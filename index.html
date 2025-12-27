@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+    <title>Bionic Biome v2.3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="c" width="800" height="600"></canvas>
+
+<div id="ui-layer">
+    <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
+    <div class="btn-action" id="act">HOLD<br>ATK</div>
+</div>
+
+<div id="start-screen" class="screen-overlay">
+    <h1 id="title-text">BIONIC<br>BIOME</h1>
+    <div class="author-sub">Created by Brant Fuller &copy; 2025<br>All Rights Reserved.</div>
+    
+    <div class="stats-box" id="stats-box" style="display:none;">
+        <div class="stat-row"><span class="stat-label">BIOME:</span> <span class="stat-val" id="st-biome">1</span></div>
+        <div class="stat-row"><span class="stat-label">KILLS:</span> <span class="stat-val" id="st-kills">0</span></div>
+        <div class="stat-row"><span class="stat-label">TIME:</span> <span class="stat-val" id="st-time">00:00</span></div>
+    </div>
+    
+    <div class="btn-row" id="main-btns">
+        <button class="btn-std btn-menu" id="menu-btn">MENU</button>
+        <button class="btn-std" id="play-btn">PLAY</button>
+    </div>
+
+    <div class="btn-row hidden" id="diff-btns">
+        <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">EASY</button>
+        <button class="btn-std btn-norm" onclick="selectDifficulty('normal')">NORMAL</button>
+        <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">HARD</button>
+    </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
