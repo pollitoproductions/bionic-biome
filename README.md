@@ -1,4 +1,4 @@
-# Bionic Biome v2.3
+# Bionic Biome v1.0
 
 **Bionic Biome** is a fast-paced, procedurally generated survival RPG. Explore infinite biomes, fight scaling enemies, and conquer the dungeon bosses.
 
