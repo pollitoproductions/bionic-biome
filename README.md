@@ -228,3 +228,25 @@ A signing key
 No local Android installation required
 
 You may safely delete the Codespace after finishing.
+
+📦 Next Steps
+
+Upload the .aab to Google Play Console
+
+Prepare:
+
+512×512 app icon
+
+1024×500 feature graphic
+
+Privacy policy (required for WebView apps)
+
+© Copyright
+
+© 2025 Brant Fuller
+Pollito Productions
+
+All rights reserved.
+
+This repository, including the game, artwork, and associated code, is the intellectual property of the copyright holder.
+No part of this project may be copied, modified, distributed, or used commercially without explicit permission.
