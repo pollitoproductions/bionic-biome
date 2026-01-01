@@ -306,19 +306,14 @@
 
 <script>
 /**
- * BIONIC BIOME v1.0 - visual/menu tweaks requested
- * Changes:
- *  - neon player glow
- *  - bluish glow for sword/bow drops
- *  - cyberpunk menus
- *  - action button without text
- *  - player flashes when damaged (like boss)
- *  - stats box slightly enlarged to avoid overlap
- *  - requested adjustments applied:
- *    1) diamond positioned so it touches the front of the shaft
- *    2) restored arrow speed & firing interval to original values to fix slowdown
+ * BIONIC BIOME v1.0
+ * Minimal changes to make movement and timers time-based (delta-time) so game speed remains consistent even if FPS drops.
+ * - convert per-frame movement (player, enemies, boss, arrows) into per-second velocities and multiply by dt.
+ * - convert frame-based timers (swing, hitTimer, atkDelay, etc.) to be decremented by dt*FPS so original frame-values remain valid.
+ * - keep semantics same otherwise.
  */
 
+/* === CONFIG / CONSTANTS (unchanged semantics) === */
 const TILE = 32;
 const MAP_SIZE = 120; 
 const WORLD = MAP_SIZE * TILE;
@@ -330,7 +325,6 @@ let inDungeon = false;
 let gameOver = false;
 let currentDifficulty = 'easy'; 
 
-// DIFFICULTY CONFIG: 'normal' renamed to 'moderate'
 const DIFFICULTY_SETTINGS = {
   easy: {
     name: "EASY",
@@ -361,16 +355,28 @@ const DIFFICULTY_SETTINGS = {
   }
 };
 
-// CONSTANTS
-const PLAYER_SPEED = 4.5;
-const BOSS_SPEED = 2.5; 
-const PLAYER_RAD = 18; // Increased 20% from 15
+// These original constants remain the same in numeric value but we'll derive per-second velocities below.
+const PLAYER_SPEED = 4.5;   // originally px/frame
+const BOSS_SPEED = 2.5;     // originally px/frame
+const PLAYER_RAD = 18;      // unchanged
 
-// RESTORED arrow speed and fire interval to fix the slowdown the last change introduced
-const ARROW_BASE_SPEED = 13; // restored original speed
-const FIRE_INTERVAL_MS = 100; // restored original firing interval
+// ARROW: restored original per-frame number (13). We'll convert to per-second below.
+const ARROW_BASE_SPEED = 13; // px/frame originally
 
-// STATS
+// Fire interval in ms (unchanged)
+const FIRE_INTERVAL_MS = 100;
+
+/* === DELTA-TIME PREPARATION ===
+   The game historically used values in px/frame. We'll treat those "per-frame" numbers as if they were for 60 FPS,
+   and convert them to per-second velocities by multiplying by 60 (frames/sec). During update, we multiply per-second
+   velocities by dt (seconds since last frame).
+*/
+const FPS = 60;
+const PLAYER_SPEED_PPS = PLAYER_SPEED * FPS;      // px per second
+const BOSS_SPEED_PPS = BOSS_SPEED * FPS;          // px per second
+const ARROW_SPEED_PPS = ARROW_BASE_SPEED * FPS;   // px per second
+
+/* === STATE === */
 let startTime = 0;
 let enemiesKilled = 0;
 let heartsCollected = 0;
@@ -381,11 +387,13 @@ let shots = [];
 let drops = [];
 let explored = [];
 
-// Pathfinding
+/* Flow-field timing: previously used a frame counter flowTimer++ and ran updateFlowField when >15.
+   15 frames at 60FPS is 0.25s (I use 0.2667 earlier — keep similar). Use a seconds accumulator now.
+*/
 let flowMap = []; 
-let flowTimer = 0; 
+let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
 
-// --- SOUND / MUSIC (unchanged logic) ---
+/* --- SOUND / MUSIC (unchanged) --- */
 const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
@@ -396,7 +404,7 @@ const Music = {
 };
 
 
-// BIOMES
+/* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
   {name: "Grey Peak", grass:"#78909c", wall:"#cfd8dc", wallEdge:"#37474f", boss:"#3498db", enemy:"#f1c40f"},
   {name: "Emerald Grove", grass:"#00695c", wall:"#004d40", wallEdge:"#b2dfdb", boss:"#2ecc71", enemy:"#d500f9"}, 
@@ -410,7 +418,6 @@ const biomes = [
   {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff0000", enemy:"#f1c40f"}  
 ];
 
-// --- UTILS ---
 function isWall(x, y) {
   let tx = Math.floor(x / TILE);
   let ty = Math.floor(y / TILE);
@@ -440,7 +447,7 @@ function formatTime(ms) {
   return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
 }
 
-// --- DOM ELEMENTS ---
+/* DOM elements (unchanged) */
 const startScreen = document.getElementById('start-screen');
 const menuScreen = document.getElementById('menu-screen');
 const victoryScreen = document.getElementById('victory-screen');
@@ -455,7 +462,6 @@ const victoryTimeDisplay = document.getElementById('victory-time-display');
 const mainBtns = document.getElementById('main-btns');
 const diffBtns = document.getElementById('diff-btns');
 
-// Menu Elements
 const tabSound = document.getElementById('tab-sound');
 const tabTips = document.getElementById('tab-tips');
 const panelSound = document.getElementById('panel-sound');
@@ -472,7 +478,7 @@ const elSword = document.getElementById('st-sword');
 const elBow = document.getElementById('st-bow');
 const elDiff = document.getElementById('st-diff');
 
-// --- EVENT LISTENERS ---
+/* === EVENT LISTENERS (unchanged behavior) === */
 const initAudioInteraction = () => {
   Music.init();
   if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
@@ -485,7 +491,6 @@ window.addEventListener('click', initAudioInteraction);
 window.addEventListener('touchstart', initAudioInteraction);
 
 playBtn.addEventListener('click', () => {
-  // Show Difficulty Select
   mainBtns.classList.add('hidden');
   diffBtns.classList.remove('hidden');
   titleText.style.display = 'none';
@@ -493,7 +498,6 @@ playBtn.addEventListener('click', () => {
   statsBox.style.display = 'none';
 });
 
-// TRIGGER GAME START
 window.selectDifficulty = (diff) => {
   currentDifficulty = diff;
   Music.init();
@@ -503,9 +507,7 @@ window.selectDifficulty = (diff) => {
   }, 450);
 };
 
-// MENU LOGIC
 let soundTestMode = 'overworld'; 
-
 function renderTrackButtons() {
   trackGrid.innerHTML = '';
   for(let i=1; i<=10; i++) {
@@ -526,11 +528,9 @@ menuBtn.addEventListener('click', () => {
   startScreen.classList.add('hidden');
   menuScreen.classList.remove('hidden');
   renderTrackButtons();
-  // Default to sound tab
   tabSound.click();
 });
 
-// Tab Switching
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
   tabTips.classList.remove('active');
@@ -570,7 +570,6 @@ swDungeon.addEventListener('click', () => {
   Music.stop();
 });
 
-
 continueBtn.addEventListener('click', () => {
   Music.playSFX('start');
   setTimeout(() => {
@@ -581,6 +580,7 @@ continueBtn.addEventListener('click', () => {
   }, 450);
 });
 
+/* === GAME START / OVER / WORLD GENERATION (unchanged semantics) === */
 function showGameOver() {
   gameActive = false;
   gameOver = true;
@@ -600,7 +600,6 @@ function showGameOver() {
   
   statsBox.style.display = "block";
   
-  // RESET UI FOR NEXT RUN
   playBtn.innerText = "RETRY";
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
@@ -623,10 +622,10 @@ function startGame() {
   generateWorld(true);
 }
 
-// --- WORLD GENERATION ---
 function generateWorld(reset) {
   world = { grid: [], enemies: [], entrance: {x: 0, y: 0}, boss: null };
   flowMap = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(9999));
+  flowAccSeconds = 0;
   
   Music.play('overworld'); 
 
@@ -665,9 +664,7 @@ function generateWorld(reset) {
   while (Math.hypot(ep.x - player.x, ep.y - player.y) < 1500) ep = findSafePos();
   world.entrance = ep;
 
-  // APPLY DIFFICULTY SCALING
-  let settings = DIFFICULTY_SETTINGS[currentDifficulty];
-  
+  let settings = DIFFICULTY_SETTINGS[currentDifficulty];  
   let scaledDmg = 1 + Math.floor((biomeLevel - 1) * 0.25);
   let enemyCount = settings.enemyCountBase + (biomeLevel * settings.enemyCountStep);
 
@@ -679,7 +676,7 @@ function generateWorld(reset) {
   }
 }
 
-// --- PATHFINDING ---
+/* === PATHFINDING (unchanged) === */
 function updateFlowField() {
   for(let y=0; y<MAP_SIZE; y++) {
     for(let x=0; x<MAP_SIZE; x++) {
@@ -715,14 +712,13 @@ function updateFlowField() {
   }
 }
 
-// --- CONTROLS ---
+/* === CONTROLS & ACTION (minor change: shots now store per-second velocities) === */
 const keys = {};
 let touchX = 0, touchY = 0, fireInterval = null;
 
 const startAction = () => {
   if (!fireInterval && gameActive) {
     doAction();
-    // restored firing interval to original
     fireInterval = setInterval(doAction, FIRE_INTERVAL_MS); 
   }
 };
@@ -781,20 +777,21 @@ actBtn.addEventListener("touchcancel", stopAction);
 
 function doAction() {
   player.swing = 5; 
-  // use restored arrow speed
+  // create shot velocities in px/second so movement is dt-correct
   shots.push({
     x: player.x,
     y: player.y,
-    dx: Math.cos(player.dir) * ARROW_BASE_SPEED,
-    dy: Math.sin(player.dir) * ARROW_BASE_SPEED,
+    dx: Math.cos(player.dir) * ARROW_SPEED_PPS,
+    dy: Math.sin(player.dir) * ARROW_SPEED_PPS,
     dmg: Math.max(1, player.bowLvl)
   });
 }
 
-// --- GAME LOOP ---
-function update() {
+/* === UPDATE: now accepts dt (seconds) and uses per-second velocities === */
+function update(dt) {
   if (!gameActive || gameOver) return;
 
+  // Player movement: touch/keys produce unit direction vector; movement uses per-second speed * dt
   let mx = (keys.ArrowLeft || keys.KeyA ? -1 : keys.ArrowRight || keys.KeyD ? 1 : 0) + touchX;
   let my = (keys.ArrowUp || keys.KeyW ? -1 : keys.ArrowDown || keys.KeyS ? 1 : 0) + touchY;
     
@@ -802,11 +799,13 @@ function update() {
   if (m > 0.1) {
     mx /= m; my /= m;
     player.dir = Math.atan2(my, mx);
-    let nx = player.x + mx * PLAYER_SPEED, ny = player.y + my * PLAYER_SPEED;
+    let nx = player.x + mx * PLAYER_SPEED_PPS * dt;
+    let ny = player.y + my * PLAYER_SPEED_PPS * dt;
     if (!isWall(nx, player.y)) player.x = Math.max(16, Math.min(WORLD - 16, nx));
     if (!isWall(player.x, ny)) player.y = Math.max(16, Math.min(WORLD - 16, ny));
   }
 
+  // Mark explored
   let tx = Math.floor(player.x / TILE), ty = Math.floor(player.y / TILE);
   for (let y = ty - 4; y <= ty + 4; y++) {
     for (let x = tx - 4; x <= tx + 4; x++) {
@@ -814,21 +813,24 @@ function update() {
     }
   }
 
-  flowTimer++;
-  if(flowTimer > 15) {
+  // Flow field update every ~16 frames originally => ~0.2667s; accumulate dt
+  flowAccSeconds += dt;
+  if (flowAccSeconds > (16 / FPS)) {
     updateFlowField();
-    flowTimer = 0;
+    flowAccSeconds = 0;
   }
 
-  if (player.swing > 0) player.swing--;
-  if (player.hitTimer > 0) player.hitTimer--; // player damage flash timer
+  // Timers: decrement by frames equivalent = dt * FPS so existing numeric frame-based values work
+  if (player.swing > 0) player.swing -= dt * FPS;
+  if (player.hitTimer > 0) player.hitTimer -= dt * FPS;
 
-  // SCALED SPEED based on difficulty
+  // Enemy movement: compute per-frame-style speed then convert to per-second
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
-  const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep);
+  const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep); // px/frame
+  const CURRENT_ENEMY_SPEED_PPS = CURRENT_ENEMY_SPEED * FPS; // px/sec
 
   world.enemies.forEach(e => {
-    if (e.hitTimer > 0) e.hitTimer--;
+    if (e.hitTimer > 0) e.hitTimer -= dt * FPS;
 
     let d = Math.hypot(player.x - e.x, player.y - e.y);
     if (d < 450) { 
@@ -862,8 +864,8 @@ function update() {
         }
       }
         
-      let nx = e.x + vx * CURRENT_ENEMY_SPEED;
-      let ny = e.y + vy * CURRENT_ENEMY_SPEED;
+      let nx = e.x + vx * CURRENT_ENEMY_SPEED_PPS * dt;
+      let ny = e.y + vy * CURRENT_ENEMY_SPEED_PPS * dt;
       
       let distToPlayer = Math.hypot(nx - player.x, ny - player.y);
       if (distToPlayer > 30) {
@@ -871,7 +873,7 @@ function update() {
         if (!isWall(e.x, ny)) e.y = ny;
       }
         
-      if (d < (PLAYER_RAD + 20) && e.atkDelay <= 0) {
+      if (d < (PLAYER_RAD + 20) && (e.atkDelay <= 0)) {
         let angleToEnemy = Math.atan2(e.y - player.y, e.x - player.x);
         let angleDiff = Math.abs(angleToEnemy - player.dir);
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
@@ -888,13 +890,13 @@ function update() {
         }
 
         player.hp -= damage;
-        player.hitTimer = 8; // flash player when damaged
-        e.atkDelay = 45;
+        player.hitTimer = 8; // frame-based value
+        e.atkDelay = 45; // frame-based value
       }
     }
-    if (e.atkDelay > 0) e.atkDelay--;
+    if (e.atkDelay > 0) e.atkDelay -= dt * FPS;
     
-    // MELEE HIT
+    // MELEE HIT (player.swing is decremented by dt*FPS above)
     if (player.swing > 0 && d < (PLAYER_RAD + 45)) {
       let angleToEnemy = Math.atan2(e.y - player.y, e.x - player.x);
       let diff = angleToEnemy - player.dir;
@@ -913,8 +915,10 @@ function update() {
     }
   });
 
+  // Shots: dx/dy are in px/sec. Move by dx*dt.
   shots = shots.filter(s => {
-    s.x += s.dx; s.y += s.dy;
+    s.x += s.dx * dt;
+    s.y += s.dy * dt;
     if (isWall(s.x, s.y)) return false;
     let hit = false;
     world.enemies.forEach(e => {
@@ -942,13 +946,11 @@ function update() {
 
   world.enemies = world.enemies.filter(e => e.hp > 0);
 
-  // BOSS LOGIC
+  // BOSS LOGIC: convert speed to px/sec and use dt
   if (inDungeon && world.boss) {
-    if (world.boss.hitTimer > 0) world.boss.hitTimer--;
+    if (world.boss.hitTimer > 0) world.boss.hitTimer -= dt * FPS;
 
     let bd = Math.hypot(player.x - world.boss.x, player.y - world.boss.y);
-    
-    // Once activated (within 700px), stays active forever
     if (bd < 700) world.boss.active = true;
 
     if (world.boss.active) { 
@@ -957,25 +959,25 @@ function update() {
       let bDist = Math.hypot(bdx, bdy);
       
       if(bDist > 0 && bDist > 75) { 
-          // Boss speed override:
           let bossSpeed;
           if (currentDifficulty === 'impossible') {
             bossSpeed = Math.max(0.1, PLAYER_SPEED - 1.5);
           } else {
             bossSpeed = BOSS_SPEED + (settings.bossSpeedAdd || 0);
           }
-          world.boss.x += (bdx / bDist) * bossSpeed; 
-          world.boss.y += (bdy / bDist) * bossSpeed;
+          const bossSpeedPPS = bossSpeed * FPS;
+          world.boss.x += (bdx / bDist) * bossSpeedPPS * dt; 
+          world.boss.y += (bdy / bDist) * bossSpeedPPS * dt;
       }
 
       if (bd < (PLAYER_RAD + 60) && world.boss.atkDelay <= 0) {
         player.hp -= world.boss.dmg;
-        player.hitTimer = 12; // flash player on boss hit
-        world.boss.atkDelay = 45; 
+        player.hitTimer = 12; // frame-based
+        world.boss.atkDelay = 45;
         vibrate(300);
       }
     }
-    if (world.boss.atkDelay > 0) world.boss.atkDelay--;
+    if (world.boss.atkDelay > 0) world.boss.atkDelay -= dt * FPS;
     
     if (player.swing > 0 && bd < (PLAYER_RAD + 75)) {
        let angleToBoss = Math.atan2(world.boss.y - player.y, world.boss.x - player.x);
@@ -995,7 +997,6 @@ function update() {
     if (world.boss.hp <= 0) {
       enemiesKilled++; 
       
-      // CHECK FOR LEVEL 10 VICTORY
       if (biomeLevel === 10 && beatGameTime === null) {
           beatGameTime = Date.now() - startTime;
           showVictoryScreen();
@@ -1026,14 +1027,12 @@ function update() {
   }
 }
 
-// spawnDrop: in impossible mode decrease HP and weapon drops by 50%
+/* spawnDrop unchanged (already halves in impossible) */
 function spawnDrop(x, y) {
-  // Base per-type probabilities (as original): Sword 1.9%, Bow 1.9%, HP 13.7% (total ~17.5%)
   let pSword = 0.019;
   let pBow = 0.019;
   let pHp = 0.137;
 
-  // In 'Impossible' mode, decrease HP and weapon drops by 50%
   if (currentDifficulty === 'impossible') {
     pSword *= 0.5;
     pBow *= 0.5;
@@ -1050,12 +1049,14 @@ function spawnDrop(x, y) {
   }
 }
 
+/* enterDungeon unchanged semantics */
 function enterDungeon() {
   inDungeon = true;
   Music.play('dungeon');
   
   explored = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(false));
   flowMap = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(9999));
+  flowAccSeconds = 0;
     
   let wallChance = 0.06;
 
@@ -1074,7 +1075,6 @@ function enterDungeon() {
     
   while (Math.hypot(bp.x - player.x, bp.y - player.y) < 600) bp = findSafePos();
   
-  // APPLY DIFFICULTY SCALING
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
   
   let hpS = biomeLevel * settings.bossHpMult; 
@@ -1104,7 +1104,7 @@ function enterDungeon() {
   }
 }
 
-// --- RENDER ---
+/* === RENDER (unchanged except using shot positions that are now dt-correct) === */
 const ctx = document.getElementById("c").getContext("2d");
 
 function draw() {
@@ -1126,7 +1126,6 @@ function draw() {
       let drawY = y * TILE - cy;
 
       if (world.grid[y][x] === 1) {
-        // WALL TEXTURE
         ctx.fillStyle = b.wall; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
         
@@ -1141,7 +1140,6 @@ function draw() {
         ctx.strokeRect(drawX, drawY, TILE, TILE);
 
       } else if (!inDungeon) {
-        // GRASS TEXTURE
         ctx.fillStyle = b.grass; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
         
@@ -1157,7 +1155,6 @@ function draw() {
         }
 
       } else {
-        // DUNGEON FLOOR TEXTURE
         ctx.fillStyle = "#111"; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
         
@@ -1179,18 +1176,15 @@ function draw() {
     ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
- // PLAYER - darker neon blue with glow; flash white when damaged
+ // PLAYER
 ctx.save();
 if (player.hitTimer > 0) {
-  // flash white when damaged (keeps the high-contrast hit flash)
   ctx.shadowBlur = 36;
   ctx.shadowColor = "rgba(255,255,255,0.95)";
   ctx.fillStyle = "#ffffff";
 } else {
-  // darker blue base matching HP drops, but keep a neon cyan-ish glow
-  // base fill is #3498db (same as HP drop), glow color uses the same RGB
   ctx.shadowBlur = 42;
-  ctx.shadowColor = "rgba(52,152,219,0.95)"; // rgba for #3498db
+  ctx.shadowColor = "rgba(52,152,219,0.95)";
   ctx.fillStyle = "#3498db";
 }
 ctx.beginPath();
@@ -1231,30 +1225,28 @@ ctx.restore();
     ctx.fillStyle = "#ff0000"; ctx.fillRect(bx - 50, by - 80, (world.boss.hp / world.boss.max) * 100, 10);
   }
 
-  // DRAW SHOTS
+  // DRAW SHOTS (positions updated in update(dt))
   shots.forEach(s => {
     ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
-    ctx.lineTo(s.x - cx - s.dx * 2, s.y - cy - s.dy * 2); ctx.stroke();
+    // draw a little trail backwards scaled by current per-second velocity magnitude (approx)
+    ctx.lineTo(s.x - cx - (s.dx / FPS) * 2, s.y - cy - (s.dy / FPS) * 2); ctx.stroke();
 
-    // Draw a thin shaft
+    // Draw shaft + diamond (unchanged visuals)
     ctx.fillStyle = "#bdc3c7"; 
     let ang = Math.atan2(s.dy, s.dx);
     ctx.save();
     ctx.translate(s.x - cx, s.y - cy);
     ctx.rotate(ang);
 
-    // Shaft: thin rectangle extended so it ends exactly where the diamond (arrow head) begins.
-    // width 28 ends at x = 10; diamond's front begins at x = 10 -> they touch.
+    // Shaft extended so its end touches the diamond head
     ctx.beginPath();
     ctx.rect(-18, -1.5, 28, 3);
     ctx.fill();
 
-    // Diamond at the very tip of the arrow (as arrow head) with sword-like glow
     ctx.beginPath();
     ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
     ctx.fillStyle = "#dfeef6";
-    // diamond placed starting at x = 10 so it sits flush with the shaft end
     ctx.moveTo(10, 0);
     ctx.lineTo(14, -5);
     ctx.lineTo(18, 0);
@@ -1265,7 +1257,6 @@ ctx.restore();
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // small brighter center for contrast at the tip
     ctx.beginPath();
     ctx.shadowBlur = 0;
     ctx.fillStyle = "rgba(255,255,255,0.8)";
@@ -1275,7 +1266,7 @@ ctx.restore();
     ctx.restore();
   });
 
-  // DROPS: bluish glow for Sword/Bow, HP unchanged
+  // DROPS (unchanged visuals)
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
@@ -1305,10 +1296,8 @@ ctx.restore();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
 
-      // Make the bow drop glow like the sword drop: use same shadow and pale fill
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.fillStyle = "#dfeef6";
-      // a subtle filled silhouette to produce the glow
       ctx.beginPath();
       ctx.moveTo(0, -22);
       ctx.quadraticCurveTo(-10, -12, -10, 0);
@@ -1318,7 +1307,6 @@ ctx.restore();
       ctx.closePath();
       ctx.fill();
 
-      // Bow body (over the glow)
       ctx.shadowBlur = 0;
       ctx.strokeStyle = "#deb887"; 
       ctx.lineWidth = 4; ctx.lineCap = "round"; 
@@ -1329,13 +1317,11 @@ ctx.restore();
       ctx.quadraticCurveTo(-15, 10, -10, 20);
       ctx.stroke();
 
-      // Add glow to the string specifically (bright + shadow), then draw core string
       ctx.beginPath();
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
       ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
 
-      // core darker string on top for definition
       ctx.shadowBlur = 0;
       ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
@@ -1344,20 +1330,18 @@ ctx.restore();
     }
   });
 
-  // TOP STATS BOX (contrasting background) - moved left of the minimap and spaced
+  // STATS BOX + MINIMAP (unchanged)
   const boxX = 20;
   const boxY = 10;
-  const boxW = 360; // slightly wider
-  const boxH = 110; // slightly taller so bow level doesn't overlap biome
+  const boxW = 360;
+  const boxH = 110;
 
-  // Background + border
   ctx.fillStyle = "rgba(0,0,0,0.72)";
   ctx.fillRect(boxX, boxY, boxW, boxH);
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 2;
   ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-  // Left column (HP, Sword, Bow) - adjusted spacing
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
   ctx.font = "bold 18px monospace";
@@ -1367,7 +1351,6 @@ ctx.restore();
   ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 62);
   ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 88);
 
-  // Right column (Time, Difficulty)
   ctx.textAlign = "right";
   ctx.font = "bold 16px monospace";
   ctx.fillText("TIME: " + formatTime(Date.now() - startTime), boxX + boxW - 12, boxY + 36);
@@ -1375,14 +1358,12 @@ ctx.restore();
   ctx.font = "13px monospace";
   ctx.fillText("DIFF: " + (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase(), boxX + boxW - 12, boxY + 62);
 
-  // Biome title/number — extreme right side of the stats box
   ctx.textAlign = "right";
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 15px monospace";
   ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), boxX + boxW - 6, boxY + 92);
   ctx.globalAlpha = 1.0;
 
-  // MINIMAP
   const mmS = 1.0;
   ctx.globalAlpha = 0.8; ctx.fillStyle = "#000";
   ctx.fillRect(650, 15, MAP_SIZE * mmS, MAP_SIZE * mmS);
@@ -1412,11 +1393,15 @@ ctx.restore();
   ctx.fill(); ctx.globalAlpha = 1.0;
 }
 
-(function loop() {
-  update();
+/* === MAIN LOOP: compute dt and pass to update === */
+let lastTime = performance.now();
+(function loop(now) {
+  const dt = Math.min(0.1, (now - lastTime) / 1000); // clamp to avoid huge jumps (max 100ms)
+  lastTime = now;
+  update(dt);
   draw();
   requestAnimationFrame(loop);
-})();
+})(lastTime);
 </script>
 </body>
 </html>
