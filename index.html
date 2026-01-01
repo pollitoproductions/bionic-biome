@@ -276,7 +276,8 @@ const DIFFICULTY_SETTINGS = {
     enemyCountBase: 200,
     enemyCountStep: 36,
     bossHpMult: 360,
-    bossDefMult: 0.3
+    bossDefMult: 0.3,
+    bossSpeedAdd: 0
   },
   normal: { 
     name: "NORMAL",
@@ -284,7 +285,8 @@ const DIFFICULTY_SETTINGS = {
     enemyCountBase: 200,
     enemyCountStep: 60,
     bossHpMult: 600,
-    bossDefMult: 0.5
+    bossDefMult: 0.5,
+    bossSpeedAdd: 0
   },
   impossible: { 
     name: "IMPOSSIBLE",
@@ -292,7 +294,8 @@ const DIFFICULTY_SETTINGS = {
     enemyCountBase: 300,
     enemyCountStep: 85,
     bossHpMult: 840,
-    bossDefMult: 0.7
+    bossDefMult: 0.7,
+    bossSpeedAdd: 1.0   // boss is +1 speed on impossible
   }
 };
 
@@ -1068,8 +1071,10 @@ function update() {
       let bDist = Math.hypot(bdx, bdy);
       
       if(bDist > 0 && bDist > 75) { 
-          world.boss.x += (bdx / bDist) * BOSS_SPEED; 
-          world.boss.y += (bdy / bDist) * BOSS_SPEED;
+          // boss moves faster on impossible difficulty (BOSS_SPEED + bossSpeedAdd)
+          let bossSpeed = BOSS_SPEED + (settings.bossSpeedAdd || 0);
+          world.boss.x += (bdx / bDist) * bossSpeed; 
+          world.boss.y += (bdy / bDist) * bossSpeed;
       }
 
       if (bd < (PLAYER_RAD + 60) && world.boss.atkDelay <= 0) {
@@ -1129,11 +1134,28 @@ function update() {
   }
 }
 
+// spawnDrop: probabilities are halved when currentDifficulty === 'impossible'
 function spawnDrop(x, y) {
-  let r = Math.random();
-  if (r < 0.019) drops.push({x, y, type: "Sword"});       
-  else if (r < 0.038) drops.push({x, y, type: "Bow"});     
-  else if (r < 0.175) drops.push({x, y, type: "hp"});      
+  // Base per-type probabilities (as original): Sword 1.9%, Bow 1.9%, HP 13.7% (total ~17.5%)
+  let pSword = 0.019;
+  let pBow = 0.019;
+  let pHp = 0.137;
+
+  // Reduce all drops by 50% on impossible
+  if (currentDifficulty === 'impossible') {
+    pSword *= 0.5;
+    pBow *= 0.5;
+    pHp *= 0.5;
+  }
+
+  const r = Math.random();
+  if (r < pSword) {
+    drops.push({ x, y, type: "Sword" });
+  } else if (r < pSword + pBow) {
+    drops.push({ x, y, type: "Bow" });
+  } else if (r < pSword + pBow + pHp) {
+    drops.push({ x, y, type: "hp" });
+  }
 }
 
 function enterDungeon() {
