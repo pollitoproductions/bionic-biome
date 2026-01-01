@@ -270,7 +270,6 @@ let currentDifficulty = 'easy';
 
 // DIFFICULTY CONFIG
 const DIFFICULTY_SETTINGS = {
-  // Put "Grey Peak" as first biome (done in biomes array below)
   easy: {
     name: "EASY",
     enemySpeedStep: 0.08,
@@ -515,6 +514,8 @@ const Music = {
 };
 
 
+// --- UTILS & WORLD DATA ---
+
 // BIOMES
 // Reordered so "Grey Peak" appears first
 const biomes = [
@@ -530,7 +531,6 @@ const biomes = [
   {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff0000", enemy:"#f1c40f"}  
 ];
 
-// --- UTILS ---
 function isWall(x, y) {
   let tx = Math.floor(x / TILE);
   let ty = Math.floor(y / TILE);
@@ -1072,8 +1072,15 @@ function update() {
       let bDist = Math.hypot(bdx, bdy);
       
       if(bDist > 0 && bDist > 75) { 
-          // faster boss on impossible (uses settings from update scope)
-          let bossSpeed = BOSS_SPEED + (settings.bossSpeedAdd || 0);
+          // Boss speed override:
+          // - In impossible: boss moves at (PLAYER_SPEED - 1.5) (floored at 0.1)
+          // - Otherwise: use base BOSS_SPEED + any difficulty add
+          let bossSpeed;
+          if (currentDifficulty === 'impossible') {
+            bossSpeed = Math.max(0.1, PLAYER_SPEED - 1.5);
+          } else {
+            bossSpeed = BOSS_SPEED + (settings.bossSpeedAdd || 0);
+          }
           world.boss.x += (bdx / bDist) * bossSpeed; 
           world.boss.y += (bdy / bDist) * bossSpeed;
       }
@@ -1213,6 +1220,8 @@ function enterDungeon() {
 }
 
 // --- RENDER ---
+const ctx = document.getElementById("c").getContext("2d");
+
 function draw() {
   if (!gameActive) return;
 
@@ -1387,32 +1396,42 @@ function draw() {
     }
   });
 
-  // TOP STATS BOX (contrasting background)
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  ctx.fillRect(20, 10, 760, 70);
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(20, 10, 760, 70);
+  // TOP STATS BOX (contrasting background) - moved left of the minimap and spaced
+  const boxX = 20;
+  const boxY = 10;
+  const boxW = 320;
+  const boxH = 90;
 
-  // Stats text inside top box
-  ctx.fillStyle = "#fff";
+  // Background + border
+  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fillRect(boxX, boxY, boxW, boxH);
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+  // Left column (HP, Sword, Bow)
+  ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
   ctx.font = "bold 18px monospace";
-  ctx.fillText("HP: " + Math.ceil(player.hp), 40, 40);
-  ctx.fillText("Sword Lvl: " + player.swordLvl, 200, 40);
-  ctx.fillText("Bow Lvl: " + player.bowLvl, 360, 40);
+  ctx.fillText("HP: " + Math.ceil(player.hp), boxX + 12, boxY + 30);
 
-  ctx.textAlign = "center";
-  ctx.font = "bold 16px monospace";
-  ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), 400, 40);
+  ctx.font = "14px monospace";
+  ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 52);
+  ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 72);
 
+  // Right column (Time, Difficulty)
   ctx.textAlign = "right";
-  ctx.font = "bold 18px monospace";
-  ctx.fillText("TIME: " + formatTime(Date.now() - startTime), 740, 40);
+  ctx.font = "bold 16px monospace";
+  ctx.fillText("TIME: " + formatTime(Date.now() - startTime), boxX + boxW - 12, boxY + 30);
+  ctx.fillStyle = "#aaaaaa";
+  ctx.font = "13px monospace";
+  ctx.fillText("DIFF: " + currentDifficulty.toUpperCase(), boxX + boxW - 12, boxY + 52);
 
-  ctx.fillStyle = "#aaa";
-  ctx.font = "12px monospace";
-  ctx.fillText("DIFF: " + currentDifficulty.toUpperCase(), 740, 60);
+  // Center (Biome title)
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 15px monospace";
+  ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), boxX + (boxW / 2), boxY + 72);
   ctx.globalAlpha = 1.0;
 
   // MINIMAP
@@ -1444,8 +1463,6 @@ function draw() {
   ctx.arc(650 + (player.x / TILE) * mmS, 15 + (player.y / TILE) * mmS, 2.5, 0, 7);
   ctx.fill(); ctx.globalAlpha = 1.0;
 }
-
-const ctx = document.getElementById("c").getContext("2d");
 
 (function loop() {
   update();
