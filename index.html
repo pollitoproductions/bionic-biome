@@ -25,22 +25,26 @@
   /* Virtual Joystick */
   .joy-container {
     position: absolute; left: 5%; bottom: 8%; width: 140px; height: 140px;
-    background: rgba(255,255,255,0.1); border-radius: 50%;
-    pointer-events: auto; border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06); border-radius: 50%;
+    pointer-events: auto; border: 2px solid rgba(0,255,255,0.06);
   }
   .knob {
     position: absolute; left: 45px; top: 45px; width: 50px; height: 50px;
     background: #fff; border-radius: 50%; pointer-events: none;
   }
-  /* Action Button */
+  /* Action Button - no text, subtle shaded look */
   .btn-action {
     position: absolute; right: 5%; bottom: 8%; width: 100px; height: 100px;
-    background: rgba(255,255,255,0.2); border-radius: 50%;
-    pointer-events: auto; border: 3px solid #fff;
+    background: linear-gradient(180deg, rgba(10,10,20,0.28), rgba(5,5,10,0.55));
+    border-radius: 50%;
+    pointer-events: auto; border: 2px solid rgba(0,200,255,0.12);
     display: flex; align-items: center; justify-content: center;
     color: #fff; font-weight: bold; font-size: 16px; text-align: center;
+    box-shadow: inset 0 -10px 20px rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.6);
+    transition: transform 0.08s;
   }
-  
+  .btn-action:active { transform: translateY(3px); }
+
   /* SCREENS */
   .screen-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -67,12 +71,12 @@
     max-width: 90%;
   }
 
-  /* STATS BOX */
+  /* STATS BOX (slightly larger to avoid overlap) */
   .stats-box {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 15px 20px; 
-    border-radius: 4px; 
-    border: 2px solid #555;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px 22px; 
+    border-radius: 6px; 
+    border: 2px solid rgba(255,255,255,0.08);
     width: 380px; 
     text-align: left; 
     margin-bottom: 15px;
@@ -92,77 +96,79 @@
     display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
   }
   .btn-std {
-    background: #2ecc71; color: #fff; border: none;
-    padding: 15px 20px; font-size: 14px; 
-    font-weight: bold; border-radius: 4px; 
+    background: linear-gradient(180deg,#00e6ff,#0077aa);
+    color: #000; border: none;
+    padding: 12px 18px; font-size: 13px; 
+    font-weight: bold; border-radius: 6px; 
     cursor: pointer;
-    box-shadow: 0 4px 0px #27ae60; 
-    transition: transform 0.1s;
+    box-shadow: 0 6px 0px #003f4d, 0 0 18px rgba(0,230,255,0.08);
+    transition: transform 0.08s, box-shadow 0.12s;
     font-family: 'Press Start 2P', cursive; 
     text-transform: uppercase;
     margin: 5px;
   }
-  .btn-menu { background: #3498db; box-shadow: 0 4px 0px #2980b9; }
-  
-  /* DIFFICULTY BUTTONS */
-  .btn-easy { background: #2ecc71; box-shadow: 0 4px 0px #27ae60; }
-  .btn-norm { background: #f1c40f; box-shadow: 0 4px 0px #d4ac0d; color: #000; }
-  .btn-hard { background: #e74c3c; box-shadow: 0 4px 0px #c0392b; }
+  .btn-std:active { transform: translateY(4px); box-shadow: none; }
 
-  .btn-std:active { 
-    transform: translate(0, 4px); 
-    box-shadow: 0 0 0;
-  }
+  .btn-menu { background: linear-gradient(90deg,#9b59b6,#3498db); color: #fff; box-shadow: 0 6px 0px rgba(20,20,40,0.7); }
 
-  /* MENU OVERLAY */
-  #menu-screen { z-index: 300; }
+  /* DIFFICULTY BUTTONS (rename normal->moderate) */
+  .btn-easy { background: linear-gradient(90deg,#2ecc71,#27ae60); color:#000; box-shadow: 0 6px 0px #1f8a4a; }
+  .btn-moderate { background: linear-gradient(90deg,#f1c40f,#d4ac0d); color:#000; box-shadow: 0 6px 0px #a27f06; }
+  .btn-hard { background: linear-gradient(90deg,#e74c3c,#c0392b); color:#000; box-shadow: 0 6px 0px #8e2b25; }
+
+  /* Cyberpunk menus */
   .menu-box {
-    background: #222; border: 2px solid #fff;
-    padding: 0; width: 90%; max-width: 400px;
+    background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
+    border: 2px solid rgba(0, 200, 255, 0.14);
+    padding: 0; width: 90%; max-width: 420px;
     text-align: center; font-family: 'Press Start 2P', cursive;
     overflow: hidden;
     display: flex; flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    border-radius: 8px;
   }
-  
-  /* MENU TABS */
   .menu-tabs {
-    display: flex; border-bottom: 2px solid #fff;
+    display: flex; border-bottom: 1px solid rgba(0,200,255,0.06);
+    background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(0,30,60,0.18));
   }
   .menu-tab {
-    flex: 1; background: #444; color: #aaa; cursor: pointer;
-    padding: 15px 0; font-size: 12px; border: none; font-family: 'Press Start 2P', cursive;
+    flex: 1; background: transparent; color: #9fbcd3; cursor: pointer;
+    padding: 14px 0; font-size: 12px; border: none; font-family: 'Press Start 2P', cursive;
+    position: relative;
   }
   .menu-tab.active {
-    background: #222; color: #f1c40f;
+    color: #00e6ff;
+    box-shadow: inset 0 -4px 0 rgba(0,230,255,0.12);
   }
 
-  .menu-content { padding: 20px; min-height: 200px; }
-  
-  .track-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 10px 0; }
+  .menu-content { padding: 18px; min-height: 200px; color:#cfeff6; font-size:13px; }
+  .track-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 10px 0; }
   .track-btn {
-    background: #444; border: 1px solid #777; color: #fff;
-    padding: 8px 0; cursor: pointer; font-size: 10px;
+    background: linear-gradient(180deg,#14121a,#1f1b29); border: 1px solid rgba(0,200,255,0.06); color: #9fbcd3;
+    padding: 10px 4px; cursor: pointer; font-size: 12px; border-radius: 6px;
     font-family: 'Press Start 2P', cursive;
+    transition: box-shadow 0.12s, transform 0.06s;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.7);
   }
-  .track-btn.active { background: #e74c3c; border-color: #c0392b; }
-  .mode-switch {
-    display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;
-  }
+  .track-btn.active, .track-btn:hover { box-shadow: 0 6px 24px rgba(0,230,255,0.12); color:#00e6ff; transform: translateY(-2px); border-color: rgba(0,230,255,0.18); }
+
+  .mode-switch { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
   .switch-btn {
-    background: #555; padding: 8px 15px; cursor: pointer; font-size: 10px; border: 1px solid #888;
+    background: #1a1a2b; padding: 8px 15px; cursor: pointer; font-size: 12px; border: 1px solid rgba(255,255,255,0.04);
+    color: #9fbcd3; border-radius: 6px;
   }
-  .switch-btn.selected { background: #fff; color: #000; }
+  .switch-btn.selected { background: #00e6ff; color: #001218; box-shadow: 0 6px 20px rgba(0,230,255,0.14); }
 
   /* TIPS LIST */
   .tips-list {
-    text-align: left; font-size: 10px; line-height: 1.8; color: #ccc;
+    text-align: left; font-size: 12px; line-height: 1.8; color: #cfeff6;
   }
   .tips-list li { margin-bottom: 10px; }
 
   .btn-close {
-    background: #e74c3c; color: white; border: none; padding: 10px 20px;
+    background: linear-gradient(90deg,#ff4d4d,#c0392b); color: white; border: none; padding: 10px 20px;
     margin: 15px; cursor: pointer; font-family: 'Press Start 2P', cursive;
-    box-shadow: 0 4px 0 #c0392b; align-self: center;
+    box-shadow: 0 6px 0 rgba(150,20,20,0.7); align-self: center; border-radius:6px;
   }
   .btn-close:active { transform: translate(0,4px); box-shadow: none; }
 
@@ -180,7 +186,8 @@
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
-  <div class="btn-action" id="act">HOLD<br>ATK</div>
+  <!-- action button text removed, just shaded -->
+  <div class="btn-action" id="act" aria-label="attack button"></div>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -206,7 +213,7 @@
   <div class="btn-row hidden" id="diff-btns">
     <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">EASY</button>
-    <button class="btn-std btn-norm" onclick="selectDifficulty('normal')">NORMAL</button>
+    <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
   </div>
 </div>
@@ -253,8 +260,14 @@
 
 <script>
 /**
- * BIONIC BIOME v1.0
- * Copyright (c) 2025 Brant Fuller. All Rights Reserved.
+ * BIONIC BIOME v1.0 - visual/menu tweaks requested
+ * Changes:
+ *  - neon player glow
+ *  - bluish glow for sword/bow drops
+ *  - cyberpunk menus
+ *  - action button without text
+ *  - player flashes when damaged (like boss)
+ *  - stats box slightly enlarged to avoid overlap
  */
 
 const TILE = 32;
@@ -268,7 +281,7 @@ let inDungeon = false;
 let gameOver = false;
 let currentDifficulty = 'easy'; 
 
-// DIFFICULTY CONFIG
+// DIFFICULTY CONFIG: 'normal' renamed to 'moderate'
 const DIFFICULTY_SETTINGS = {
   easy: {
     name: "EASY",
@@ -279,8 +292,8 @@ const DIFFICULTY_SETTINGS = {
     bossDefMult: 0.3,
     bossSpeedAdd: 0
   },
-  normal: { 
-    name: "NORMAL",
+  moderate: { 
+    name: "MODERATE",
     enemySpeedStep: 0.15,
     enemyCountBase: 200,
     enemyCountStep: 60,
@@ -319,205 +332,18 @@ let explored = [];
 let flowMap = []; 
 let flowTimer = 0; 
 
-// --- PROCEDURAL TECHNO MUSIC SYSTEM ---
+// --- SOUND / MUSIC (unchanged logic) ---
 const Music = {
-  ctx: null,
-  osc: null,
-  gain: null,
-  timer: null,
-  isPlaying: false,
-  currentTrackId: null,
-
-  init: function() {
-    if (!this.ctx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioContext();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-  },
-
-  playSFX: function(type) {
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    
-    // Main tone oscillator
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    
-    // Modulator for "Electronic" feel
-    const mod = this.ctx.createOscillator();
-    const modGain = this.ctx.createGain();
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    
-    mod.connect(modGain);
-    modGain.connect(osc.frequency);
-    
-    if (type === 'start') {
-       osc.type = 'square';
-       osc.frequency.setValueAtTime(110, t);
-       osc.frequency.exponentialRampToValueAtTime(880, t + 0.3);
-       
-       mod.type = 'sawtooth';
-       mod.frequency.setValueAtTime(50, t);
-       mod.frequency.linearRampToValueAtTime(200, t + 0.3);
-       modGain.gain.setValueAtTime(500, t);
-       
-       gain.gain.setValueAtTime(0.2, t);
-       gain.gain.linearRampToValueAtTime(0, t + 0.3);
-       
-       osc.start(t);
-       mod.start(t);
-       osc.stop(t + 0.3);
-       mod.stop(t + 0.3);
-       
-    } else if (type === 'gameover') {
-       osc.type = 'sawtooth';
-       osc.frequency.setValueAtTime(400, t);
-       osc.frequency.exponentialRampToValueAtTime(40, t + 1.0);
-       
-       mod.type = 'square';
-       mod.frequency.setValueAtTime(60, t);
-       mod.frequency.linearRampToValueAtTime(10, t + 1.0);
-       modGain.gain.setValueAtTime(1000, t);
-
-       gain.gain.setValueAtTime(0.3, t);
-       gain.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
-       
-       osc.start(t);
-       mod.start(t);
-       osc.stop(t + 1.0);
-       mod.stop(t + 1.0);
-    }
-  },
-
-  generateDarkTrack: function(level, isDungeon) {
-      const roots = [110.00, 130.81, 146.83, 164.81, 174.61]; 
-      let baseFreq = roots[(level - 1) % roots.length]; 
-      
-      let patternType = (level - 1) % 3;
-      let notes = [];
-      let intervals = [];
-
-      if (isDungeon) {
-          // Darker version of overworld: Octave down, slower, tritone/locrian intervals
-          baseFreq *= 0.5; // Octave down
-          // Dissonant intervals (0, 6=tritone, 7=fifth, 13=minor 9th)
-          intervals = [0, 0, 6, 0, 7, 6, 13, 0]; 
-      } else {
-          // Overworld patterns
-          if (patternType === 0) {
-              intervals = [0, 3, 7, 12, 0, 3, 7, 12, 0, 0, 12, 12, 7, 7, 3, 3];
-          } else if (patternType === 1) {
-              intervals = [0, 0, 12, 0, 3, 0, 12, 0, 7, 0, 12, 0, 5, 0, 12, 0];
-          } else {
-              intervals = [0, 1, 0, 1, 5, 7, 5, 7, 12, 1, 12, 1, 0, 0, 12, 0];
-          }
-      }
-
-      for (let i=0; i<intervals.length; i++) {
-          let f = baseFreq * Math.pow(2, intervals[i] / 12);
-          notes.push(f);
-      }
-
-      // Dungeon BPM is slower/heavier than Overworld
-      let bpm = isDungeon ? 90 + (level * 1) : 125 + (level * 2);
-      return { notes: notes, bpm: bpm };
-  },
-
-  play: function(type, overrideLevel) {
-    let lvl = overrideLevel || biomeLevel;
-    let reqId = type;
-    if (type === 'overworld' || type === 'dungeon') {
-        reqId = type + "_" + lvl;
-    }
-
-    if (this.currentTrackId === reqId && this.isPlaying) return;
-    this.stop();
-    this.init(); 
-    
-    this.currentTrackId = reqId;
-    this.isPlaying = true;
-    
-    let trackData = null;
-
-    if (type === 'title') {
-        trackData = { bpm: 180, notes: [261, 523, 392, 329, 261, 523, 493, 392], loop: true };
-    } else if (type === 'victory') {
-        trackData = { bpm: 120, notes: [261,392,523,659, 783,1046, 0], loop: false };
-    } else if (type === 'overworld') {
-        trackData = this.generateDarkTrack(lvl, false);
-        trackData.loop = true;
-    } else if (type === 'dungeon') {
-        trackData = this.generateDarkTrack(lvl, true);
-        trackData.loop = true;
-    }
-
-    if (!trackData) return;
-
-    this.osc = this.ctx.createOscillator();
-    this.gain = this.ctx.createGain();
-    
-    this.osc.type = 'sawtooth'; 
-    this.osc.connect(this.gain);
-    this.gain.connect(this.ctx.destination);
-    this.gain.gain.setValueAtTime(0, this.ctx.currentTime);
-    this.osc.start();
-
-    let noteIndex = 0;
-    
-    const nextNote = () => {
-      if (!this.isPlaying) return;
-      
-      let freq = trackData.notes[noteIndex];
-      const t = this.ctx.currentTime;
-      const duration = trackData.bpm / 1000; 
-
-      if (freq > 0) {
-        this.osc.frequency.setValueAtTime(freq, t);
-        this.gain.gain.cancelScheduledValues(t);
-        this.gain.gain.setValueAtTime(0.08, t); 
-        this.gain.gain.exponentialRampToValueAtTime(0.001, t + (duration * 0.9));
-      } else {
-        this.gain.gain.setValueAtTime(0, t);
-      }
-
-      noteIndex++;
-      if (noteIndex >= trackData.notes.length) {
-        if (trackData.loop === false) {
-           this.stop();
-           return;
-        }
-        noteIndex = 0;
-      }
-      this.timer = setTimeout(nextNote, trackData.bpm);
-    };
-
-    nextNote();
-  },
-
-  stop: function() {
-    this.isPlaying = false;
-    clearTimeout(this.timer);
-    if (this.osc) {
-      try { 
-        this.osc.stop(); 
-        this.osc.disconnect();
-      } catch(e){}
-      this.osc = null;
-    }
-    this.currentTrackId = null;
-  }
+  ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
+  init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
+  playSFX(type){ if(!this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
+  generateDarkTrack(level,isDungeon){ const roots=[110,130.81,146.83,164.81,174.61]; let base=roots[(level-1)%roots.length]; let p=(level-1)%3, notes=[], intervals=[]; if(isDungeon){ base*=0.5; intervals=[0,0,6,0,7,6,13,0]; } else { if(p===0) intervals=[0,3,7,12,0,3,7,12,0,0,12,12,7,7,3,3]; else if(p===1) intervals=[0,0,12,0,3,0,12,0,7,0,12,0,5,0,12,0]; else intervals=[0,1,0,1,5,7,5,7,12,1,12,1,0,0,12,0]; } for(let i=0;i<intervals.length;i++){ notes.push(base*Math.pow(2,intervals[i]/12)); } return {notes, bpm: isDungeon?90+level:125+level*2}; },
+  play(type,override){ let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
+  stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
 
 
-// --- UTILS & WORLD DATA ---
-
 // BIOMES
-// Reordered so "Grey Peak" appears first
 const biomes = [
   {name: "Grey Peak", grass:"#78909c", wall:"#cfd8dc", wallEdge:"#37474f", boss:"#3498db", enemy:"#f1c40f"},
   {name: "Emerald Grove", grass:"#00695c", wall:"#004d40", wallEdge:"#b2dfdb", boss:"#2ecc71", enemy:"#d500f9"}, 
@@ -531,6 +357,7 @@ const biomes = [
   {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff0000", enemy:"#f1c40f"}  
 ];
 
+// --- UTILS ---
 function isWall(x, y) {
   let tx = Math.floor(x / TILE);
   let ty = Math.floor(y / TILE);
@@ -712,7 +539,7 @@ function showGameOver() {
   elTime.innerText = formatTime(Date.now() - startTime);
   elSword.innerText = player.swordLvl;
   elBow.innerText = player.bowLvl;
-  elDiff.innerText = currentDifficulty.toUpperCase();
+  elDiff.innerText = (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase();
 
   titleText.innerText = "RUN OVER"; 
   titleText.style.display = 'block';
@@ -763,7 +590,7 @@ function generateWorld(reset) {
 
   if (reset) {
     let sp = findSafePos();
-    player = { x: sp.x, y: sp.y, hp: 10, max: 999, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0 };
+    player = { x: sp.x, y: sp.y, hp: 10, max: 999, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
     biomeLevel = 1;
     startTime = Date.now();
     enemiesKilled = 0;
@@ -939,6 +766,7 @@ function update() {
   }
 
   if (player.swing > 0) player.swing--;
+  if (player.hitTimer > 0) player.hitTimer--; // player damage flash timer
 
   // SCALED SPEED based on difficulty
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
@@ -1005,6 +833,7 @@ function update() {
         }
 
         player.hp -= damage;
+        player.hitTimer = 8; // flash player when damaged
         e.atkDelay = 45;
       }
     }
@@ -1050,6 +879,7 @@ function update() {
       world.boss.hp -= damage; 
       hit = true;
       world.boss.hitTimer = 5; 
+      player.hitTimer = 6; // slight flash when hitting boss
       vibrate(40);
     }
     return !hit && s.x > 0 && s.x < WORLD && s.y > 0 && s.y < WORLD;
@@ -1073,8 +903,6 @@ function update() {
       
       if(bDist > 0 && bDist > 75) { 
           // Boss speed override:
-          // - In impossible: boss moves at (PLAYER_SPEED - 1.5) (floored at 0.1)
-          // - Otherwise: use base BOSS_SPEED + any difficulty add
           let bossSpeed;
           if (currentDifficulty === 'impossible') {
             bossSpeed = Math.max(0.1, PLAYER_SPEED - 1.5);
@@ -1087,6 +915,7 @@ function update() {
 
       if (bd < (PLAYER_RAD + 60) && world.boss.atkDelay <= 0) {
         player.hp -= world.boss.dmg;
+        player.hitTimer = 12; // flash player on boss hit
         world.boss.atkDelay = 45; 
         vibrate(300);
       }
@@ -1290,14 +1119,27 @@ function draw() {
 
   if (!inDungeon) {
     ctx.fillStyle = "#000"; ctx.beginPath();
-    ctx.arc(world.entrance.x - cx, world.entrance.y - cy, 35, 0, 7);
+    ctx.arc(world.entrance.x - cx, world.entrance.y - cy, 35, 0, Math.PI*2);
     ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
-  // PLAYER (Scale Increased)
-  ctx.fillStyle = "#3498db"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(400, 300, PLAYER_RAD, 0, 7); 
-  ctx.fill(); ctx.stroke();
+  // PLAYER - neon glow, flash on damage
+  ctx.save();
+  if (player.hitTimer > 0) {
+    // flash white when damaged (similar to boss)
+    ctx.shadowBlur = 36;
+    ctx.shadowColor = "rgba(255,255,255,0.95)";
+    ctx.fillStyle = "#ffffff";
+  } else {
+    ctx.shadowBlur = 42; // stronger neon glow
+    ctx.shadowColor = "rgba(0,220,255,0.95)";
+    ctx.fillStyle = "#00e6ff";
+  }
+  ctx.beginPath(); ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI*2); ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
+  ctx.stroke();
+  ctx.restore();
 
   if (player.swing > 0) {
     ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 20; ctx.beginPath();
@@ -1308,7 +1150,7 @@ function draw() {
     ctx.fillStyle = (e.hitTimer > 0) ? "#fff" : b.enemy;
     ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
     
-    ctx.beginPath(); ctx.arc(e.x - cx, e.y - cy, 14, 0, 7); 
+    ctx.beginPath(); ctx.arc(e.x - cx, e.y - cy, 14, 0, Math.PI*2); 
     ctx.fill(); ctx.stroke();
 
     if (e.hitTimer === 0) {
@@ -1321,13 +1163,12 @@ function draw() {
   if (inDungeon && world.boss) {
     let bx = world.boss.x - cx, by = world.boss.y - cy;
     ctx.fillStyle = (world.boss.hitTimer > 0) ? "#fff" : b.enemy;
-    ctx.beginPath(); ctx.arc(bx, by, 50, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx, by, 50, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
       
     ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(bx - 52, by - 82, 104, 14);
     ctx.fillStyle = "#333"; ctx.fillRect(bx - 50, by - 80, 100, 10);
     ctx.fillStyle = "#ff0000"; ctx.fillRect(bx - 50, by - 80, (world.boss.hp / world.boss.max) * 100, 10);
-    // DEF text removed
   }
 
   // DRAW SHOTS
@@ -1350,24 +1191,26 @@ function draw() {
     ctx.restore();
   });
 
+  // DROPS: bluish glow for Sword/Bow, HP unchanged
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
       ctx.fillStyle = "#3498db"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(dx, dy, 10, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(dx, dy, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(255,255,255,0.7)"; 
-      ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, 7); ctx.fill(); 
+      ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, Math.PI*2); ctx.fill(); 
 
     } else if (d.type === "Sword") {
       ctx.save();
+      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.translate(dx, dy);
       ctx.rotate(Math.PI / 4);
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.lineJoin = "round";
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.lineJoin = "round";
       ctx.beginPath(); 
       ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.lineTo(-3, -15);
       ctx.rect(-3, -15, 6, 24);
       ctx.stroke();
-      ctx.fillStyle = "#bdc3c7"; ctx.fillRect(-3, -15, 6, 24); 
+      ctx.fillStyle = "#dfeef6"; ctx.fillRect(-3, -15, 6, 24); 
       ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.fill();
       ctx.fillStyle = "#f39c12"; ctx.fillRect(-8, 5, 16, 4);
       ctx.fillStyle = "#8e44ad"; ctx.fillRect(-2, 9, 4, 8);
@@ -1375,6 +1218,7 @@ function draw() {
 
     } else if (d.type === "Bow") {
       ctx.save();
+      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.65)";
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
       ctx.strokeStyle = "#deb887"; 
@@ -1387,11 +1231,6 @@ function draw() {
       ctx.stroke();
       ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(-10, -20);
-      ctx.lineTo(-10, 20);
-      ctx.stroke();
       ctx.restore();
     }
   });
@@ -1399,39 +1238,39 @@ function draw() {
   // TOP STATS BOX (contrasting background) - moved left of the minimap and spaced
   const boxX = 20;
   const boxY = 10;
-  const boxW = 320;
-  const boxH = 90;
+  const boxW = 360; // slightly wider
+  const boxH = 110; // slightly taller so bow level doesn't overlap biome
 
   // Background + border
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fillStyle = "rgba(0,0,0,0.72)";
   ctx.fillRect(boxX, boxY, boxW, boxH);
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 2;
   ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-  // Left column (HP, Sword, Bow)
+  // Left column (HP, Sword, Bow) - adjusted spacing
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
   ctx.font = "bold 18px monospace";
-  ctx.fillText("HP: " + Math.ceil(player.hp), boxX + 12, boxY + 30);
+  ctx.fillText("HP: " + Math.ceil(player.hp), boxX + 12, boxY + 36);
 
   ctx.font = "14px monospace";
-  ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 52);
-  ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 72);
+  ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 62);
+  ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 88);
 
   // Right column (Time, Difficulty)
   ctx.textAlign = "right";
   ctx.font = "bold 16px monospace";
-  ctx.fillText("TIME: " + formatTime(Date.now() - startTime), boxX + boxW - 12, boxY + 30);
+  ctx.fillText("TIME: " + formatTime(Date.now() - startTime), boxX + boxW - 12, boxY + 36);
   ctx.fillStyle = "#aaaaaa";
   ctx.font = "13px monospace";
-  ctx.fillText("DIFF: " + currentDifficulty.toUpperCase(), boxX + boxW - 12, boxY + 52);
+  ctx.fillText("DIFF: " + (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase(), boxX + boxW - 12, boxY + 62);
 
-  // Center (Biome title)
+  // Center (Biome title) - moved slightly lower to avoid overlapping bow level
   ctx.textAlign = "center";
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 15px monospace";
-  ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), boxX + (boxW / 2), boxY + 72);
+  ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), boxX + (boxW / 2), boxY + 92);
   ctx.globalAlpha = 1.0;
 
   // MINIMAP
@@ -1454,13 +1293,13 @@ function draw() {
     if (explored[ey] && explored[ey][ex]) {
         ctx.fillStyle = b.enemy;
         ctx.beginPath();
-        ctx.arc(650 + ex * mmS, 15 + ey * mmS, 3, 0, 7);
+        ctx.arc(650 + ex * mmS, 15 + ey * mmS, 3, 0, Math.PI*2);
         ctx.fill();
     }
   }
 
   ctx.fillStyle = "#00ffff"; ctx.beginPath();
-  ctx.arc(650 + (player.x / TILE) * mmS, 15 + (player.y / TILE) * mmS, 2.5, 0, 7);
+  ctx.arc(650 + (player.x / TILE) * mmS, 15 + (player.y / TILE) * mmS, 2.5, 0, Math.PI*2);
   ctx.fill(); ctx.globalAlpha = 1.0;
 }
 
