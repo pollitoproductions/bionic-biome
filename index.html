@@ -1239,45 +1239,41 @@ ctx.restore();
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
     ctx.lineTo(s.x - cx - s.dx * 2, s.y - cy - s.dy * 2); ctx.stroke();
 
-    // Draw a thin shaft
-    ctx.fillStyle = "#bdc3c7"; 
-    let ang = Math.atan2(s.dy, s.dx);
-    ctx.save();
-    ctx.translate(s.x - cx, s.y - cy);
-    ctx.rotate(ang);
+  // rotated arrow: shaft + diamond head (touching)
+let ang = Math.atan2(s.dy, s.dx);
+ctx.save();
+ctx.translate(s.x - cx, s.y - cy);
+ctx.rotate(ang);
 
-    // Shaft: thin rectangle extending behind the arrow so the diamond sits at the forward tip
-    // previously the shaft was centered too close to the diamond, making the diamond appear mid-rod.
-    // Now the shaft runs from -18 (tail) to 0 (near base of diamond), and the diamond is drawn ahead of that.
-    ctx.beginPath();
-    ctx.rect(-18, -1.5, 18, 3);
-    ctx.fill();
+// Shaft: thin rectangle extending behind the arrow so the diamond sits at the forward tip
+// rect starts at -18 and has width 28, so it ends at x = 10 where the diamond begins
+ctx.fillStyle = "#bdc3c7";
+ctx.beginPath();
+ctx.rect(-18, -1.5, 28, 3);
+ctx.fill();
 
-    // Diamond at the very tip of the arrow (as arrow head) with sword-like glow
-    // MOVED to the forward/tip side of the arrow (positive x in rotated space),
-    // so it sits ahead of the current projectile position and clearly reads as an arrow head.
-    ctx.beginPath();
-    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-    ctx.fillStyle = "#dfeef6";
-    // diamond points placed further forward so it is visually at the rod's tip
-    ctx.moveTo(10, 0);
-    ctx.lineTo(14, -5);
-    ctx.lineTo(18, 0);
-    ctx.lineTo(14, 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+// Diamond (arrow head) placed immediately at x = 10 so it touches the shaft
+ctx.beginPath();
+ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
+ctx.fillStyle = "#dfeef6";
+ctx.moveTo(10, 0);
+ctx.lineTo(14, -4);
+ctx.lineTo(18, 0);
+ctx.lineTo(14, 4);
+ctx.closePath();
+ctx.fill();
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 1;
+ctx.stroke();
 
-    // small brighter center for contrast at the tip
-    ctx.beginPath();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.arc(14, 0, 1.2, 0, Math.PI*2);
-    ctx.fill();
+// small brighter center for contrast at the tip
+ctx.beginPath();
+ctx.shadowBlur = 0;
+ctx.fillStyle = "rgba(255,255,255,0.9)";
+ctx.arc(14, 0, 1.2, 0, Math.PI * 2);
+ctx.fill();
 
-    ctx.restore();
+ctx.restore();
   });
 
   // DROPS: bluish glow for Sword/Bow, HP unchanged
