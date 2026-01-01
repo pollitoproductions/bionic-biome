@@ -1123,23 +1123,27 @@ function draw() {
     ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
-  // PLAYER - neon glow, flash on damage
-  ctx.save();
-  if (player.hitTimer > 0) {
-    // flash white when damaged (similar to boss)
-    ctx.shadowBlur = 36;
-    ctx.shadowColor = "rgba(255,255,255,0.95)";
-    ctx.fillStyle = "#ffffff";
-  } else {
-    ctx.shadowBlur = 42; // stronger neon glow
-    ctx.shadowColor = "rgba(0,220,255,0.95)";
-    ctx.fillStyle = "#00e6ff";
-  }
-  ctx.beginPath(); ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI*2); ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
-  ctx.stroke();
-  ctx.restore();
+ // PLAYER - darker neon blue with glow; flash white when damaged
+ctx.save();
+if (player.hitTimer > 0) {
+  // flash white when damaged (keeps the high-contrast hit flash)
+  ctx.shadowBlur = 36;
+  ctx.shadowColor = "rgba(255,255,255,0.95)";
+  ctx.fillStyle = "#ffffff";
+} else {
+  // darker blue base matching HP drops, but keep a neon cyan-ish glow
+  // base fill is #3498db (same as HP drop), glow color uses the same RGB
+  ctx.shadowBlur = 42;
+  ctx.shadowColor = "rgba(52,152,219,0.95)"; // rgba for #3498db
+  ctx.fillStyle = "#3498db";
+}
+ctx.beginPath();
+ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI * 2);
+ctx.fill();
+ctx.lineWidth = 2;
+ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
+ctx.stroke();
+ctx.restore();
 
   if (player.swing > 0) {
     ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 20; ctx.beginPath();
