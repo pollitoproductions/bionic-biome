@@ -1246,22 +1246,24 @@ ctx.restore();
     ctx.translate(s.x - cx, s.y - cy);
     ctx.rotate(ang);
 
-    // Shaft: thin rectangle extending from tail (0) towards tip (~ -10)
+    // Shaft: thin rectangle extending behind the arrow so the diamond sits at the forward tip
+    // previously the shaft was centered too close to the diamond, making the diamond appear mid-rod.
+    // Now the shaft runs from -18 (tail) to 0 (near base of diamond), and the diamond is drawn ahead of that.
     ctx.beginPath();
-    ctx.rect(-10, -1.5, 10, 3);
+    ctx.rect(-18, -1.5, 18, 3);
     ctx.fill();
 
     // Diamond at the very tip of the arrow (as arrow head) with sword-like glow
     // MOVED to the forward/tip side of the arrow (positive x in rotated space),
-    // so it sits ahead of the current projectile position and points in travel direction.
+    // so it sits ahead of the current projectile position and clearly reads as an arrow head.
     ctx.beginPath();
     ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
     ctx.fillStyle = "#dfeef6";
-    // diamond centered at +12 (tip forward)
-    ctx.moveTo(8, 0);
-    ctx.lineTo(12, -4);
-    ctx.lineTo(16, 0);
-    ctx.lineTo(12, 4);
+    // diamond points placed further forward so it is visually at the rod's tip
+    ctx.moveTo(10, 0);
+    ctx.lineTo(14, -5);
+    ctx.lineTo(18, 0);
+    ctx.lineTo(14, 5);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = "#ffffff";
@@ -1272,7 +1274,7 @@ ctx.restore();
     ctx.beginPath();
     ctx.shadowBlur = 0;
     ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.arc(12, 0, 1.2, 0, Math.PI*2);
+    ctx.arc(14, 0, 1.2, 0, Math.PI*2);
     ctx.fill();
 
     ctx.restore();
