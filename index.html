@@ -315,9 +315,8 @@
  *  - player flashes when damaged (like boss)
  *  - stats box slightly enlarged to avoid overlap
  *  - requested adjustments applied:
- *    1) diamond moved to arrow tip (arrow head), bow drop glows like sword drop
- *    2) arrow firing rate reduced to 2/3 of original (interval 150ms)
- *    3) projectile speed reduced to 2/3 (13 * 2/3)
+ *    1) diamond positioned so it touches the front of the shaft
+ *    2) restored arrow speed & firing interval to original values to fix slowdown
  */
 
 const TILE = 32;
@@ -367,10 +366,9 @@ const PLAYER_SPEED = 4.5;
 const BOSS_SPEED = 2.5; 
 const PLAYER_RAD = 18; // Increased 20% from 15
 
-// Updated arrow speed multiplier (2/3 of original 13)
-const ARROW_BASE_SPEED = 13 * (2/3); // ≈ 8.6667
-// Updated firing interval (2/3 of original rate -> interval from 100ms -> 150ms)
-const FIRE_INTERVAL_MS = 150;
+// RESTORED arrow speed and fire interval to fix the slowdown the last change introduced
+const ARROW_BASE_SPEED = 13; // restored original speed
+const FIRE_INTERVAL_MS = 100; // restored original firing interval
 
 // STATS
 let startTime = 0;
@@ -724,7 +722,7 @@ let touchX = 0, touchY = 0, fireInterval = null;
 const startAction = () => {
   if (!fireInterval && gameActive) {
     doAction();
-    // reduced firing rate: interval increased from 100 -> 150 ms (2/3 of original rate)
+    // restored firing interval to original
     fireInterval = setInterval(doAction, FIRE_INTERVAL_MS); 
   }
 };
@@ -783,7 +781,7 @@ actBtn.addEventListener("touchcancel", stopAction);
 
 function doAction() {
   player.swing = 5; 
-  // projectile speed reduced to 2/3
+  // use restored arrow speed
   shots.push({
     x: player.x,
     y: player.y,
@@ -1239,41 +1237,42 @@ ctx.restore();
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
     ctx.lineTo(s.x - cx - s.dx * 2, s.y - cy - s.dy * 2); ctx.stroke();
 
-  // rotated arrow: shaft + diamond head (touching)
-let ang = Math.atan2(s.dy, s.dx);
-ctx.save();
-ctx.translate(s.x - cx, s.y - cy);
-ctx.rotate(ang);
+    // Draw a thin shaft
+    ctx.fillStyle = "#bdc3c7"; 
+    let ang = Math.atan2(s.dy, s.dx);
+    ctx.save();
+    ctx.translate(s.x - cx, s.y - cy);
+    ctx.rotate(ang);
 
-// Shaft: thin rectangle extending behind the arrow so the diamond sits at the forward tip
-// rect starts at -18 and has width 28, so it ends at x = 10 where the diamond begins
-ctx.fillStyle = "#bdc3c7";
-ctx.beginPath();
-ctx.rect(-18, -1.5, 28, 3);
-ctx.fill();
+    // Shaft: thin rectangle extended so it ends exactly where the diamond (arrow head) begins.
+    // width 28 ends at x = 10; diamond's front begins at x = 10 -> they touch.
+    ctx.beginPath();
+    ctx.rect(-18, -1.5, 28, 3);
+    ctx.fill();
 
-// Diamond (arrow head) placed immediately at x = 10 so it touches the shaft
-ctx.beginPath();
-ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-ctx.fillStyle = "#dfeef6";
-ctx.moveTo(10, 0);
-ctx.lineTo(14, -4);
-ctx.lineTo(18, 0);
-ctx.lineTo(14, 4);
-ctx.closePath();
-ctx.fill();
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 1;
-ctx.stroke();
+    // Diamond at the very tip of the arrow (as arrow head) with sword-like glow
+    ctx.beginPath();
+    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
+    ctx.fillStyle = "#dfeef6";
+    // diamond placed starting at x = 10 so it sits flush with the shaft end
+    ctx.moveTo(10, 0);
+    ctx.lineTo(14, -5);
+    ctx.lineTo(18, 0);
+    ctx.lineTo(14, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
-// small brighter center for contrast at the tip
-ctx.beginPath();
-ctx.shadowBlur = 0;
-ctx.fillStyle = "rgba(255,255,255,0.9)";
-ctx.arc(14, 0, 1.2, 0, Math.PI * 2);
-ctx.fill();
+    // small brighter center for contrast at the tip
+    ctx.beginPath();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.arc(14, 0, 1.2, 0, Math.PI*2);
+    ctx.fill();
 
-ctx.restore();
+    ctx.restore();
   });
 
   // DROPS: bluish glow for Sword/Bow, HP unchanged
