@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>Bionic Biome v1.0 &copy; 2025</title>
+<title>Bionic Biome v1.0 &copy; 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   html, body {
@@ -239,7 +239,7 @@
 <div id="start-screen" class="screen-overlay">
   <h1 id="title-text">BIONIC<br>BIOME</h1>
   
-  <div class="author-sub">Created by Brant Fuller &copy; 2025<br>All Rights Reserved.</div>
+  <div class="author-sub">Created by Brant Fuller &copy; 2026<br>All Rights Reserved.</div>
 
   <div class="stats-box" id="stats-box" style="display:none;">
     <div class="stat-row"><span class="stat-label">BIOME REACHED:</span> <span class="stat-val" id="st-biome">1</span></div>
@@ -315,10 +315,9 @@
  *  - player flashes when damaged (like boss)
  *  - stats box slightly enlarged to avoid overlap
  *  - requested adjustments applied:
- *    1) arrow diamond glow like sword drop
- *    2) biome name/number extreme right of stats box
- *    3) glow for bow string
- *    4) decrease HP and weapon drops by 50% in impossible
+ *    1) diamond moved to arrow tip (arrow head), bow drop glows like sword drop
+ *    2) arrow firing rate reduced to 2/3 of original (interval 150ms)
+ *    3) projectile speed reduced to 2/3 (13 * 2/3)
  */
 
 const TILE = 32;
@@ -367,6 +366,11 @@ const DIFFICULTY_SETTINGS = {
 const PLAYER_SPEED = 4.5;
 const BOSS_SPEED = 2.5; 
 const PLAYER_RAD = 18; // Increased 20% from 15
+
+// Updated arrow speed multiplier (2/3 of original 13)
+const ARROW_BASE_SPEED = 13 * (2/3); // ≈ 8.6667
+// Updated firing interval (2/3 of original rate -> interval from 100ms -> 150ms)
+const FIRE_INTERVAL_MS = 150;
 
 // STATS
 let startTime = 0;
@@ -720,7 +724,8 @@ let touchX = 0, touchY = 0, fireInterval = null;
 const startAction = () => {
   if (!fireInterval && gameActive) {
     doAction();
-    fireInterval = setInterval(doAction, 100); 
+    // reduced firing rate: interval increased from 100 -> 150 ms (2/3 of original rate)
+    fireInterval = setInterval(doAction, FIRE_INTERVAL_MS); 
   }
 };
 const stopAction = () => {
@@ -778,11 +783,12 @@ actBtn.addEventListener("touchcancel", stopAction);
 
 function doAction() {
   player.swing = 5; 
+  // projectile speed reduced to 2/3
   shots.push({
     x: player.x,
     y: player.y,
-    dx: Math.cos(player.dir) * 13,
-    dy: Math.sin(player.dir) * 13,
+    dx: Math.cos(player.dir) * ARROW_BASE_SPEED,
+    dy: Math.sin(player.dir) * ARROW_BASE_SPEED,
     dmg: Math.max(1, player.bowLvl)
   });
 }
@@ -1233,32 +1239,39 @@ ctx.restore();
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
     ctx.lineTo(s.x - cx - s.dx * 2, s.y - cy - s.dy * 2); ctx.stroke();
 
+    // Draw a thin shaft
     ctx.fillStyle = "#bdc3c7"; 
     let ang = Math.atan2(s.dy, s.dx);
     ctx.save();
     ctx.translate(s.x - cx, s.y - cy);
     ctx.rotate(ang);
+
+    // Shaft: thin rectangle extending from tail (0) towards tip (~ -10)
     ctx.beginPath();
-    ctx.moveTo(0, 0); 
-    ctx.lineTo(-6, -4);
-    ctx.lineTo(-12, 0);
-    ctx.lineTo(-6, 4);
+    ctx.rect(-10, -1.5, 10, 3);
     ctx.fill();
 
-    // Diamond at the end of the arrow (glow like sword drop)
+    // Diamond at the very tip of the arrow (as arrow head) with sword-like glow
     ctx.beginPath();
     ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
     ctx.fillStyle = "#dfeef6";
-    // draw a small diamond behind the arrowhead
-    ctx.moveTo(-18, 0);
-    ctx.lineTo(-14, -4);
-    ctx.lineTo(-10, 0);
-    ctx.lineTo(-14, 4);
+    // diamond centered at -12 (tip)
+    ctx.moveTo(-16, 0);
+    ctx.lineTo(-12, -4);
+    ctx.lineTo(-8, 0);
+    ctx.lineTo(-12, 4);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1;
     ctx.stroke();
+
+    // small darker center for contrast (optional)
+    ctx.beginPath();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.arc(-12, 0, 1.2, 0, Math.PI*2);
+    ctx.fill();
 
     ctx.restore();
   });
@@ -1293,8 +1306,21 @@ ctx.restore();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
 
-      // Bow body glow (subtle)
-      ctx.shadowBlur = 18; ctx.shadowColor = "rgba(0,180,255,0.65)";
+      // Make the bow drop glow like the sword drop: use same shadow and pale fill
+      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
+      ctx.fillStyle = "#dfeef6";
+      // a subtle filled silhouette to produce the glow
+      ctx.beginPath();
+      ctx.moveTo(0, -22);
+      ctx.quadraticCurveTo(-10, -12, -10, 0);
+      ctx.quadraticCurveTo(-10, 12, 0, 22);
+      ctx.quadraticCurveTo(-6, 12, -6, 0);
+      ctx.quadraticCurveTo(-6, -12, 0, -22);
+      ctx.closePath();
+      ctx.fill();
+
+      // Bow body (over the glow)
+      ctx.shadowBlur = 0;
       ctx.strokeStyle = "#deb887"; 
       ctx.lineWidth = 4; ctx.lineCap = "round"; 
       ctx.beginPath();
