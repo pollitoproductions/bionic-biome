@@ -32,16 +32,62 @@
     position: absolute; left: 45px; top: 45px; width: 50px; height: 50px;
     background: #fff; border-radius: 50%; pointer-events: none;
   }
-  /* Action Button - no text, subtle shaded look */
-  .btn-action {
-    position: absolute; right: 5%; bottom: 8%; width: 100px; height: 100px;
-    background: linear-gradient(180deg, rgba(10,10,20,0.28), rgba(5,5,10,0.55));
-    border-radius: 50%;
-    pointer-events: auto; border: 2px solid rgba(0,200,255,0.12);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: bold; font-size: 16px; text-align: center;
-    box-shadow: inset 0 -10px 20px rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.6);
-    transition: transform 0.08s;
+/* Action Button - no text, subtle shaded look with glossy overlay */
+.btn-action {
+  position: absolute;
+  right: 5%;
+  bottom: 8%;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(180deg, rgba(10,10,20,0.28), rgba(5,5,10,0.55));
+  border-radius: 50%;
+  pointer-events: auto;
+  border: 2px solid rgba(0,200,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  box-shadow: inset 0 -10px 20px rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.6);
+  transition: transform 0.08s;
+  overflow: hidden; /* clips the glossy overlay */
+}
+.btn-action:active { transform: translateY(3px); }
+
+/* subtle top-to-bottom glossy shade over the action button */
+.btn-action::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.05) 30%,
+    rgba(255,255,255,0.02) 60%,
+    rgba(255,255,255,0) 100%
+  );
+  mix-blend-mode: overlay;
+  z-index: 2;
+}
+
+/* small glossy highlight near top-left for extra depth */
+.btn-action::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: 10%;
+  width: 36%;
+  height: 30%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255,255,255,0.25), rgba(255,255,255,0) 60%);
+  mix-blend-mode: screen;
+  z-index: 3;
+}
   }
   .btn-action:active { transform: translateY(3px); }
 
