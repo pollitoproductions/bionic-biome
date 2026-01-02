@@ -311,6 +311,10 @@
  * - convert per-frame movement (player, enemies, boss, arrows) into per-second velocities and multiply by dt.
  * - convert frame-based timers (swing, hitTimer, atkDelay, etc.) to be decremented by dt*FPS so original frame-values remain valid.
  * - keep semantics same otherwise.
+ *
+ * Changes made here:
+ * 1) In EASY difficulty, drop probabilities for health, sword, and bow are tripled.
+ * 2) The game pauses when a UI screen (menu) is shown or when the app/tab is backgrounded; it resumes when appropriate.
  */
 
 /* === CONFIG / CONSTANTS (unchanged semantics) === */
@@ -320,10 +324,14 @@ const WORLD = MAP_SIZE * TILE;
 
 // GAME STATE
 let gameActive = false;
+let gameRunning = false; // whether the game is logically running (unpaused intention)
+let gameOver = false;
 let biomeLevel = 1;
 let inDungeon = false;
-let gameOver = false;
 let currentDifficulty = 'easy'; 
+
+// track if the game was active when a pause was requested (so we can resume correctly)
+let wasActiveBeforePause = false;
 
 const DIFFICULTY_SETTINGS = {
   easy: {
@@ -478,7 +486,25 @@ const elSword = document.getElementById('st-sword');
 const elBow = document.getElementById('st-bow');
 const elDiff = document.getElementById('st-diff');
 
-/* === EVENT LISTENERS (unchanged behavior) === */
+/* === PAUSE/RESUME HELPERS === */
+function pauseGame() {
+  // Record whether the game was active so we can resume later
+  wasActiveBeforePause = gameActive;
+  if (gameActive) {
+    stopAction();
+  }
+  gameActive = false;
+}
+
+function resumeGame() {
+  // Only resume if the game was active before the pause and the run hasn't ended
+  if (!gameOver && wasActiveBeforePause) {
+    gameActive = true;
+  }
+  wasActiveBeforePause = false;
+}
+
+/* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
 const initAudioInteraction = () => {
   Music.init();
   if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
@@ -524,6 +550,9 @@ function renderTrackButtons() {
 }
 
 menuBtn.addEventListener('click', () => {
+  // Pause the game whenever the menu is shown
+  pauseGame();
+
   Music.init();
   startScreen.classList.add('hidden');
   menuScreen.classList.remove('hidden');
@@ -552,6 +581,9 @@ closeMenuBtn.addEventListener('click', () => {
   menuScreen.classList.add('hidden');
   startScreen.classList.remove('hidden');
   Music.play('title');
+
+  // Resume the game only if it was active before the menu was opened (resumeGame checks that)
+  resumeGame();
 });
 
 swBiome.addEventListener('click', () => {
@@ -574,16 +606,19 @@ continueBtn.addEventListener('click', () => {
   Music.playSFX('start');
   setTimeout(() => {
     victoryScreen.classList.add('hidden');
+    // Resume the logical game state for the next biome
     gameActive = true;
+    gameRunning = true;
     biomeLevel++;
     generateWorld(false);
   }, 450);
 });
 
-/* === GAME START / OVER / WORLD GENERATION (unchanged semantics) === */
+/* === GAME START / OVER / WORLD GENERATION (unchanged semantics except mark gameRunning) === */
 function showGameOver() {
   gameActive = false;
   gameOver = true;
+  gameRunning = false;
   Music.playSFX('gameover');
   
   elBiome.innerText = biomeLevel;
@@ -608,7 +643,10 @@ function showGameOver() {
 }
 
 function showVictoryScreen() {
+    // When victory screen appears, pause the active play. continueBtn will resume appropriately.
+    wasActiveBeforePause = gameActive;
     gameActive = false;
+
     Music.play('victory');
     let finalTime = Date.now() - startTime;
     victoryTimeDisplay.innerText = formatTime(finalTime);
@@ -618,6 +656,8 @@ function showVictoryScreen() {
 function startGame() {
   startScreen.classList.add('hidden');
   victoryScreen.classList.add('hidden');
+  // Mark the game as logically running and active (unless another mechanism paused it)
+  gameRunning = true;
   gameActive = true;
   generateWorld(true);
 }
@@ -1027,11 +1067,18 @@ function update(dt) {
   }
 }
 
-/* spawnDrop unchanged (already halves in impossible) */
+/* spawnDrop modified: triple probabilities in EASY, keep impossible halving */
 function spawnDrop(x, y) {
   let pSword = 0.019;
   let pBow = 0.019;
   let pHp = 0.137;
+
+  if (currentDifficulty === 'easy') {
+    // Triple all drops in Easy mode
+    pSword *= 3;
+    pBow *= 3;
+    pHp *= 3;
+  }
 
   if (currentDifficulty === 'impossible') {
     pSword *= 0.5;
@@ -1402,6 +1449,21 @@ let lastTime = performance.now();
   draw();
   requestAnimationFrame(loop);
 })(lastTime);
+
+/* === Visibility / Focus handling: pause when app/backgrounded, resume when visible === */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pauseGame();
+  } else {
+    resumeGame();
+  }
+});
+window.addEventListener('blur', () => {
+  pauseGame();
+});
+window.addEventListener('focus', () => {
+  resumeGame();
+});
 </script>
 </body>
 </html>
