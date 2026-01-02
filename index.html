@@ -56,7 +56,6 @@
 }
 .btn-action:active { transform: translateY(3px); }
 
-/* subtle top-to-bottom glossy shade over the action button */
 .btn-action::after {
   content: "";
   position: absolute;
@@ -73,8 +72,6 @@
   mix-blend-mode: overlay;
   z-index: 2;
 }
-
-/* small glossy highlight near top-left for extra depth */
 .btn-action::before {
   content: "";
   position: absolute;
@@ -88,8 +85,6 @@
   mix-blend-mode: screen;
   z-index: 3;
 }
-  }
-  .btn-action:active { transform: translateY(3px); }
 
   /* SCREENS */
   .screen-overlay {
@@ -152,15 +147,31 @@
     font-family: 'Press Start 2P', cursive; 
     text-transform: uppercase;
     margin: 5px;
+    pointer-events: auto;
   }
   .btn-std:active { transform: translateY(4px); box-shadow: none; }
 
   .btn-menu { background: linear-gradient(90deg,#9b59b6,#3498db); color: #fff; box-shadow: 0 6px 0px rgba(20,20,40,0.7); }
 
-  /* DIFFICULTY BUTTONS (rename normal->moderate) */
-  .btn-easy { background: linear-gradient(90deg,#2ecc71,#27ae60); color:#000; box-shadow: 0 6px 0px #1f8a4a; }
-  .btn-moderate { background: linear-gradient(90deg,#f1c40f,#d4ac0d); color:#000; box-shadow: 0 6px 0px #a27f06; }
-  .btn-hard { background: linear-gradient(90deg,#e74c3c,#c0392b); color:#000; box-shadow: 0 6px 0px #8e2b25; }
+  /* DIFFICULTY BUTTONS - updated to match menu visual style */
+  .btn-easy {
+    background: linear-gradient(90deg,#2ecc71,#27ae60);
+    color: #001218;
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    border: 2px solid rgba(0,200,255,0.14);
+  }
+  .btn-moderate {
+    background: linear-gradient(90deg,#f1c40f,#d4ac0d);
+    color: #001218;
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    border: 2px solid rgba(0,200,255,0.14);
+  }
+  .btn-hard {
+    background: linear-gradient(90deg,#e74c3c,#c0392b);
+    color: #001218;
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    border: 2px solid rgba(0,200,255,0.14);
+  }
 
   /* Cyberpunk menus */
   .menu-box {
@@ -261,6 +272,11 @@
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">EASY</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
+
+    <!-- Tip added per request: tell player how to pause/unpause using the map -->
+    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#9fbcd3; max-width:360px;">
+      TIP: Tap the map in the top-right corner to Pause / Unpause during play.
+    </div>
   </div>
 </div>
 
@@ -276,8 +292,7 @@
          <div class="switch-btn selected" id="sw-biome">BIOME</div>
          <div class="switch-btn" id="sw-dungeon">DUNGEON</div>
        </div>
-       <div class="track-grid" id="track-grid">
-         </div>
+       <div class="track-grid" id="track-grid"></div>
     </div>
 
     <div class="menu-content hidden" id="panel-tips">
@@ -307,14 +322,14 @@
 <script>
 /**
  * BIONIC BIOME v1.0
- * Minimal changes to make movement and timers time-based (delta-time) so game speed remains consistent even if FPS drops.
- * - convert per-frame movement (player, enemies, boss, arrows) into per-second velocities and multiply by dt.
- * - convert frame-based timers (swing, hitTimer, atkDelay, etc.) to be decremented by dt*FPS so original frame-values remain valid.
- * - keep semantics same otherwise.
  *
- * Changes made here:
- * 1) In EASY difficulty, drop probabilities for health, sword, and bow are tripled.
- * 2) The game pauses when a UI screen (menu) is shown or when the app/tab is backgrounded; it resumes when appropriate.
+ * Changes implemented:
+ * 1) EASY mode: triple drop chances (hp, sword, bow).
+ * 2) Pause the game when menu is shown or page is backgrounded.
+ * 3) Map (top-right minimap) toggles Pause/Unpause when tapped/clicked.
+ *    - The draw function renders even while paused so the player can see the map and unpause.
+ * 4) Tip added to difficulty selection screen explaining the map pause/unpause.
+ * 5) Difficulty buttons styling adjusted to match menu visual style.
  */
 
 /* === CONFIG / CONSTANTS (unchanged semantics) === */
@@ -322,16 +337,15 @@ const TILE = 32;
 const MAP_SIZE = 120; 
 const WORLD = MAP_SIZE * TILE;
 
-// GAME STATE
-let gameActive = false;
-let gameRunning = false; // whether the game is logically running (unpaused intention)
+/* GAME STATE */
+let gameActive = false;      // when true, update(dt) runs and input works
+let gameRunning = false;     // marks that a run is in-progress (used to allow pause/resume)
 let gameOver = false;
 let biomeLevel = 1;
 let inDungeon = false;
-let currentDifficulty = 'easy'; 
+let currentDifficulty = 'easy';
 
-// track if the game was active when a pause was requested (so we can resume correctly)
-let wasActiveBeforePause = false;
+let wasActiveBeforePause = false; // used to remember if the game was active before a pause
 
 const DIFFICULTY_SETTINGS = {
   easy: {
@@ -363,28 +377,17 @@ const DIFFICULTY_SETTINGS = {
   }
 };
 
-// These original constants remain the same in numeric value but we'll derive per-second velocities below.
 const PLAYER_SPEED = 4.5;   // originally px/frame
 const BOSS_SPEED = 2.5;     // originally px/frame
-const PLAYER_RAD = 18;      // unchanged
-
-// ARROW: restored original per-frame number (13). We'll convert to per-second below.
-const ARROW_BASE_SPEED = 13; // px/frame originally
-
-// Fire interval in ms (unchanged)
+const PLAYER_RAD = 18;
+const ARROW_BASE_SPEED = 13;
 const FIRE_INTERVAL_MS = 100;
 
-/* === DELTA-TIME PREPARATION ===
-   The game historically used values in px/frame. We'll treat those "per-frame" numbers as if they were for 60 FPS,
-   and convert them to per-second velocities by multiplying by 60 (frames/sec). During update, we multiply per-second
-   velocities by dt (seconds since last frame).
-*/
 const FPS = 60;
-const PLAYER_SPEED_PPS = PLAYER_SPEED * FPS;      // px per second
-const BOSS_SPEED_PPS = BOSS_SPEED * FPS;          // px per second
-const ARROW_SPEED_PPS = ARROW_BASE_SPEED * FPS;   // px per second
+const PLAYER_SPEED_PPS = PLAYER_SPEED * FPS;
+const ARROW_SPEED_PPS = ARROW_BASE_SPEED * FPS;
 
-/* === STATE === */
+/* STATE */
 let startTime = 0;
 let enemiesKilled = 0;
 let heartsCollected = 0;
@@ -395,13 +398,10 @@ let shots = [];
 let drops = [];
 let explored = [];
 
-/* Flow-field timing: previously used a frame counter flowTimer++ and ran updateFlowField when >15.
-   15 frames at 60FPS is 0.25s (I use 0.2667 earlier — keep similar). Use a seconds accumulator now.
-*/
-let flowMap = []; 
-let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
+let flowMap = [];
+let flowAccSeconds = 0;
 
-/* --- SOUND / MUSIC (unchanged) --- */
+/* SOUND (unchanged) */
 const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
@@ -411,8 +411,7 @@ const Music = {
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
 
-
-/* === BIOMES, UTILS, DOM (unchanged) === */
+/* BIOMES / UTILS */
 const biomes = [
   {name: "Grey Peak", grass:"#78909c", wall:"#cfd8dc", wallEdge:"#37474f", boss:"#3498db", enemy:"#f1c40f"},
   {name: "Emerald Grove", grass:"#00695c", wall:"#004d40", wallEdge:"#b2dfdb", boss:"#2ecc71", enemy:"#d500f9"}, 
@@ -455,7 +454,10 @@ function formatTime(ms) {
   return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
 }
 
-/* DOM elements (unchanged) */
+/* DOM */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
 const startScreen = document.getElementById('start-screen');
 const menuScreen = document.getElementById('menu-screen');
 const victoryScreen = document.getElementById('victory-screen');
@@ -486,25 +488,35 @@ const elSword = document.getElementById('st-sword');
 const elBow = document.getElementById('st-bow');
 const elDiff = document.getElementById('st-diff');
 
-/* === PAUSE/RESUME HELPERS === */
+/* PAUSE / RESUME helpers */
 function pauseGame() {
-  // Record whether the game was active so we can resume later
   wasActiveBeforePause = gameActive;
-  if (gameActive) {
-    stopAction();
-  }
+  if (gameActive) stopAction();
   gameActive = false;
 }
-
 function resumeGame() {
-  // Only resume if the game was active before the pause and the run hasn't ended
   if (!gameOver && wasActiveBeforePause) {
     gameActive = true;
   }
   wasActiveBeforePause = false;
 }
+/* toggle via map: if playing -> pause; if paused and run in progress -> unpause */
+function togglePauseByMap() {
+  // only allow toggle during a run (not on title or victory screens)
+  if (!gameRunning || gameOver) return;
+  // don't toggle if start screen visible
+  if (!startScreen.classList.contains('hidden')) return;
 
-/* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
+  if (gameActive) {
+    pauseGame();
+  } else {
+    // user intentionally toggled unpause via map; resume regardless of wasActiveBeforePause
+    gameActive = true;
+    wasActiveBeforePause = false;
+  }
+}
+
+/* EVENT LISTENERS (audio init etc.) */
 const initAudioInteraction = () => {
   Music.init();
   if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
@@ -533,7 +545,7 @@ window.selectDifficulty = (diff) => {
   }, 450);
 };
 
-let soundTestMode = 'overworld'; 
+let soundTestMode = 'overworld';
 function renderTrackButtons() {
   trackGrid.innerHTML = '';
   for(let i=1; i<=10; i++) {
@@ -552,7 +564,6 @@ function renderTrackButtons() {
 menuBtn.addEventListener('click', () => {
   // Pause the game whenever the menu is shown
   pauseGame();
-
   Music.init();
   startScreen.classList.add('hidden');
   menuScreen.classList.remove('hidden');
@@ -581,8 +592,7 @@ closeMenuBtn.addEventListener('click', () => {
   menuScreen.classList.add('hidden');
   startScreen.classList.remove('hidden');
   Music.play('title');
-
-  // Resume the game only if it was active before the menu was opened (resumeGame checks that)
+  // Resume only if the run was active before menu opened
   resumeGame();
 });
 
@@ -606,7 +616,6 @@ continueBtn.addEventListener('click', () => {
   Music.playSFX('start');
   setTimeout(() => {
     victoryScreen.classList.add('hidden');
-    // Resume the logical game state for the next biome
     gameActive = true;
     gameRunning = true;
     biomeLevel++;
@@ -614,7 +623,7 @@ continueBtn.addEventListener('click', () => {
   }, 450);
 });
 
-/* === GAME START / OVER / WORLD GENERATION (unchanged semantics except mark gameRunning) === */
+/* GAME START / OVER / WORLD GENERATION */
 function showGameOver() {
   gameActive = false;
   gameOver = true;
@@ -643,7 +652,6 @@ function showGameOver() {
 }
 
 function showVictoryScreen() {
-    // When victory screen appears, pause the active play. continueBtn will resume appropriately.
     wasActiveBeforePause = gameActive;
     gameActive = false;
 
@@ -656,7 +664,6 @@ function showVictoryScreen() {
 function startGame() {
   startScreen.classList.add('hidden');
   victoryScreen.classList.add('hidden');
-  // Mark the game as logically running and active (unless another mechanism paused it)
   gameRunning = true;
   gameActive = true;
   generateWorld(true);
@@ -716,7 +723,7 @@ function generateWorld(reset) {
   }
 }
 
-/* === PATHFINDING (unchanged) === */
+/* PATHFINDING */
 function updateFlowField() {
   for(let y=0; y<MAP_SIZE; y++) {
     for(let x=0; x<MAP_SIZE; x++) {
@@ -752,7 +759,7 @@ function updateFlowField() {
   }
 }
 
-/* === CONTROLS & ACTION (minor change: shots now store per-second velocities) === */
+/* CONTROLS & ACTION */
 const keys = {};
 let touchX = 0, touchY = 0, fireInterval = null;
 
@@ -782,12 +789,14 @@ const joy = document.getElementById("joy");
 const knob = document.getElementById("knob");
 const actBtn = document.getElementById("act");
 
-joy.addEventListener("touchstart", handleTouch, {passive: false});
-joy.addEventListener("touchmove", handleTouch, {passive: false});
-joy.addEventListener("touchend", () => {
-  touchX = 0; touchY = 0;
-  knob.style.transform = "translate(0,0)";
-});
+if (joy) {
+  joy.addEventListener("touchstart", handleTouch, {passive: false});
+  joy.addEventListener("touchmove", handleTouch, {passive: false});
+  joy.addEventListener("touchend", () => {
+    touchX = 0; touchY = 0;
+    knob.style.transform = "translate(0,0)";
+  });
+}
 
 function handleTouch(e) {
   if (!gameActive) return;
@@ -806,18 +815,18 @@ function handleTouch(e) {
   knob.style.transform = "translate(" + (touchX * 40) + "px," + (touchY * 40) + "px)";
 }
 
-actBtn.addEventListener("touchstart", e => {
-  e.preventDefault();
-  if (!gameActive) return; 
-  startAction();
-}, {passive: false});
-
-actBtn.addEventListener("touchend", stopAction);
-actBtn.addEventListener("touchcancel", stopAction);
+if (actBtn) {
+  actBtn.addEventListener("touchstart", e => {
+    e.preventDefault();
+    if (!gameActive) return; 
+    startAction();
+  }, {passive: false});
+  actBtn.addEventListener("touchend", stopAction);
+  actBtn.addEventListener("touchcancel", stopAction);
+}
 
 function doAction() {
   player.swing = 5; 
-  // create shot velocities in px/second so movement is dt-correct
   shots.push({
     x: player.x,
     y: player.y,
@@ -827,11 +836,10 @@ function doAction() {
   });
 }
 
-/* === UPDATE: now accepts dt (seconds) and uses per-second velocities === */
+/* UPDATE accepts dt (seconds) */
 function update(dt) {
   if (!gameActive || gameOver) return;
 
-  // Player movement: touch/keys produce unit direction vector; movement uses per-second speed * dt
   let mx = (keys.ArrowLeft || keys.KeyA ? -1 : keys.ArrowRight || keys.KeyD ? 1 : 0) + touchX;
   let my = (keys.ArrowUp || keys.KeyW ? -1 : keys.ArrowDown || keys.KeyS ? 1 : 0) + touchY;
     
@@ -845,7 +853,6 @@ function update(dt) {
     if (!isWall(player.x, ny)) player.y = Math.max(16, Math.min(WORLD - 16, ny));
   }
 
-  // Mark explored
   let tx = Math.floor(player.x / TILE), ty = Math.floor(player.y / TILE);
   for (let y = ty - 4; y <= ty + 4; y++) {
     for (let x = tx - 4; x <= tx + 4; x++) {
@@ -853,25 +860,21 @@ function update(dt) {
     }
   }
 
-  // Flow field update every ~16 frames originally => ~0.2667s; accumulate dt
   flowAccSeconds += dt;
   if (flowAccSeconds > (16 / FPS)) {
     updateFlowField();
     flowAccSeconds = 0;
   }
 
-  // Timers: decrement by frames equivalent = dt * FPS so existing numeric frame-based values work
   if (player.swing > 0) player.swing -= dt * FPS;
   if (player.hitTimer > 0) player.hitTimer -= dt * FPS;
 
-  // Enemy movement: compute per-frame-style speed then convert to per-second
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
-  const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep); // px/frame
-  const CURRENT_ENEMY_SPEED_PPS = CURRENT_ENEMY_SPEED * FPS; // px/sec
+  const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep);
+  const CURRENT_ENEMY_SPEED_PPS = CURRENT_ENEMY_SPEED * FPS;
 
   world.enemies.forEach(e => {
     if (e.hitTimer > 0) e.hitTimer -= dt * FPS;
-
     let d = Math.hypot(player.x - e.x, player.y - e.y);
     if (d < 450) { 
       let vx = 0, vy = 0;
@@ -930,14 +933,13 @@ function update(dt) {
         }
 
         player.hp -= damage;
-        player.hitTimer = 8; // frame-based value
-        e.atkDelay = 45; // frame-based value
+        player.hitTimer = 8;
+        e.atkDelay = 45;
       }
     }
     if (e.atkDelay > 0) e.atkDelay -= dt * FPS;
     
-    // MELEE HIT (player.swing is decremented by dt*FPS above)
-    if (player.swing > 0 && d < (PLAYER_RAD + 45)) {
+    if (player.swing > 0 && Math.hypot(player.x - e.x, player.y - e.y) < (PLAYER_RAD + 45)) {
       let angleToEnemy = Math.atan2(e.y - player.y, e.x - player.x);
       let diff = angleToEnemy - player.dir;
       while (diff > Math.PI) diff -= Math.PI * 2;
@@ -955,7 +957,6 @@ function update(dt) {
     }
   });
 
-  // Shots: dx/dy are in px/sec. Move by dx*dt.
   shots = shots.filter(s => {
     s.x += s.dx * dt;
     s.y += s.dy * dt;
@@ -978,7 +979,7 @@ function update(dt) {
       world.boss.hp -= damage; 
       hit = true;
       world.boss.hitTimer = 5; 
-      player.hitTimer = 6; // slight flash when hitting boss
+      player.hitTimer = 6;
       vibrate(40);
     }
     return !hit && s.x > 0 && s.x < WORLD && s.y > 0 && s.y < WORLD;
@@ -986,7 +987,6 @@ function update(dt) {
 
   world.enemies = world.enemies.filter(e => e.hp > 0);
 
-  // BOSS LOGIC: convert speed to px/sec and use dt
   if (inDungeon && world.boss) {
     if (world.boss.hitTimer > 0) world.boss.hitTimer -= dt * FPS;
 
@@ -1012,7 +1012,7 @@ function update(dt) {
 
       if (bd < (PLAYER_RAD + 60) && world.boss.atkDelay <= 0) {
         player.hp -= world.boss.dmg;
-        player.hitTimer = 12; // frame-based
+        player.hitTimer = 12;
         world.boss.atkDelay = 45;
         vibrate(300);
       }
@@ -1067,14 +1067,13 @@ function update(dt) {
   }
 }
 
-/* spawnDrop modified: triple probabilities in EASY, keep impossible halving */
+/* spawnDrop: EASY triples, IMPOSSIBLE halves */
 function spawnDrop(x, y) {
   let pSword = 0.019;
   let pBow = 0.019;
   let pHp = 0.137;
 
   if (currentDifficulty === 'easy') {
-    // Triple all drops in Easy mode
     pSword *= 3;
     pBow *= 3;
     pHp *= 3;
@@ -1096,7 +1095,7 @@ function spawnDrop(x, y) {
   }
 }
 
-/* enterDungeon unchanged semantics */
+/* enterDungeon unchanged */
 function enterDungeon() {
   inDungeon = true;
   Music.play('dungeon');
@@ -1151,16 +1150,20 @@ function enterDungeon() {
   }
 }
 
-/* === RENDER (unchanged except using shot positions that are now dt-correct) === */
-const ctx = document.getElementById("c").getContext("2d");
-
+/* RENDER:
+   Important: draw now renders even if gameActive == false (paused) so player can tap the minimap to unpause.
+*/
 function draw() {
-  if (!gameActive) return;
+  // If there is no world yet, clear and return
+  if (!world || !player) {
+    ctx.fillStyle = "#000"; ctx.fillRect(0,0,canvas.width,canvas.height);
+    return;
+  }
 
   const b = biomes[(biomeLevel - 1) % biomes.length];
   let cx = player.x - 400, cy = player.y - 300;
 
-  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 800, 600);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   let startX = Math.max(0, Math.floor(cx / TILE));
   let endX = Math.min(MAP_SIZE, startX + 27);
@@ -1175,21 +1178,17 @@ function draw() {
       if (world.grid[y][x] === 1) {
         ctx.fillStyle = b.wall; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
-        
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.fillRect(drawX, drawY, TILE, 4);
         ctx.fillRect(drawX, drawY, 4, TILE);
         ctx.fillStyle = "rgba(0,0,0,0.3)";
         ctx.fillRect(drawX + TILE - 4, drawY, 4, TILE);
         ctx.fillRect(drawX, drawY + TILE - 4, TILE, 4);
-        
         ctx.strokeStyle = b.wallEdge; 
         ctx.strokeRect(drawX, drawY, TILE, TILE);
-
       } else if (!inDungeon) {
         ctx.fillStyle = b.grass; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
-        
         let noise = ((x * 13 + y * 23) % 10) / 10;
         if (noise > 0.6) {
            ctx.fillStyle = "rgba(0,0,0,0.1)";
@@ -1200,11 +1199,9 @@ function draw() {
            ctx.fillRect(drawX + 20, drawY + 18, 2, 2);
            ctx.fillRect(drawX + 4, drawY + 22, 2, 2);
         }
-
       } else {
         ctx.fillStyle = "#111"; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
-        
         if ((x + y) % 2 === 0) {
             ctx.fillStyle = "rgba(255,255,255,0.03)";
             ctx.fillRect(drawX + 2, drawY + 2, TILE - 4, TILE - 4);
@@ -1223,24 +1220,24 @@ function draw() {
     ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
- // PLAYER
-ctx.save();
-if (player.hitTimer > 0) {
-  ctx.shadowBlur = 36;
-  ctx.shadowColor = "rgba(255,255,255,0.95)";
-  ctx.fillStyle = "#ffffff";
-} else {
-  ctx.shadowBlur = 42;
-  ctx.shadowColor = "rgba(52,152,219,0.95)";
-  ctx.fillStyle = "#3498db";
-}
-ctx.beginPath();
-ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI * 2);
-ctx.fill();
-ctx.lineWidth = 2;
-ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
-ctx.stroke();
-ctx.restore();
+  // PLAYER
+  ctx.save();
+  if (player.hitTimer > 0) {
+    ctx.shadowBlur = 36;
+    ctx.shadowColor = "rgba(255,255,255,0.95)";
+    ctx.fillStyle = "#ffffff";
+  } else {
+    ctx.shadowBlur = 42;
+    ctx.shadowColor = "rgba(52,152,219,0.95)";
+    ctx.fillStyle = "#3498db";
+  }
+  ctx.beginPath();
+  ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
+  ctx.stroke();
+  ctx.restore();
 
   if (player.swing > 0) {
     ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 20; ctx.beginPath();
@@ -1250,10 +1247,8 @@ ctx.restore();
   world.enemies.forEach(e => {
     ctx.fillStyle = (e.hitTimer > 0) ? "#fff" : b.enemy;
     ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
-    
     ctx.beginPath(); ctx.arc(e.x - cx, e.y - cy, 14, 0, Math.PI*2); 
     ctx.fill(); ctx.stroke();
-
     if (e.hitTimer === 0) {
         ctx.fillStyle = "#000"; 
         ctx.fillRect(e.x - cx - 5, e.y - cy - 5, 3, 3);
@@ -1266,54 +1261,30 @@ ctx.restore();
     ctx.fillStyle = (world.boss.hitTimer > 0) ? "#fff" : b.enemy;
     ctx.beginPath(); ctx.arc(bx, by, 50, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
-      
     ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(bx - 52, by - 82, 104, 14);
     ctx.fillStyle = "#333"; ctx.fillRect(bx - 50, by - 80, 100, 10);
     ctx.fillStyle = "#ff0000"; ctx.fillRect(bx - 50, by - 80, (world.boss.hp / world.boss.max) * 100, 10);
   }
 
-  // DRAW SHOTS (positions updated in update(dt))
+  // DRAW SHOTS
   shots.forEach(s => {
     ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
-    // draw a little trail backwards scaled by current per-second velocity magnitude (approx)
     ctx.lineTo(s.x - cx - (s.dx / FPS) * 2, s.y - cy - (s.dy / FPS) * 2); ctx.stroke();
-
-    // Draw shaft + diamond (unchanged visuals)
     ctx.fillStyle = "#bdc3c7"; 
     let ang = Math.atan2(s.dy, s.dx);
     ctx.save();
     ctx.translate(s.x - cx, s.y - cy);
     ctx.rotate(ang);
-
-    // Shaft extended so its end touches the diamond head
-    ctx.beginPath();
-    ctx.rect(-18, -1.5, 28, 3);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-    ctx.fillStyle = "#dfeef6";
-    ctx.moveTo(10, 0);
-    ctx.lineTo(14, -5);
-    ctx.lineTo(18, 0);
-    ctx.lineTo(14, 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.arc(14, 0, 1.2, 0, Math.PI*2);
-    ctx.fill();
-
+    ctx.beginPath(); ctx.rect(-18, -1.5, 28, 3); ctx.fill();
+    ctx.beginPath(); ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)"; ctx.fillStyle = "#dfeef6";
+    ctx.moveTo(10, 0); ctx.lineTo(14, -5); ctx.lineTo(18, 0); ctx.lineTo(14, 5); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.arc(14, 0, 1.2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   });
 
-  // DROPS (unchanged visuals)
+  // DROPS
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
@@ -1321,28 +1292,23 @@ ctx.restore();
       ctx.beginPath(); ctx.arc(dx, dy, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(255,255,255,0.7)"; 
       ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, Math.PI*2); ctx.fill(); 
-
     } else if (d.type === "Sword") {
       ctx.save();
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.translate(dx, dy);
       ctx.rotate(Math.PI / 4);
       ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.lineJoin = "round";
-      ctx.beginPath(); 
-      ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.lineTo(-3, -15);
-      ctx.rect(-3, -15, 6, 24);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.lineTo(-3, -15);
+      ctx.rect(-3, -15, 6, 24); ctx.stroke();
       ctx.fillStyle = "#dfeef6"; ctx.fillRect(-3, -15, 6, 24); 
       ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.fill();
       ctx.fillStyle = "#f39c12"; ctx.fillRect(-8, 5, 16, 4);
       ctx.fillStyle = "#8e44ad"; ctx.fillRect(-2, 9, 4, 8);
       ctx.restore();
-
     } else if (d.type === "Bow") {
       ctx.save();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
-
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.fillStyle = "#dfeef6";
       ctx.beginPath();
@@ -1353,31 +1319,22 @@ ctx.restore();
       ctx.quadraticCurveTo(-6, -12, 0, -22);
       ctx.closePath();
       ctx.fill();
-
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#deb887"; 
-      ctx.lineWidth = 4; ctx.lineCap = "round"; 
+      ctx.strokeStyle = "#deb887"; ctx.lineWidth = 4; ctx.lineCap = "round"; 
       ctx.beginPath();
-      ctx.moveTo(0, -5); 
-      ctx.quadraticCurveTo(-15, -10, -10, -20);
-      ctx.moveTo(0, 5);
-      ctx.quadraticCurveTo(-15, 10, -10, 20);
+      ctx.moveTo(0, -5); ctx.quadraticCurveTo(-15, -10, -10, -20);
+      ctx.moveTo(0, 5); ctx.quadraticCurveTo(-15, 10, -10, 20);
       ctx.stroke();
-
-      ctx.beginPath();
-      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-      ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)"; ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
       ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
-
       ctx.shadowBlur = 0;
       ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
-
       ctx.restore();
     }
   });
 
-  // STATS BOX + MINIMAP (unchanged)
+  // STATS BOX + MINIMAP
   const boxX = 20;
   const boxY = 10;
   const boxW = 360;
@@ -1411,15 +1368,21 @@ ctx.restore();
   ctx.fillText("BIOME " + biomeLevel + ": " + b.name.toUpperCase(), boxX + boxW - 6, boxY + 92);
   ctx.globalAlpha = 1.0;
 
+  // minimap position and scale
   const mmS = 1.0;
+  const mmX = 650;
+  const mmY = 15;
+  const mmW = MAP_SIZE * mmS;
+  const mmH = MAP_SIZE * mmS;
+
   ctx.globalAlpha = 0.8; ctx.fillStyle = "#000";
-  ctx.fillRect(650, 15, MAP_SIZE * mmS, MAP_SIZE * mmS);
+  ctx.fillRect(mmX, mmY, mmW, mmH);
   
   for (let y = 0; y < MAP_SIZE; y++) {
     for (let x = 0; x < MAP_SIZE; x++) {
       if (explored[y][x]) {
         ctx.fillStyle = world.grid[y][x] === 1 ? b.wall : "#1a1a1a";
-        ctx.fillRect(650 + x * mmS, 15 + y * mmS, mmS, mmS);
+        ctx.fillRect(mmX + x * mmS, mmY + y * mmS, mmS, mmS);
       }
     }
   }
@@ -1430,27 +1393,40 @@ ctx.restore();
     if (explored[ey] && explored[ey][ex]) {
         ctx.fillStyle = b.enemy;
         ctx.beginPath();
-        ctx.arc(650 + ex * mmS, 15 + ey * mmS, 3, 0, Math.PI*2);
+        ctx.arc(mmX + ex * mmS, mmY + ey * mmS, 3, 0, Math.PI*2);
         ctx.fill();
     }
   }
 
   ctx.fillStyle = "#00ffff"; ctx.beginPath();
-  ctx.arc(650 + (player.x / TILE) * mmS, 15 + (player.y / TILE) * mmS, 2.5, 0, Math.PI*2);
+  ctx.arc(mmX + (player.x / TILE) * mmS, mmY + (player.y / TILE) * mmS, 2.5, 0, Math.PI*2);
   ctx.fill(); ctx.globalAlpha = 1.0;
+
+  // PAUSED overlay if gameActive is false but the run is ongoing
+  const isPaused = !gameActive && gameRunning && !gameOver && startScreen.classList.contains('hidden') && victoryScreen.classList.contains('hidden');
+  if (isPaused) {
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.font = "bold 28px monospace";
+    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2 - 10);
+    ctx.font = "12px monospace";
+    ctx.fillText("Tap the map (top-right) to resume", canvas.width / 2, canvas.height / 2 + 20);
+  }
 }
 
-/* === MAIN LOOP: compute dt and pass to update === */
+/* MAIN LOOP */
 let lastTime = performance.now();
 (function loop(now) {
-  const dt = Math.min(0.1, (now - lastTime) / 1000); // clamp to avoid huge jumps (max 100ms)
+  const dt = Math.min(0.1, (now - lastTime) / 1000);
   lastTime = now;
   update(dt);
   draw();
   requestAnimationFrame(loop);
 })(lastTime);
 
-/* === Visibility / Focus handling: pause when app/backgrounded, resume when visible === */
+/* Visibility / Focus handling */
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     pauseGame();
@@ -1464,6 +1440,40 @@ window.addEventListener('blur', () => {
 window.addEventListener('focus', () => {
   resumeGame();
 });
+
+/* Canvas click/touch: handle minimap pause/unpause */
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches && e.touches[0]) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  const x = (clientX - rect.left) * (canvas.width / rect.width);
+  const y = (clientY - rect.top) * (canvas.height / rect.height);
+  return {x, y};
+}
+
+canvas.addEventListener('click', (e) => {
+  const pos = getCanvasPos(e);
+  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  if (pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH) {
+    togglePauseByMap();
+  }
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  const pos = getCanvasPos(e);
+  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  if (pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH) {
+    e.preventDefault();
+    togglePauseByMap();
+  }
+}, {passive: false});
+
 </script>
 </body>
 </html>
