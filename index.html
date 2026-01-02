@@ -385,12 +385,14 @@
  * - Beginner mode: triple drop chances (hp, sword, bow).
  * - Pause when menu shown or page/backgrounded; minimap toggles Pause/Unpause.
  * - Responsive CSS adjustments so tips and end-of-run screens don't spill off small screens.
+ * - MAX_HP constant added and used to initialize player.max (set to 9,999,999).
  */
 
 /* === CONFIG / CONSTANTS (unchanged semantics) === */
 const TILE = 32;
 const MAP_SIZE = 120; 
 const WORLD = MAP_SIZE * TILE;
+const MAX_HP = 9999999; // new max HP constant per request
 
 // GAME STATE
 let gameActive = false;      // when true, update(dt) runs and input works
@@ -443,7 +445,11 @@ const ARROW_BASE_SPEED = 13; // px/frame originally
 // Fire interval in ms (unchanged)
 const FIRE_INTERVAL_MS = 100;
 
-/* === DELTA-TIME PREPARATION === */
+/* === DELTA-TIME PREPARATION ===
+   The game historically used values in px/frame. We'll treat those "per-frame" numbers as if they were for 60 FPS,
+   and convert them to per-second velocities by multiplying by 60 (frames/sec). During update, we multiply per-second
+   velocities by dt (seconds since last frame).
+*/
 const FPS = 60;
 const PLAYER_SPEED_PPS = PLAYER_SPEED * FPS;      // px per second
 const BOSS_SPEED_PPS = BOSS_SPEED * FPS;          // px per second
@@ -460,8 +466,11 @@ let shots = [];
 let drops = [];
 let explored = [];
 
+/* Flow-field timing: previously used a frame counter flowTimer++ and ran updateFlowField when >15.
+   15 frames at 60FPS is 0.25s (I use 0.2667 earlier — keep similar). Use a seconds accumulator now.
+*/
 let flowMap = []; 
-let flowAccSeconds = 0;
+let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
 
 /* --- SOUND / MUSIC (unchanged) --- */
 const Music = {
@@ -757,7 +766,8 @@ function generateWorld(reset) {
 
   if (reset) {
     let sp = findSafePos();
-    player = { x: sp.x, y: sp.y, hp: 10, max: 999, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
+    // use MAX_HP constant for player's max HP
+    player = { x: sp.x, y: sp.y, hp: 10, max: MAX_HP, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
     biomeLevel = 1;
     startTime = Date.now();
     enemiesKilled = 0;
