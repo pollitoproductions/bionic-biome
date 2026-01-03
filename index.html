@@ -1632,19 +1632,27 @@ let lastTime = performance.now();
   requestAnimationFrame(loop);
 })(lastTime);
 
-/* === Visibility / Focus handling: pause when app/backgrounded, resume when visible === */
+/* === Visibility / Focus handling: pause when app/backgrounded === */
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    pauseGame(true); // Show overlay when backgrounded
+    // Pause when backgrounded, but don't show overlay (user will see it when they return)
+    if (gameActive && gameRunning && !gameOver) {
+      pauseGame(true);
+    }
   } else {
-    resumeGame();
+    // When returning, don't auto-resume - let user manually unpause via map
+    // Just hide the overlay if it was shown
+    document.getElementById('pause-overlay').classList.add('hidden');
   }
 });
 window.addEventListener('blur', () => {
-  pauseGame(true); // Show overlay when window loses focus
+  // Pause when window loses focus
+  if (gameActive && gameRunning && !gameOver) {
+    pauseGame(false); // Don't show overlay for blur
+  }
 });
 window.addEventListener('focus', () => {
-  resumeGame();
+  // When focus returns, don't auto-resume - let user manually unpause via map
 });
 
 /* Canvas click/touch: handle minimap pause/unpause */
