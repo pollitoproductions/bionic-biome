@@ -238,6 +238,28 @@
   .victory-title { color: #f1c40f; text-shadow: 4px 4px 0px #e67e22; margin-bottom: 20px; }
   .victory-time { font-family: 'Press Start 2P', cursive; color: #fff; margin-bottom: 30px; font-size: 14px; text-align: center; line-height: 1.6; }
   
+  /* PAUSE OVERLAY */
+  #pause-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    pointer-events: auto;
+  }
+  .pause-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 32px;
+    color: #fff;
+    text-shadow: 4px 4px 0px #3498db;
+    text-align: center;
+  }
+
   .hidden { display: none !important; }
 
   /* === Responsive fixes (added per request) === */
@@ -331,7 +353,7 @@
 
     <!-- Tip added per request: tell player how to pause/unpause using the map -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#9fbcd3; max-width:360px;">
-      Tap the map in the top-right corner to Pause / Unpause during play. Only action, not the timer stops.
+      PAUSE GAME BY TOUCHING MAP IN TOP RIGHT
     </div>
   </div>
 </div>
@@ -374,6 +396,10 @@
     <span id="victory-time-display" style="color:#2ecc71; font-size: 20px;">00:00</span>
   </div>
   <button class="btn-std" id="continue-btn">CONTINUE</button>
+</div>
+
+<div id="pause-overlay" class="hidden">
+  <div class="pause-text">PAUSED</div>
 </div>
 
 <script>
