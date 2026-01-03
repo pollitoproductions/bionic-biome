@@ -1606,19 +1606,6 @@ ctx.restore();
   ctx.fillStyle = "#00ffff"; ctx.beginPath();
   ctx.arc(mmX + (player.x / TILE) * mmS, mmY + (player.y / TILE) * mmS, 2.5, 0, Math.PI*2);
   ctx.fill(); ctx.globalAlpha = 1.0;
-
-  // PAUSED overlay if gameActive is false but a run is ongoing
-  const isPaused = !gameActive && gameRunning && !gameOver && startScreen.classList.contains('hidden') && victoryScreen.classList.contains('hidden');
-  if (isPaused) {
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.font = "bold 28px monospace";
-    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2 - 10);
-    ctx.font = "12px monospace";
-    ctx.fillText("Tap the map (top-right) to resume", canvas.width / 2, canvas.height / 2 + 20);
-  }
 }
 
 /* === MAIN LOOP: compute dt and pass to update === */
@@ -1634,13 +1621,13 @@ let lastTime = performance.now();
 /* === Visibility / Focus handling: pause when app/backgrounded, resume when visible === */
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    pauseGame();
+    pauseGame(true); // Show overlay when backgrounded
   } else {
     resumeGame();
   }
 });
 window.addEventListener('blur', () => {
-  pauseGame();
+  pauseGame(true); // Show overlay when window loses focus
 });
 window.addEventListener('focus', () => {
   resumeGame();
