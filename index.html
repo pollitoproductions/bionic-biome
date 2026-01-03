@@ -1450,9 +1450,19 @@ ctx.restore();
 
   if (inDungeon && world.boss) {
     let bx = world.boss.x - cx, by = world.boss.y - cy;
-    ctx.fillStyle = (world.boss.hitTimer > 0) ? "#fff" : b.enemy;
+    ctx.save();
+    if (world.boss.hitTimer > 0) {
+      ctx.fillStyle = "#fff";
+      ctx.shadowBlur = 36;
+      ctx.shadowColor = "rgba(255,255,255,0.95)";
+    } else {
+      ctx.fillStyle = b.enemy;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = b.enemy;
+    }
     ctx.beginPath(); ctx.arc(bx, by, 50, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
       
     ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(bx - 52, by - 82, 104, 14);
     ctx.fillStyle = "#333"; ctx.fillRect(bx - 50, by - 80, 100, 10);
