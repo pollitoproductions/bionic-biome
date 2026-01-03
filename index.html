@@ -43,10 +43,10 @@
   bottom: 8%;
   width: 100px;
   height: 100px;
-  background: linear-gradient(180deg, rgba(10,10,20,0.36), rgba(5,5,10,0.64));
+  background: linear-gradient(180deg, rgba(50,50,50,0.5), rgba(30,30,30,0.7));
   border-radius: 50%;
   pointer-events: auto;
-  border: 2px solid rgba(0,200,255,0.16);
+  border: 2px solid rgba(100,100,100,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,7 +350,7 @@
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
-    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
+    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:15px; color:#00e6ff;">SELECT DIFFICULTY</div>
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">BEGINNER</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
@@ -1411,8 +1411,11 @@ ctx.stroke();
 ctx.restore();
 
   if (player.swing > 0) {
+    ctx.save();
+    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
     ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 20; ctx.beginPath();
     ctx.arc(400, 300, PLAYER_RAD + 25, player.dir - 1.75, player.dir + 1.75); ctx.stroke();
+    ctx.restore();
   }
 
   world.enemies.forEach(e => {
@@ -1520,17 +1523,19 @@ ctx.restore();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
 
+      // Draw glowing crescent first (flipped to match bow direction)
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.fillStyle = "#dfeef6";
       ctx.beginPath();
       ctx.moveTo(0, -22);
-      ctx.quadraticCurveTo(-10, -12, -10, 0);
-      ctx.quadraticCurveTo(-10, 12, 0, 22);
-      ctx.quadraticCurveTo(-6, 12, -6, 0);
-      ctx.quadraticCurveTo(-6, -12, 0, -22);
+      ctx.quadraticCurveTo(10, -12, 10, 0);
+      ctx.quadraticCurveTo(10, 12, 0, 22);
+      ctx.quadraticCurveTo(6, 12, 6, 0);
+      ctx.quadraticCurveTo(6, -12, 0, -22);
       ctx.closePath();
       ctx.fill();
 
+      // Draw bow wood over the crescent
       ctx.shadowBlur = 0;
       ctx.strokeStyle = "#deb887"; 
       ctx.lineWidth = 4; ctx.lineCap = "round"; 
@@ -1541,11 +1546,13 @@ ctx.restore();
       ctx.quadraticCurveTo(-15, 10, -10, 20);
       ctx.stroke();
 
+      // Draw bow string with glow
       ctx.beginPath();
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
       ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
 
+      // Draw grip over string
       ctx.shadowBlur = 0;
       ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
