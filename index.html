@@ -434,6 +434,7 @@ let currentDifficulty = 'easy'; // remains the key; displayed name will be "BEGI
 
 let wasActiveBeforePause = false;
 let pauseTimestamp = 0;
+let savedMusicTrack = null; // Track what music was playing before pause
 
 const DIFFICULTY_SETTINGS = {
   easy: {
@@ -596,6 +597,9 @@ function pauseGame(showOverlay = true) {
     stopAction();
     // Record when we paused to adjust startTime on resume
     pauseTimestamp = Date.now();
+    // Save current music state and stop music
+    savedMusicTrack = Music.currentTrackId;
+    Music.stop();
   }
   gameActive = false;
   
@@ -614,6 +618,16 @@ function resumeGame() {
     const pausedDuration = Date.now() - pauseTimestamp;
     startTime += pausedDuration;
     pauseTimestamp = 0;
+  }
+  
+  // Resume music if it was playing before pause
+  if (savedMusicTrack && !gameOver && gameRunning) {
+    if (savedMusicTrack.startsWith('overworld_')) {
+      Music.play('overworld');
+    } else if (savedMusicTrack.startsWith('dungeon_')) {
+      Music.play('dungeon');
+    }
+    savedMusicTrack = null;
   }
   
   // Only resume if the game was active before the pause and the run hasn't ended
