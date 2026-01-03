@@ -255,13 +255,6 @@
     justify-content: center;
     z-index: 150;
     pointer-events: none;
-    /* Cut out the minimap area so it stays bright */
-    -webkit-mask: linear-gradient(#fff 0 0) exclude, 
-                  linear-gradient(#fff 0 0) top 15px right 15px/120px 120px no-repeat;
-    mask: linear-gradient(#fff 0 0) exclude, 
-          linear-gradient(#fff 0 0) top 15px right 15px/120px 120px no-repeat;
-    -webkit-mask-composite: source-out;
-    mask-composite: exclude;
   }
   .pause-text {
     font-family: 'Press Start 2P', cursive;
@@ -1604,13 +1597,25 @@ ctx.restore();
   const mmW = MAP_SIZE * mmS;
   const mmH = MAP_SIZE * mmS;
 
-  ctx.globalAlpha = 0.8; ctx.fillStyle = "#000";
+  // Make minimap stand out when paused
+  const isPaused = !gameActive && gameRunning;
+  ctx.globalAlpha = isPaused ? 1.0 : 0.8; 
+  ctx.fillStyle = "#000";
   ctx.fillRect(mmX, mmY, mmW, mmH);
   
-  // Add translucent gray outline
-  ctx.strokeStyle = "rgba(128,128,128,0.5)";
-  ctx.lineWidth = 2;
+  // Brighter, glowing outline when paused
+  if (isPaused) {
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "rgba(0,230,255,0.9)";
+    ctx.strokeStyle = "rgba(0,230,255,0.8)";
+    ctx.lineWidth = 3;
+  } else {
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(128,128,128,0.5)";
+    ctx.lineWidth = 2;
+  }
   ctx.strokeRect(mmX, mmY, mmW, mmH);
+  ctx.shadowBlur = 0;
   
   for (let y = 0; y < MAP_SIZE; y++) {
     for (let x = 0; x < MAP_SIZE; x++) {
