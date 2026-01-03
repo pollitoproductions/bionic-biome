@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>Bionic Biome v1.0 &copy; 2026</title>
+<meta name="description" content="Bionic Biome - A cyberpunk action game with roguelike elements">
+<meta name="author" content="Brant Fuller">
+<meta name="theme-color" content="#000000">
+<title>Bionic Biome v1.0 © 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   html, body {
@@ -39,10 +43,10 @@
   bottom: 8%;
   width: 100px;
   height: 100px;
-  background: linear-gradient(180deg, rgba(10,10,20,0.28), rgba(5,5,10,0.55));
+  background: linear-gradient(180deg, rgba(10,10,20,0.36), rgba(5,5,10,0.64));
   border-radius: 50%;
   pointer-events: auto;
-  border: 2px solid rgba(0,200,255,0.12);
+  border: 2px solid rgba(0,200,255,0.16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,8 +92,6 @@
   mix-blend-mode: screen;
   z-index: 3;
 }
-  }
-  .btn-action:active { transform: translateY(3px); }
 
   /* SCREENS */
   .screen-overlay {
@@ -240,6 +242,30 @@
   
   .hidden { display: none !important; }
 
+  /* PAUSE OVERLAY */
+  #pause-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    pointer-events: none;
+  }
+  .pause-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 15px;
+    color: #00e6ff;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    line-height: 1.6;
+  }
+
   /* === Responsive fixes (added per request) === */
   * { box-sizing: border-box; }
 
@@ -331,7 +357,7 @@
 
     <!-- Tip added per request: tell player how to pause/unpause using the map -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#9fbcd3; max-width:360px;">
-      Tap the map in the top-right corner to Pause / Unpause during play. Only action, not the timer stops.
+      PAUSE GAME BY TOUCHING MAP IN TOP RIGHT
     </div>
   </div>
 </div>
@@ -376,6 +402,10 @@
   <button class="btn-std" id="continue-btn">CONTINUE</button>
 </div>
 
+<div id="pause-overlay" class="hidden">
+  <div class="pause-text">TOUCH MAP IN TOP RIGHT TO RESUME</div>
+</div>
+
 <script>
 /**
  * BIONIC BIOME v1.0
@@ -403,6 +433,7 @@ let inDungeon = false;
 let currentDifficulty = 'easy'; // remains the key; displayed name will be "BEGINNER"
 
 let wasActiveBeforePause = false;
+let pauseTimestamp = 0;
 
 const DIFFICULTY_SETTINGS = {
   easy: {
@@ -558,16 +589,33 @@ const elBow = document.getElementById('st-bow');
 const elDiff = document.getElementById('st-diff');
 
 /* === PAUSE/RESUME HELPERS === */
-function pauseGame() {
+function pauseGame(showOverlay = true) {
   // Record whether the game was active so we can resume later
   wasActiveBeforePause = gameActive;
   if (gameActive) {
     stopAction();
+    // Record when we paused to adjust startTime on resume
+    pauseTimestamp = Date.now();
   }
   gameActive = false;
+  
+  // Show overlay if requested (not shown for menu pause)
+  if (showOverlay) {
+    document.getElementById('pause-overlay').classList.remove('hidden');
+  }
 }
 
 function resumeGame() {
+  // Hide pause overlay
+  document.getElementById('pause-overlay').classList.add('hidden');
+  
+  // Adjust startTime to freeze the clock during pause
+  if (pauseTimestamp > 0) {
+    const pausedDuration = Date.now() - pauseTimestamp;
+    startTime += pausedDuration;
+    pauseTimestamp = 0;
+  }
+  
   // Only resume if the game was active before the pause and the run hasn't ended
   if (!gameOver && wasActiveBeforePause) {
     gameActive = true;
@@ -583,9 +631,7 @@ function togglePauseByMap() {
   if (gameActive) {
     pauseGame();
   } else {
-    // user intentionally toggled unpause via map; resume regardless
-    gameActive = true;
-    wasActiveBeforePause = false;
+    resumeGame();
   }
 }
 
@@ -636,7 +682,7 @@ function renderTrackButtons() {
 
 menuBtn.addEventListener('click', () => {
   // Pause the game whenever the menu is shown
-  pauseGame();
+  pauseGame(false);
 
   Music.init();
   startScreen.classList.add('hidden');
@@ -768,6 +814,7 @@ function generateWorld(reset) {
     let sp = findSafePos();
     // use MAX_HP constant for player's max HP
     player = { x: sp.x, y: sp.y, hp: 10, max: MAX_HP, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
+    player.glowColor = biomes[(biomeLevel - 1) % biomes.length].boss || biomes[(biomeLevel - 1) % biomes.length].enemy;
     biomeLevel = 1;
     startTime = Date.now();
     enemiesKilled = 0;
@@ -777,6 +824,7 @@ function generateWorld(reset) {
     let sp = findSafePos();
     player.x = sp.x;
     player.y = sp.y;
+    player.glowColor = biomes[(biomeLevel - 1) % biomes.length].boss || biomes[(biomeLevel - 1) % biomes.length].enemy;
   }
 
   shots = [];
@@ -796,7 +844,15 @@ function generateWorld(reset) {
   for (let i = 0; i < enemyCount; i++) {
     let enp = findSafePos();
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
-      world.enemies.push({ x: enp.x, y: enp.y, hp: 1, dmg: scaledDmg, atkDelay: 0, hitTimer: 0 });
+      world.enemies.push({ 
+        x: enp.x, 
+        y: enp.y, 
+        hp: 1, 
+        dmg: scaledDmg, 
+        atkDelay: 0, 
+        hitTimer: 0,
+        color: biomes[(biomeLevel - 1) % biomes.length].enemy
+      });
     }
   }
 }
@@ -1231,7 +1287,15 @@ function enterDungeon() {
   for (let i = 0; i < enemyCount; i++) {
     let enp = findSafePos();
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
-      world.enemies.push({ x: enp.x, y: enp.y, hp: 1, dmg: scaledDmg, atkDelay: 0, hitTimer: 0 });
+      world.enemies.push({ 
+        x: enp.x, 
+        y: enp.y, 
+        hp: 1, 
+        dmg: scaledDmg, 
+        atkDelay: 0, 
+        hitTimer: 0,
+        color: biomes[(biomeLevel - 1) % biomes.length].enemy
+      });
     }
   }
 }
@@ -1320,8 +1384,8 @@ if (player.hitTimer > 0) {
   ctx.shadowColor = "rgba(255,255,255,0.95)";
   ctx.fillStyle = "#ffffff";
 } else {
-  ctx.shadowBlur = 42;
-  ctx.shadowColor = "rgba(52,152,219,0.95)";
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = player.glowColor || "rgba(52,152,219,0.95)";
   ctx.fillStyle = "#3498db";
 }
 ctx.beginPath();
@@ -1338,11 +1402,20 @@ ctx.restore();
   }
 
   world.enemies.forEach(e => {
-    ctx.fillStyle = (e.hitTimer > 0) ? "#fff" : b.enemy;
+    ctx.save();
+    if (e.hitTimer > 0) {
+      ctx.fillStyle = "#fff";
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = b.enemy;
+      ctx.shadowColor = e.color || b.enemy;
+      ctx.shadowBlur = 12;
+    }
     ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
     
     ctx.beginPath(); ctx.arc(e.x - cx, e.y - cy, 14, 0, Math.PI*2); 
     ctx.fill(); ctx.stroke();
+    ctx.restore();
 
     if (e.hitTimer === 0) {
         ctx.fillStyle = "#000"; 
