@@ -341,7 +341,7 @@
     <div class="stat-row"><span class="stat-label">HP COLLECTED:</span> <span class="stat-val" id="st-hearts">0</span></div>
     <div class="stat-row"><span class="stat-label">SWORD LEVEL:</span> <span class="stat-val" id="st-sword">1</span></div>
     <div class="stat-row"><span class="stat-label">BOW LEVEL:</span> <span class="stat-val" id="st-bow">1</span></div>
-    <div class="stat-row"><span class="stat-label">DIFFICULTY:</span> <span class="stat-val" id="st-diff">BEGINNER</span></div>
+    <div class="stat-row"><span class="stat-label">DIFFICULTY:</span> <span class="stat-val" id="st-diff">CASUAL</span></div>
   </div>
   
   <div class="btn-row" id="main-btns">
@@ -351,7 +351,7 @@
 
   <div class="btn-row hidden" id="diff-btns">
     <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
-    <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">BEGINNER</button>
+    <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
 
@@ -430,7 +430,7 @@ let gameRunning = false;     // marks that a run is in-progress (used to allow p
 let gameOver = false;
 let biomeLevel = 1;
 let inDungeon = false;
-let currentDifficulty = 'easy'; // remains the key; displayed name will be "BEGINNER"
+let currentDifficulty = 'easy'; // remains the key; displayed name will be "CASUAL"
 
 let wasActiveBeforePause = false;
 let pauseTimestamp = 0;
@@ -438,7 +438,7 @@ let savedMusicTrack = null; // Track what music was playing before pause
 
 const DIFFICULTY_SETTINGS = {
   easy: {
-    name: "BEGINNER",
+    name: "CASUAL",
     enemySpeedStep: 0.08,
     enemyCountBase: 200,
     enemyCountStep: 36,
