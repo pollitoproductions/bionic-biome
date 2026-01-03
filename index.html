@@ -350,13 +350,13 @@
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
-    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:15px; color:#00e6ff;">SELECT DIFFICULTY</div>
+    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">BEGINNER</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
 
     <!-- Tip added per request: tell player how to pause/unpause using the map -->
-    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#9fbcd3; max-width:360px;">
+    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
       PAUSE GAME BY TOUCHING MAP IN TOP RIGHT
     </div>
   </div>
@@ -1471,8 +1471,10 @@ ctx.restore();
     ctx.rect(-18, -1.5, 28, 3);
     ctx.fill();
 
-    ctx.beginPath();
+    // Diamond arrowhead with glow
+    ctx.save();
     ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
+    ctx.beginPath();
     ctx.fillStyle = "#dfeef6";
     ctx.moveTo(10, 0);
     ctx.lineTo(14, -5);
@@ -1484,11 +1486,11 @@ ctx.restore();
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.beginPath();
     ctx.shadowBlur = 0;
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.arc(14, 0, 1.2, 0, Math.PI*2);
     ctx.fill();
+    ctx.restore();
 
     ctx.restore();
   });
@@ -1523,20 +1525,8 @@ ctx.restore();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
 
-      // Draw glowing crescent first (flipped to match bow direction)
+      // Draw bow wood with glow
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-      ctx.fillStyle = "#dfeef6";
-      ctx.beginPath();
-      ctx.moveTo(0, -22);
-      ctx.quadraticCurveTo(10, -12, 10, 0);
-      ctx.quadraticCurveTo(10, 12, 0, 22);
-      ctx.quadraticCurveTo(6, 12, 6, 0);
-      ctx.quadraticCurveTo(6, -12, 0, -22);
-      ctx.closePath();
-      ctx.fill();
-
-      // Draw bow wood over the crescent
-      ctx.shadowBlur = 0;
       ctx.strokeStyle = "#deb887"; 
       ctx.lineWidth = 4; ctx.lineCap = "round"; 
       ctx.beginPath();
@@ -1606,10 +1596,15 @@ ctx.restore();
   ctx.globalAlpha = 0.8; ctx.fillStyle = "#000";
   ctx.fillRect(mmX, mmY, mmW, mmH);
   
+  // Add translucent gray outline
+  ctx.strokeStyle = "rgba(128,128,128,0.5)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(mmX, mmY, mmW, mmH);
+  
   for (let y = 0; y < MAP_SIZE; y++) {
     for (let x = 0; x < MAP_SIZE; x++) {
       if (explored[y][x]) {
-        ctx.fillStyle = world.grid[y][x] === 1 ? b.wall : "#1a1a1a";
+        ctx.fillStyle = world.grid[y][x] === 1 ? b.wall : "#2a2a2a";
         ctx.fillRect(mmX + x * mmS, mmY + y * mmS, mmS, mmS);
       }
     }
