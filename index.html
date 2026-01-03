@@ -1399,7 +1399,7 @@ if (player.hitTimer > 0) {
   ctx.fillStyle = "#ffffff";
 } else {
   ctx.shadowBlur = 18;
-  ctx.shadowColor = player.glowColor || "rgba(52,152,219,0.95)";
+  ctx.shadowColor = player.glowColor || "rgba(0,180,255,0.75)";
   ctx.fillStyle = "#3498db";
 }
 ctx.beginPath();
@@ -1499,10 +1499,14 @@ ctx.restore();
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
+      ctx.save();
+      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.fillStyle = "#3498db"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(dx, dy, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
       ctx.fillStyle = "rgba(255,255,255,0.7)"; 
-      ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, Math.PI*2); ctx.fill(); 
+      ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, Math.PI*2); ctx.fill();
+      ctx.restore(); 
 
     } else if (d.type === "Sword") {
       ctx.save();
