@@ -1635,24 +1635,24 @@ let lastTime = performance.now();
 /* === Visibility / Focus handling: pause when app/backgrounded === */
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    // Pause when backgrounded, but don't show overlay (user will see it when they return)
+    // Pause when backgrounded and show overlay
     if (gameActive && gameRunning && !gameOver) {
       pauseGame(true);
     }
   } else {
-    // When returning, don't auto-resume - let user manually unpause via map
-    // Just hide the overlay if it was shown
-    document.getElementById('pause-overlay').classList.add('hidden');
+    // When returning to visible, keep the overlay shown if game is paused
+    // User will tap the map to resume
   }
 });
 window.addEventListener('blur', () => {
   // Pause when window loses focus
   if (gameActive && gameRunning && !gameOver) {
-    pauseGame(false); // Don't show overlay for blur
+    pauseGame(true); // Show overlay so user knows to tap map when returning
   }
 });
 window.addEventListener('focus', () => {
-  // When focus returns, don't auto-resume - let user manually unpause via map
+  // When focus returns, keep overlay shown if game is paused
+  // User will tap the map to resume
 });
 
 /* Canvas click/touch: handle minimap pause/unpause */
