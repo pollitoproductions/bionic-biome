@@ -1577,7 +1577,9 @@ ctx.restore();
 
   ctx.textAlign = "right";
   ctx.font = "bold 16px monospace";
-  ctx.fillText("TIME: " + formatTime(Date.now() - startTime), boxX + boxW - 12, boxY + 36);
+  // Show elapsed time, but freeze during pause
+  const displayTime = pauseTimestamp > 0 ? (pauseTimestamp - startTime) : (Date.now() - startTime);
+  ctx.fillText("TIME: " + formatTime(displayTime), boxX + boxW - 12, boxY + 36);
   ctx.fillStyle = "#aaaaaa";
   ctx.font = "13px monospace";
   ctx.fillText("DIFF: " + (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase(), boxX + boxW - 12, boxY + 62);
