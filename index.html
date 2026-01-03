@@ -630,11 +630,11 @@ function resumeGame() {
     savedMusicTrack = null;
   }
   
-  // Only resume if the game was active before the pause and the run hasn't ended
-  if (!gameOver && wasActiveBeforePause) {
+  // Resume the game if a run is in progress and not ended
+  if (!gameOver && gameRunning) {
     gameActive = true;
+    wasActiveBeforePause = false;
   }
-  wasActiveBeforePause = false;
 }
 
 /* toggle pause/unpause via map (top-right minimap) */
