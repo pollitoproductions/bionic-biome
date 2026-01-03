@@ -255,6 +255,13 @@
     justify-content: center;
     z-index: 150;
     pointer-events: none;
+    /* Cut out the minimap area so it stays bright */
+    -webkit-mask: linear-gradient(#fff 0 0) exclude, 
+                  linear-gradient(#fff 0 0) top 15px right 15px/120px 120px no-repeat;
+    mask: linear-gradient(#fff 0 0) exclude, 
+          linear-gradient(#fff 0 0) top 15px right 15px/120px 120px no-repeat;
+    -webkit-mask-composite: source-out;
+    mask-composite: exclude;
   }
   .pause-text {
     font-family: 'Press Start 2P', cursive;
