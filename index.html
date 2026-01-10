@@ -179,6 +179,102 @@
     box-shadow: 0 10px 40px rgba(0,150,255,0.06);
     border: 2px solid rgba(0,200,255,0.14);
   }
+  .btn-custom {
+    background: linear-gradient(90deg,#9b59b6,#8e44ad);
+    color: #fff;
+    box-shadow: 0 10px 40px rgba(155,89,182,0.2);
+    border: 2px solid rgba(155,89,182,0.3);
+  }
+
+  /* Custom Difficulty Panel */
+  .custom-panel {
+    background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
+    border: 2px solid rgba(0,200,255,0.14);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-family: 'Press Start 2P', cursive;
+  }
+  .slider-container {
+    margin: 15px 0;
+  }
+  .slider-label {
+    color: #00e6ff;
+    font-size: 11px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .slider-value {
+    color: #fff;
+  }
+  .custom-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00e6ff, #0077aa);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0,230,255,0.5);
+  }
+  .custom-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00e6ff, #0077aa);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(0,230,255,0.5);
+  }
+
+  /* Toggle Switch */
+  .toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+  }
+  .toggle-label {
+    color: #cfeff6;
+    font-size: 11px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .toggle-switch.active {
+    background: #00e6ff;
+  }
+  .toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .toggle-switch.active .toggle-knob {
+    transform: translateX(26px);
+  }
 
   /* Cyberpunk menus */
   .menu-box {
@@ -354,6 +450,28 @@
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
+    <button class="btn-std btn-custom" onclick="selectDifficulty('custom')">CUSTOM</button>
+
+    <!-- Custom Difficulty Panel -->
+    <div class="custom-panel hidden" id="custom-panel">
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>DROP RATE</span>
+          <span class="slider-value" id="drop-rate-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY COUNT</span>
+          <span class="slider-value" id="enemy-count-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
+      </div>
+
+      <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
+    </div>
 
     <!-- Tip added per request: tell player how to pause/unpause using the map -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
@@ -366,6 +484,7 @@
   <div class="menu-box">
     <div class="menu-tabs">
       <button class="menu-tab active" id="tab-sound">SOUND</button>
+      <button class="menu-tab" id="tab-settings">SETTINGS</button>
       <button class="menu-tab" id="tab-tips">TIPS</button>
     </div>
     
@@ -376,6 +495,24 @@
        </div>
        <div class="track-grid" id="track-grid">
          </div>
+    </div>
+
+    <div class="menu-content hidden" id="panel-settings">
+      <div style="text-align:center; color:#00e6ff; font-size:12px; margin-bottom:20px;">GAME SETTINGS</div>
+      
+      <div class="toggle-container">
+        <span class="toggle-label">SOUND</span>
+        <div class="toggle-switch active" id="toggle-sound">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
+      <div class="toggle-container">
+        <span class="toggle-label">VIBRATION</span>
+        <div class="toggle-switch active" id="toggle-vibration">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
     </div>
 
     <div class="menu-content hidden" id="panel-tips">
@@ -436,6 +573,12 @@ let wasActiveBeforePause = false;
 let pauseTimestamp = 0;
 let savedMusicTrack = null; // Track what music was playing before pause
 
+// Custom difficulty settings
+let customDropRate = 2; // 0=Very Low, 1=Low, 2=Normal, 3=High, 4=Very High
+let customEnemyCount = 2; // 0=Very Low, 1=Low, 2=Normal, 3=High, 4=Very High
+let soundEnabled = true;
+let vibrationEnabled = true;
+
 const DIFFICULTY_SETTINGS = {
   easy: {
     name: "CASUAL",
@@ -463,6 +606,15 @@ const DIFFICULTY_SETTINGS = {
     bossHpMult: 800,
     bossDefMult: 0.6,
     bossSpeedAdd: 0.5
+  },
+  custom: {
+    name: "CUSTOM",
+    enemySpeedStep: 0.15, // Will be calculated based on enemy count slider
+    enemyCountBase: 200,  // Will be calculated based on slider
+    enemyCountStep: 60,   // Will be calculated based on slider
+    bossHpMult: 600,      // Scales with enemy count
+    bossDefMult: 0.5,     // Scales with enemy count
+    bossSpeedAdd: 0.25    // Scales with enemy count
   }
 };
 
@@ -508,9 +660,9 @@ let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
 const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
-  playSFX(type){ if(!this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
+  playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
   generateDarkTrack(level,isDungeon){ const roots=[110,130.81,146.83,164.81,174.61]; let base=roots[(level-1)%roots.length]; let p=(level-1)%3, notes=[], intervals=[]; if(isDungeon){ base*=0.5; intervals=[0,0,6,0,7,6,13,0]; } else { if(p===0) intervals=[0,3,7,12,0,3,7,12,0,0,12,12,7,7,3,3]; else if(p===1) intervals=[0,0,12,0,3,0,12,0,7,0,12,0,5,0,12,0]; else intervals=[0,1,0,1,5,7,5,7,12,1,12,1,0,0,12,0]; } for(let i=0;i<intervals.length;i++){ notes.push(base*Math.pow(2,intervals[i]/12)); } return {notes, bpm: isDungeon?90+level:125+level*2}; },
-  play(type,override){ let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
+  play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
 
@@ -546,7 +698,7 @@ function findSafePos() {
 }
 
 function vibrate(ms) {
-  if (window.navigator && window.navigator.vibrate) {
+  if (vibrationEnabled && window.navigator && window.navigator.vibrate) {
     window.navigator.vibrate(ms);
   }
 }
@@ -574,12 +726,22 @@ const mainBtns = document.getElementById('main-btns');
 const diffBtns = document.getElementById('diff-btns');
 
 const tabSound = document.getElementById('tab-sound');
+const tabSettings = document.getElementById('tab-settings');
 const tabTips = document.getElementById('tab-tips');
 const panelSound = document.getElementById('panel-sound');
+const panelSettings = document.getElementById('panel-settings');
 const panelTips = document.getElementById('panel-tips');
 const trackGrid = document.getElementById('track-grid');
 const swBiome = document.getElementById('sw-biome');
 const swDungeon = document.getElementById('sw-dungeon');
+
+const customPanel = document.getElementById('custom-panel');
+const dropRateSlider = document.getElementById('drop-rate-slider');
+const enemyCountSlider = document.getElementById('enemy-count-slider');
+const dropRateVal = document.getElementById('drop-rate-val');
+const enemyCountVal = document.getElementById('enemy-count-val');
+const toggleSound = document.getElementById('toggle-sound');
+const toggleVibration = document.getElementById('toggle-vibration');
 
 const elBiome = document.getElementById('st-biome');
 const elKills = document.getElementById('st-kills');
@@ -670,6 +832,11 @@ playBtn.addEventListener('click', () => {
 });
 
 window.selectDifficulty = (diff) => {
+  if (diff === 'custom') {
+    // Show custom panel instead of starting immediately
+    customPanel.classList.remove('hidden');
+    return;
+  }
   currentDifficulty = diff;
   Music.init();
   Music.playSFX('start'); 
@@ -707,16 +874,31 @@ menuBtn.addEventListener('click', () => {
 
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
+  tabSettings.classList.remove('active');
   tabTips.classList.remove('active');
   panelSound.classList.remove('hidden');
+  panelSettings.classList.add('hidden');
   panelTips.classList.add('hidden');
+});
+
+tabSettings.addEventListener('click', () => {
+  tabSettings.classList.add('active');
+  tabSound.classList.remove('active');
+  tabTips.classList.remove('active');
+  panelSettings.classList.remove('hidden');
+  panelSound.classList.add('hidden');
+  panelTips.classList.add('hidden');
+  Music.stop(); 
+  document.querySelectorAll('.track-btn').forEach(btn => btn.classList.remove('active'));
 });
 
 tabTips.addEventListener('click', () => {
   tabTips.classList.add('active');
   tabSound.classList.remove('active');
+  tabSettings.classList.remove('active');
   panelTips.classList.remove('hidden');
   panelSound.classList.add('hidden');
+  panelSettings.classList.add('hidden');
   Music.stop(); 
   document.querySelectorAll('.track-btn').forEach(btn => btn.classList.remove('active'));
 });
@@ -746,6 +928,66 @@ swDungeon.addEventListener('click', () => {
   document.querySelectorAll('.track-btn').forEach(btn => btn.classList.remove('active'));
   Music.stop();
 });
+
+// Custom difficulty sliders
+const dropRateLabels = ['Very Low', 'Low', 'Normal', 'High', 'Very High'];
+const enemyCountLabels = ['Very Low', 'Low', 'Normal', 'High', 'Very High'];
+
+dropRateSlider.addEventListener('input', (e) => {
+  customDropRate = parseInt(e.target.value);
+  dropRateVal.textContent = dropRateLabels[customDropRate];
+  updateCustomDifficulty();
+});
+
+enemyCountSlider.addEventListener('input', (e) => {
+  customEnemyCount = parseInt(e.target.value);
+  enemyCountVal.textContent = enemyCountLabels[customEnemyCount];
+  updateCustomDifficulty();
+});
+
+// Settings toggles
+toggleSound.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  toggleSound.classList.toggle('active');
+  if (!soundEnabled) {
+    Music.stop();
+  }
+});
+
+toggleVibration.addEventListener('click', () => {
+  vibrationEnabled = !vibrationEnabled;
+  toggleVibration.classList.toggle('active');
+  if (vibrationEnabled) {
+    vibrate(50); // Test vibration
+  }
+});
+
+function updateCustomDifficulty() {
+  // Enemy count settings: 0=100+30, 1=150+45, 2=200+60, 3=250+72, 4=300+85
+  const enemyBases = [100, 150, 200, 250, 300];
+  const enemySteps = [30, 45, 60, 72, 85];
+  const enemySpeeds = [0.06, 0.10, 0.15, 0.19, 0.22];
+  const bossHps = [300, 450, 600, 750, 840];
+  const bossDefs = [0.25, 0.35, 0.5, 0.6, 0.7];
+  const bossSpeeds = [0, 0, 0.25, 0.4, 0.5];
+  
+  DIFFICULTY_SETTINGS.custom.enemyCountBase = enemyBases[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.enemyCountStep = enemySteps[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.enemySpeedStep = enemySpeeds[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.bossHpMult = bossHps[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.bossDefMult = bossDefs[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.bossSpeedAdd = bossSpeeds[customEnemyCount];
+}
+
+window.startCustomGame = () => {
+  currentDifficulty = 'custom';
+  updateCustomDifficulty();
+  Music.init();
+  Music.playSFX('start'); 
+  setTimeout(() => {
+    startGame();
+  }, 450);
+};
 
 continueBtn.addEventListener('click', () => {
   Music.playSFX('start');
@@ -1247,6 +1489,16 @@ function spawnDrop(x, y) {
     pSword *= 0.625;
     pBow *= 0.625;
     pHp *= 0.625;
+  }
+
+  if (currentDifficulty === 'custom') {
+    // CUSTOM: Apply drop rate multiplier based on slider
+    // 0=0.3x, 1=0.65x, 2=1x, 3=1.75x, 4=2.5x
+    const dropMults = [0.3, 0.65, 1.0, 1.75, 2.5];
+    const mult = dropMults[customDropRate];
+    pSword *= mult;
+    pBow *= mult;
+    pHp *= mult;
   }
 
   const r = Math.random();
