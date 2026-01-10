@@ -441,9 +441,9 @@ const DIFFICULTY_SETTINGS = {
     name: "CASUAL",
     enemySpeedStep: 0.08,
     enemyCountBase: 200,
-    enemyCountStep: 36,
-    bossHpMult: 360,
-    bossDefMult: 0.3,
+    enemyCountStep: 50,
+    bossHpMult: 400,
+    bossDefMult: 0.4,
     bossSpeedAdd: 0
   },
   moderate: { 
@@ -453,16 +453,16 @@ const DIFFICULTY_SETTINGS = {
     enemyCountStep: 60,
     bossHpMult: 600,
     bossDefMult: 0.5,
-    bossSpeedAdd: 0
+    bossSpeedAdd: 0.25
   },
   impossible: { 
     name: "IMPOSSIBLE",
     enemySpeedStep: 0.22,
     enemyCountBase: 300,
-    enemyCountStep: 85,
-    bossHpMult: 840,
-    bossDefMult: 0.7,
-    bossSpeedAdd: 1.0
+    enemyCountStep: 75,
+    bossHpMult: 800,
+    bossDefMult: 0.6,
+    bossSpeedAdd: 0.5
   }
 };
 
@@ -1224,28 +1224,29 @@ function update(dt) {
 
 /* spawnDrop modified: triple probabilities in BEGINNER (easy), keep impossible halving */
 function spawnDrop(x, y) {
-  let pSword = 0.019;
-  let pBow = 0.019;
-  let pHp = 0.137;
+  let pSword = 0.020;
+  let pBow = 0.020;
+  let pHp = 0.160;
 
   if (currentDifficulty === 'easy') {
-    // Triple all drops in Beginner mode
-    pSword *= 3;
-    pBow *= 3;
-    pHp *= 3;
+    // CASUAL: 2.5x weapons, 1.875x health
+    pSword *= 2.5;
+    pBow *= 2.5;
+    pHp *= 1.875;
   }
 
   if (currentDifficulty === 'moderate') {
-    // 1.5x drops in Moderate mode
+    // MODERATE: 1.5x weapons, 1.25x health
     pSword *= 1.5;
     pBow *= 1.5;
-    pHp *= 1.5;
+    pHp *= 1.25;
   }
 
   if (currentDifficulty === 'impossible') {
-    pSword *= 0.5;
-    pBow *= 0.5;
-    pHp *= 0.5;
+    // IMPOSSIBLE: 0.625x all drops
+    pSword *= 0.625;
+    pBow *= 0.625;
+    pHp *= 0.625;
   }
 
   const r = Math.random();
