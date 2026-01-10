@@ -470,12 +470,20 @@
         <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
       </div>
 
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY DIFFICULTY</span>
+          <span class="slider-value" id="enemy-difficulty-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
+      </div>
+
       <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
     </div>
 
-    <!-- Tip added per request: tell player how to pause/unpause using the map -->
+    <!-- Tip added per request: tell player how to pause/unpause by tapping anywhere -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-      PAUSE GAME BY TOUCHING MAP IN TOP RIGHT
+      PAUSE OR RESUME BY TAPPING ANYWHERE ON THE SCREEN
     </div>
   </div>
 </div>
@@ -540,7 +548,7 @@
 </div>
 
 <div id="pause-overlay" class="hidden">
-  <div class="pause-text">TOUCH MAP IN TOP RIGHT TO RESUME</div>
+  <div class="pause-text">TAP ANYWHERE TO RESUME</div>
 </div>
 
 <script>
@@ -550,7 +558,7 @@
  * Changes implemented in this version:
  * - Beginner (was Easy) naming in UI and stats.
  * - Beginner mode: triple drop chances (hp, sword, bow).
- * - Pause when menu shown or page/backgrounded; minimap toggles Pause/Unpause.
+ * - Pause when menu shown or page/backgrounded; tap anywhere to pause/unpause.
  * - Responsive CSS adjustments so tips and end-of-run screens don't spill off small screens.
  * - MAX_HP constant added and used to initialize player.max (set to 9,999,999).
  */
@@ -576,6 +584,7 @@ let savedMusicTrack = null; // Track what music was playing before pause
 // Custom difficulty settings
 let customDropRate = 2; // 0=Very Low, 1=Low, 2=Normal, 3=High, 4=Very High
 let customEnemyCount = 2; // 0=Very Low, 1=Low, 2=Normal, 3=High, 4=Very High
+let customEnemyDifficulty = 2; // 0=Very Low, 1=Low, 2=Normal, 3=High, 4=Very High
 let soundEnabled = true;
 let vibrationEnabled = true;
 
@@ -587,7 +596,9 @@ const DIFFICULTY_SETTINGS = {
     enemyCountStep: 50,
     bossHpMult: 400,
     bossDefMult: 0.4,
-    bossSpeedAdd: 0
+    bossSpeedAdd: 0,
+    enemyDamageMult: 1,
+    enemyHpMult: 1
   },
   moderate: { 
     name: "MODERATE",
@@ -596,7 +607,9 @@ const DIFFICULTY_SETTINGS = {
     enemyCountStep: 60,
     bossHpMult: 600,
     bossDefMult: 0.5,
-    bossSpeedAdd: 0.25
+    bossSpeedAdd: 0.25,
+    enemyDamageMult: 1,
+    enemyHpMult: 1
   },
   impossible: { 
     name: "IMPOSSIBLE",
@@ -605,7 +618,9 @@ const DIFFICULTY_SETTINGS = {
     enemyCountStep: 75,
     bossHpMult: 800,
     bossDefMult: 0.6,
-    bossSpeedAdd: 0.5
+    bossSpeedAdd: 0.5,
+    enemyDamageMult: 1,
+    enemyHpMult: 1
   },
   custom: {
     name: "CUSTOM",
@@ -614,7 +629,9 @@ const DIFFICULTY_SETTINGS = {
     enemyCountStep: 60,   // Will be calculated based on slider
     bossHpMult: 600,      // Scales with enemy count
     bossDefMult: 0.5,     // Scales with enemy count
-    bossSpeedAdd: 0.25    // Scales with enemy count
+    bossSpeedAdd: 0.25,   // Scales with enemy count
+    enemyDamageMult: 1,   // Scales with enemy difficulty slider
+    enemyHpMult: 1        // Scales with enemy difficulty slider
   }
 };
 
@@ -738,8 +755,10 @@ const swDungeon = document.getElementById('sw-dungeon');
 const customPanel = document.getElementById('custom-panel');
 const dropRateSlider = document.getElementById('drop-rate-slider');
 const enemyCountSlider = document.getElementById('enemy-count-slider');
+const enemyDifficultySlider = document.getElementById('enemy-difficulty-slider');
 const dropRateVal = document.getElementById('drop-rate-val');
 const enemyCountVal = document.getElementById('enemy-count-val');
+const enemyDifficultyVal = document.getElementById('enemy-difficulty-val');
 const toggleSound = document.getElementById('toggle-sound');
 const toggleVibration = document.getElementById('toggle-vibration');
 
@@ -799,8 +818,8 @@ function resumeGame() {
   }
 }
 
-/* toggle pause/unpause via map (top-right minimap) */
-function togglePauseByMap() {
+/* toggle pause/unpause via canvas tap (anywhere) */
+function togglePauseByTap() {
   if (!gameRunning || gameOver) return;
   if (!startScreen.classList.contains('hidden')) return;
 
@@ -932,6 +951,7 @@ swDungeon.addEventListener('click', () => {
 // Custom difficulty sliders
 const dropRateLabels = ['Very Low', 'Low', 'Normal', 'High', 'Very High'];
 const enemyCountLabels = ['Very Low', 'Low', 'Normal', 'High', 'Very High'];
+const enemyDifficultyLabels = ['Very Low', 'Low', 'Normal', 'High', 'Very High'];
 
 dropRateSlider.addEventListener('input', (e) => {
   customDropRate = parseInt(e.target.value);
@@ -942,6 +962,12 @@ dropRateSlider.addEventListener('input', (e) => {
 enemyCountSlider.addEventListener('input', (e) => {
   customEnemyCount = parseInt(e.target.value);
   enemyCountVal.textContent = enemyCountLabels[customEnemyCount];
+  updateCustomDifficulty();
+});
+
+enemyDifficultySlider.addEventListener('input', (e) => {
+  customEnemyDifficulty = parseInt(e.target.value);
+  enemyDifficultyVal.textContent = enemyDifficultyLabels[customEnemyDifficulty];
   updateCustomDifficulty();
 });
 
@@ -970,6 +996,8 @@ function updateCustomDifficulty() {
   const bossHps = [300, 450, 600, 750, 840];
   const bossDefs = [0.25, 0.35, 0.5, 0.6, 0.7];
   const bossSpeeds = [0, 0, 0.25, 0.4, 0.5];
+  const enemyDamageMults = [0.7, 0.85, 1.0, 1.25, 1.5];
+  const enemyHpMults = [0.8, 1.0, 1.2, 1.5, 1.8];
   
   DIFFICULTY_SETTINGS.custom.enemyCountBase = enemyBases[customEnemyCount];
   DIFFICULTY_SETTINGS.custom.enemyCountStep = enemySteps[customEnemyCount];
@@ -977,6 +1005,8 @@ function updateCustomDifficulty() {
   DIFFICULTY_SETTINGS.custom.bossHpMult = bossHps[customEnemyCount];
   DIFFICULTY_SETTINGS.custom.bossDefMult = bossDefs[customEnemyCount];
   DIFFICULTY_SETTINGS.custom.bossSpeedAdd = bossSpeeds[customEnemyCount];
+  DIFFICULTY_SETTINGS.custom.enemyDamageMult = enemyDamageMults[customEnemyDifficulty];
+  DIFFICULTY_SETTINGS.custom.enemyHpMult = enemyHpMults[customEnemyDifficulty];
 }
 
 window.startCustomGame = () => {
@@ -1094,8 +1124,11 @@ function generateWorld(reset) {
   world.entrance = ep;
 
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];  
-  let scaledDmg = 1 + Math.floor((biomeLevel - 1) * 0.25);
+  const dmgMult = settings.enemyDamageMult || 1;
+  const hpMult = settings.enemyHpMult || 1;
+  let scaledDmg = Math.max(1, Math.round((1 + Math.floor((biomeLevel - 1) * 0.25)) * dmgMult));
   let enemyCount = settings.enemyCountBase + (biomeLevel * settings.enemyCountStep);
+  let enemyHp = Math.max(1, Math.round(hpMult));
 
   for (let i = 0; i < enemyCount; i++) {
     let enp = findSafePos();
@@ -1103,7 +1136,7 @@ function generateWorld(reset) {
       world.enemies.push({ 
         x: enp.x, 
         y: enp.y, 
-        hp: 1, 
+        hp: enemyHp, 
         dmg: scaledDmg, 
         atkDelay: 0, 
         hitTimer: 0,
@@ -1538,25 +1571,30 @@ function enterDungeon() {
   while (Math.hypot(bp.x - player.x, bp.y - player.y) < 600) bp = findSafePos();
   
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
+  const dmgMult = settings.enemyDamageMult || 1;
+  const hpMult = settings.enemyHpMult || 1;
   
-  let hpS = biomeLevel * settings.bossHpMult; 
-  let dmgS = 5 + (biomeLevel * 1.0); 
+  let hpS = biomeLevel * settings.bossHpMult * hpMult; 
+  let dmgS = (5 + (biomeLevel * 1.0)) * dmgMult; 
   let defS = Math.floor(biomeLevel * settings.bossDefMult); 
+  const bossHp = Math.max(1, Math.round(hpS));
+  const bossDmg = Math.max(1, Math.round(dmgS));
     
   world.boss = { 
     x: bp.x, 
     y: bp.y, 
-    hp: hpS, 
-    max: hpS, 
-    dmg: dmgS, 
+    hp: bossHp, 
+    max: bossHp, 
+    dmg: bossDmg, 
     defense: defS, 
     atkDelay: 0,
     hitTimer: 0,
     active: false 
   };
     
-  let scaledDmg = 1 + Math.floor((biomeLevel - 1) * 0.25);
+  let scaledDmg = Math.max(1, Math.round((1 + Math.floor((biomeLevel - 1) * 0.25)) * dmgMult));
   let enemyCount = settings.enemyCountBase + (biomeLevel * settings.enemyCountStep);
+  let enemyHp = Math.max(1, Math.round(hpMult));
 
   for (let i = 0; i < enemyCount; i++) {
     let enp = findSafePos();
@@ -1564,7 +1602,7 @@ function enterDungeon() {
       world.enemies.push({ 
         x: enp.x, 
         y: enp.y, 
-        hp: 1, 
+        hp: enemyHp, 
         dmg: scaledDmg, 
         atkDelay: 0, 
         hitTimer: 0,
@@ -1574,7 +1612,7 @@ function enterDungeon() {
   }
 }
 
-/* === RENDER (draw even when paused so minimap can be tapped to resume) === */
+/* === RENDER (draw even when paused so canvas taps can resume) === */
 const ctx = document.getElementById("c").getContext("2d");
 const canvas = document.getElementById("c");
 
@@ -1931,51 +1969,28 @@ document.addEventListener('visibilitychange', () => {
     }
   } else {
     // When returning to visible, keep the overlay shown if game is paused
-    // User will tap the map to resume
+    // User will tap anywhere to resume
   }
 });
 window.addEventListener('blur', () => {
   // Pause when window loses focus
   if (gameActive && gameRunning && !gameOver) {
-    pauseGame(true); // Show overlay so user knows to tap map when returning
+    pauseGame(true); // Show overlay so user knows to tap anywhere when returning
   }
 });
 window.addEventListener('focus', () => {
   // When focus returns, keep overlay shown if game is paused
-  // User will tap the map to resume
+  // User will tap anywhere to resume
 });
 
-/* Canvas click/touch: handle minimap pause/unpause */
-function getCanvasPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  let clientX, clientY;
-  if (e.touches && e.touches[0]) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  }
-  const x = (clientX - rect.left) * (canvas.width / rect.width);
-  const y = (clientY - rect.top) * (canvas.height / rect.height);
-  return {x, y};
-}
-
-canvas.addEventListener('click', (e) => {
-  const pos = getCanvasPos(e);
-  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
-  if (pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH) {
-    togglePauseByMap();
-  }
+/* Canvas click/touch: toggle pause anywhere */
+canvas.addEventListener('click', () => {
+  togglePauseByTap();
 });
 
 canvas.addEventListener('touchstart', (e) => {
-  const pos = getCanvasPos(e);
-  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
-  if (pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH) {
-    e.preventDefault();
-    togglePauseByMap();
-  }
+  e.preventDefault();
+  togglePauseByTap();
 }, {passive: false});
 </script>
 </body>
