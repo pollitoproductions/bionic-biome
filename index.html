@@ -481,9 +481,9 @@
       <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
     </div>
 
-    <!-- Tip added per request: tell player how to pause/unpause by tapping anywhere -->
+    <!-- Tip added per request: pause on map, resume anywhere -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-      PAUSE OR RESUME BY TAPPING ANYWHERE ON THE SCREEN
+      TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
     </div>
   </div>
 </div>
@@ -818,14 +818,36 @@ function resumeGame() {
   }
 }
 
-/* toggle pause/unpause via canvas tap (anywhere) */
-function togglePauseByTap() {
+/* Handle canvas taps: pause only on minimap, resume anywhere */
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches && e.touches[0]) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  const x = (clientX - rect.left) * (canvas.width / rect.width);
+  const y = (clientY - rect.top) * (canvas.height / rect.height);
+  return { x, y };
+}
+
+function handleCanvasTap(e) {
   if (!gameRunning || gameOver) return;
   if (!startScreen.classList.contains('hidden')) return;
 
+  const pos = getCanvasPos(e);
+  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
+
   if (gameActive) {
-    pauseGame();
+    if (onMinimap) {
+      pauseGame();
+    }
   } else {
+    // When paused, any tap resumes
     resumeGame();
   }
 }
@@ -1983,14 +2005,14 @@ window.addEventListener('focus', () => {
   // User will tap anywhere to resume
 });
 
-/* Canvas click/touch: toggle pause anywhere */
-canvas.addEventListener('click', () => {
-  togglePauseByTap();
+/* Canvas click/touch: pause on minimap, resume anywhere */
+canvas.addEventListener('click', (e) => {
+  handleCanvasTap(e);
 });
 
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
-  togglePauseByTap();
+  handleCanvasTap(e);
 }, {passive: false});
 </script>
 </body>
