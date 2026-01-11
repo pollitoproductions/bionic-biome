@@ -1344,8 +1344,8 @@ function generateWorld(reset) {
     let sp = findSafePos();
     // use MAX_HP constant for player's max HP
     player = { x: sp.x, y: sp.y, hp: 10, max: MAX_HP, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
+    biomeLevel = Math.floor(Math.random() * biomes.length) + 1; // Random starting biome
     player.glowColor = biomes[(biomeLevel - 1) % biomes.length].boss || biomes[(biomeLevel - 1) % biomes.length].enemy;
-    biomeLevel = 1;
     startTime = Date.now();
     enemiesKilled = 0;
     heartsCollected = 0;
