@@ -524,8 +524,24 @@
   /* TIPS LIST */
   .tips-list {
     text-align: left; font-size: 12px; line-height: 1.8; color: #cfeff6;
+    list-style: none;
+    padding-left: 0;
   }
-  .tips-list li { margin-bottom: 10px; }
+  .tips-list li { 
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+  }
+  .tips-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 12px;
+    height: 2px;
+    background: #00e6ff;
+    box-shadow: 0 0 6px rgba(0,230,255,0.6);
+  }
 
   .btn-close {
     background: linear-gradient(90deg,#ff4d4d,#c0392b); color: white; border: none; padding: 10px 20px;
@@ -737,11 +753,11 @@
 
     <div class="menu-content hidden" id="panel-tips">
       <ul class="tips-list">
-        <li>&gt; Enemies do 50% more damage if your back is turned.</li>
-        <li>&gt; Enemies and Bosses scale infinitely.</li>
-        <li>&gt; Defeating the Biome 10 Boss wins the run.</li>
-        <li>&gt; The Action button swings your sword and fires arrows simultaneously.</li>
-        <li>&gt; Mark the entrance to the dungeon on the map by moving close to it.</li>
+        <li>Enemies do 50% more damage if your back is turned.</li>
+        <li>Enemies and Bosses scale infinitely.</li>
+        <li>Defeating the Biome 10 Boss wins the run.</li>
+        <li>The Action button swings your sword and fires arrows simultaneously.</li>
+        <li>Mark the entrance to the dungeon on the map by moving close to it.</li>
       </ul>
     </div>
 
