@@ -875,30 +875,48 @@ const Music = {
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
   generateDarkTrack(level,isDungeon){ 
-    // Darker, more heroic musical intervals - minor keys, lower register
-    const roots=[82.41,87.31,92.50,98.00,103.83]; // Lower bass notes (E2, F2, F#2, G2, G#2)
+    // Dark cyberpunk zombie horde atmosphere - faster, grittier, more aggressive
+    const roots=[65.41,69.30,73.42,77.78,82.41]; // Very low bass (C2, C#2, D2, D#2, E2)
     let base=roots[(level-1)%roots.length]; 
-    let p=(level-1)%4; // 4 patterns for more variety
+    let p=(level-1)%5; // 5 different patterns for maximum variety
     let notes=[], intervals=[];
     
     if(isDungeon){ 
-      base*=0.5; // Even lower for dungeon ambience
-      // Ominous, tense dungeon progression
-      intervals=[0,0,5,0,7,5,12,0,3,0,7,0,10,0,12,0];
-    } else { 
-      // Heroic overworld themes with darker minor progressions
-      if(p===0) {
-        // Heroic minor march
-        intervals=[0,7,12,7,0,5,12,5,0,3,7,12,0,7,5,3];
-      } else if(p===1) {
-        // Dramatic tension builder
-        intervals=[0,0,3,5,7,7,10,12,7,5,3,0,12,12,7,5];
-      } else if(p===2) {
-        // Epic battle theme
-        intervals=[0,5,7,12,0,7,10,12,5,7,12,15,12,7,5,0];
+      // Each dungeon level has unique aggressive patterns
+      let dungeonPattern = (level-1)%5;
+      if(dungeonPattern===0) {
+        // Relentless pounding chase
+        intervals=[0,0,7,0,0,7,0,3,0,0,5,0,0,7,0,12];
+      } else if(dungeonPattern===1) {
+        // Industrial horror
+        intervals=[0,5,0,5,7,12,7,5,0,3,0,3,7,10,7,3];
+      } else if(dungeonPattern===2) {
+        // Descending dread
+        intervals=[12,10,7,5,3,0,3,5,7,10,12,7,5,3,0,0];
+      } else if(dungeonPattern===3) {
+        // Chaotic swarm
+        intervals=[0,7,3,10,0,5,12,7,0,3,7,5,0,10,7,3];
       } else {
-        // Dark atmospheric
-        intervals=[0,3,7,10,12,10,7,5,3,7,12,7,5,3,0,0];
+        // Mechanical menace
+        intervals=[0,0,5,5,7,7,12,12,7,7,5,5,3,3,0,0];
+      }
+    } else { 
+      // Varied aggressive overworld themes
+      if(p===0) {
+        // Heavy assault march
+        intervals=[0,7,12,7,0,5,12,10,7,12,15,12,7,5,3,0];
+      } else if(p===1) {
+        // Synthetic threat
+        intervals=[0,0,5,7,12,12,7,10,0,0,3,7,12,15,12,7];
+      } else if(p===2) {
+        // Relentless advance
+        intervals=[0,3,7,10,12,10,7,5,0,5,7,12,7,5,3,0];
+      } else if(p===3) {
+        // Glitchy chaos
+        intervals=[0,12,0,7,0,10,0,5,0,12,7,5,3,7,12,0];
+      } else {
+        // Pulsing danger
+        intervals=[0,0,7,7,12,12,7,7,5,5,7,7,10,10,7,7];
       }
     } 
     
@@ -906,8 +924,8 @@ const Music = {
       notes.push(base*Math.pow(2,intervals[i]/12)); 
     } 
     
-    // Slower, more dramatic tempo
-    return {notes, bpm: isDungeon ? 140+level*2 : 180+level*3}; 
+    // Much faster tempo - cyberpunk action speed
+    return {notes, bpm: isDungeon ? 90+level*3 : 110+level*4}; 
   },
   play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
@@ -1114,6 +1132,7 @@ playBtn.addEventListener('click', () => {
     titleText.style.display = 'block';
     document.querySelector('.author-sub').style.display = 'block';
     playBtn.innerText = "PLAY";
+    menuBtn.style.display = ''; // Show menu button again
     mainBtns.classList.remove('hidden');
     diffBtns.classList.add('hidden');
     customSubmenu.classList.add('hidden');
@@ -1351,6 +1370,8 @@ function showGameOver() {
   gameOver = false;
   
   playBtn.innerText = "MAIN MENU";
+  // Hide the menu button on game over
+  menuBtn.style.display = 'none';
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
   customSubmenu.classList.add('hidden');
