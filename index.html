@@ -9,25 +9,17 @@
 <title>Bionic Biome v1.0 © 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  html {
+  html, body {
     margin: 0; padding: 0; overflow: hidden; background: #000;
+    touch-action: none; font-family: 'Courier New', sans-serif;
     width: 100vw; height: 100vh;
-    position: relative;
-  }
-  body {
-    margin: 0; padding: 0; overflow: hidden; background: #000;
-    font-family: 'Courier New', sans-serif;
-    width: 100%; height: 100%;
     display: flex; justify-content: center; align-items: center;
     color: white;
-    position: relative;
   }
   canvas {
     display: block; max-width: 100%; max-height: 100%;
     object-fit: contain; background: #000;
-    image-rendering: pixelated;
-    position: relative;
-    z-index: 1;
+    image-rendering: pixelated; 
   }
   #ui-layer {
     position: fixed; left: 0; top: 0; width: 100%; height: 100%;
@@ -103,34 +95,13 @@
 
   /* SCREENS */
   .screen-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 200; pointer-events: auto;
     backdrop-filter: blur(4px);
   }
-
-  /* In-game menu button */
-  .ingame-menu-btn {
-    position: fixed;
-    top: 16px;
-    left: 16px;
-    z-index: 180;
-    padding: 10px 14px;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    color: #001218;
-    background: linear-gradient(135deg, #00e6ff, #0099cc);
-    border: 1px solid rgba(0,230,255,0.4);
-    border-radius: 8px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.45);
-    cursor: pointer;
-    pointer-events: auto;
-    display: none;
-  }
-  .ingame-menu-btn:active { transform: translateY(1px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
   
   h1 { 
     margin: 0 0 10px 0; 
@@ -183,9 +154,7 @@
     font-family: 'Press Start 2P', cursive; 
     text-transform: uppercase;
     margin: 5px;
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 300;
+    pointer-events: auto;
   }
   .btn-std:active { transform: translateY(4px); box-shadow: none; }
 
@@ -219,66 +188,52 @@
 
   /* Custom Difficulty Panel */
   .custom-panel {
-    background: linear-gradient(170deg, rgba(4,6,12,0.95), rgba(10,16,30,0.94));
-    border: 1px solid rgba(0,230,255,0.18);
-    padding: 18px;
-    border-radius: 10px;
-    margin-top: 12px;
+    background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
+    border: 2px solid rgba(0,200,255,0.14);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
     font-family: 'Press Start 2P', cursive;
-    width: 100%;
-    max-width: 320px;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   }
   .slider-container {
-    margin: 12px 0;
+    margin: 15px 0;
   }
   .slider-label {
     color: #00e6ff;
-    font-size: 10px;
+    font-size: 11px;
     margin-bottom: 8px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    align-items: center;
-  }
-  .slider-label span:first-child {
-    text-align: left;
-  }
-  .slider-label span:last-child {
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
   }
   .slider-value {
     color: #fff;
-    min-width: 80px;
-    text-align: right;
   }
   .custom-slider {
     width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(255,255,255,0.08);
+    height: 8px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.1);
     outline: none;
     -webkit-appearance: none;
-    cursor: pointer;
   }
   .custom-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00e6ff, #0099cc);
+    background: linear-gradient(135deg, #00e6ff, #0077aa);
     cursor: pointer;
-    box-shadow: 0 0 12px rgba(0,230,255,0.6);
+    box-shadow: 0 0 8px rgba(0,230,255,0.5);
   }
   .custom-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00e6ff, #0099cc);
+    background: linear-gradient(135deg, #00e6ff, #0077aa);
     cursor: pointer;
     border: none;
-    box-shadow: 0 0 12px rgba(0,230,255,0.6);
+    box-shadow: 0 0 8px rgba(0,230,255,0.5);
   }
 
   /* Toggle Switch */
@@ -445,45 +400,6 @@
   /* Make the "SELECT DIFFICULTY" area responsive */
   #diff-btns { gap: 8px; justify-content: center; padding: 6px; }
 
-  /* Fresh difficulty cards */
-  .diff-panel { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; align-items: center; max-height: 90vh; overflow-y: auto; }
-  .diff-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 10px; }
-  .diff-card {
-    position: relative;
-    border: 1px solid rgba(0,230,255,0.16);
-    background: linear-gradient(145deg, rgba(0,20,40,0.8), rgba(0,6,16,0.8));
-    color: #cfeff6;
-    border-radius: 10px;
-    padding: 14px 12px;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 11px;
-    text-align: left;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
-  }
-  .diff-card .label { display: block; font-size: 12px; color: #fff; margin-bottom: 6px; }
-  .diff-card .hint { display: block; font-size: 10px; color: #8cd2ff; opacity: 0.9; }
-  .diff-card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,230,255,0.14); border-color: rgba(0,230,255,0.4); }
-  .diff-card:active { transform: translateY(1px); }
-  .diff-easy { background: linear-gradient(145deg, rgba(0,60,30,0.9), rgba(0,35,20,0.9)); }
-  .diff-moderate { background: linear-gradient(145deg, rgba(50,50,0,0.9), rgba(30,20,0,0.9)); }
-  .diff-hard { background: linear-gradient(145deg, rgba(70,10,10,0.9), rgba(40,0,0,0.9)); }
-  .diff-custom { background: linear-gradient(145deg, rgba(40,10,70,0.9), rgba(20,0,40,0.9)); }
-
-  /* Crisper menu box */
-  .menu-box { background: linear-gradient(170deg, rgba(4,6,12,0.95), rgba(10,16,30,0.94)); border: 1px solid rgba(0,230,255,0.18); box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 0 24px rgba(0,230,255,0.04); }
-  .menu-tabs { background: linear-gradient(90deg, rgba(0,12,24,0.4), rgba(0,30,60,0.35)); border-bottom: 1px solid rgba(0,230,255,0.14); }
-  .menu-tab { letter-spacing: 0.5px; }
-  .menu-tab.active { box-shadow: inset 0 -3px 0 rgba(0,230,255,0.6); }
-  .menu-content { background: linear-gradient(180deg, rgba(0,8,20,0.35), rgba(0,4,10,0.5)); border-top: 1px solid rgba(255,255,255,0.04); }
-  .toggle-container { border: 1px solid rgba(255,255,255,0.06); box-shadow: inset 0 0 10px rgba(0,0,0,0.45); }
-
-  /* Tips list without punctuation bullets */
-  .tips-list { list-style: none; padding: 0; margin: 0; }
-  .tips-list li { margin: 10px 0; padding-left: 12px; border-left: 2px solid #00e6ff; color: #cfeff6; }
-  .tips-list li::before { content: ""; }
-
   /* Prevent horizontal overflow */
   html, body {
     overflow-x: hidden;
@@ -493,47 +409,8 @@
   @media (max-width: 420px) {
     h1 { font-size: 20px; }
     .victory-time { font-size: 12px; }
-    .btn-std { padding: 10px 12px; font-size: 11px; cursor: pointer; pointer-events: auto !important; }
+    .btn-std { padding: 10px 12px; font-size: 11px; }
     .stats-box { padding: 10px; }
-    .btn-row { gap: 8px; }
-    .screen-overlay { pointer-events: auto !important; }
-  }
-
-  /* Landscape orientation: make difficulty panel more compact and scrollable */
-  @media (max-height: 500px) {
-    .diff-panel {
-      max-height: calc(100vh - 40px);
-      padding: 10px;
-    }
-    .diff-grid {
-      gap: 8px;
-    }
-    .diff-card {
-      padding: 10px 8px;
-      font-size: 9px;
-    }
-    .diff-card .label {
-      font-size: 10px;
-      margin-bottom: 4px;
-    }
-    .diff-card .hint {
-      font-size: 8px;
-    }
-    .custom-panel {
-      padding: 12px;
-      margin-top: 8px;
-    }
-    .slider-container {
-      margin: 8px 0;
-    }
-    .slider-label {
-      font-size: 9px;
-      margin-bottom: 6px;
-    }
-    .btn-std {
-      padding: 8px 12px;
-      font-size: 10px;
-    }
   }
 
 </style>
@@ -546,7 +423,6 @@
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <!-- action button text removed, just shaded -->
   <div class="btn-action" id="act" aria-label="attack button"></div>
-  <button class="ingame-menu-btn" id="ingame-menu-btn" aria-label="open menu">MENU</button>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -570,37 +446,14 @@
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
-    <div class="diff-panel">
-      <div style="width:100%; text-align:center; margin-bottom:4px; font-family:'Press Start 2P'; font-size:12px; color:#cfeff6; letter-spacing:0.5px;">SELECT DIFFICULTY</div>
-      <div class="diff-grid">
-        <button class="diff-card diff-easy" onclick="selectDifficulty('easy')">
-          <span class="label">CASUAL</span>
-        </button>
-        <button class="diff-card diff-moderate" onclick="selectDifficulty('moderate')">
-          <span class="label">MODERATE</span>
-        </button>
-        <button class="diff-card diff-hard" onclick="selectDifficulty('impossible')">
-          <span class="label">IMPOSSIBLE</span>
-        </button>
-        <button class="diff-card diff-custom" onclick="selectDifficulty('custom')">
-          <span class="label">CUSTOM</span>
-        </button>
-      </div>
+    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
+    <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
+    <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
+    <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
+    <button class="btn-std btn-custom" onclick="selectDifficulty('custom')">CUSTOM</button>
 
-      <button class="btn-std" style="margin-top:8px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;" onclick="goBackToHome()">BACK</button>
-
-      <!-- Tip added per request: pause on map -->
-      <div style="width:100%; text-align:center; margin-top:10px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-        TAP MAP (TOP RIGHT) TO PAUSE
-      </div>
-    </div>
-  </div>
-
-  <!-- Custom Difficulty Panel (Full Screen) -->
-  <div class="btn-row hidden" id="custom-screen">
-    <div class="diff-panel" style="max-width:500px;">
-      <div style="width:100%; text-align:center; margin-bottom:20px; font-family:'Press Start 2P'; font-size:14px; color:#cfeff6; letter-spacing:0.5px;">CUSTOMIZE DIFFICULTY</div>
-      
+    <!-- Custom Difficulty Panel -->
+    <div class="custom-panel hidden" id="custom-panel">
       <div class="slider-container">
         <div class="slider-label">
           <span>DROP RATE</span>
@@ -625,10 +478,12 @@
         <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
       </div>
 
-      <div style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
-        <button class="btn-std" onclick="startCustomGame()" style="flex:1; min-width:120px;">START</button>
-        <button class="btn-std" onclick="goBackToDifficulty()" style="flex:1; min-width:120px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;">BACK</button>
-      </div>
+      <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
+    </div>
+
+    <!-- Tip added per request: pause on map, resume anywhere -->
+    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
+      TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
     </div>
   </div>
 </div>
@@ -670,11 +525,11 @@
 
     <div class="menu-content hidden" id="panel-tips">
       <ul class="tips-list">
-        <li>Enemies do 50% more damage if your back is turned.</li>
-        <li>Enemies and Bosses scale infinitely.</li>
-        <li>Defeating the Biome 10 Boss wins the run.</li>
-        <li>Hold Attack to fire arrows.</li>
-        <li>Mark the entrance to the dungeon on the map by moving close to it.</li>
+        <li>&gt; Enemies do 50% more damage if your back is turned.</li>
+        <li>&gt; Enemies and Bosses scale infinitely.</li>
+        <li>&gt; Defeating the Biome 10 Boss wins the run.</li>
+        <li>&gt; Hold Attack to fire arrows.</li>
+        <li>&gt; Mark the entrance to the dungeon on the map by moving close to it.</li>
       </ul>
     </div>
 
@@ -823,69 +678,33 @@ const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
-  generateDarkTrack(level,isDungeon){
-    // Dark, gritty tones with lower frequencies
-    const roots = [55,65.41,73.42,82.41,98]; // Lower root frequencies
-    const overMotifs = [
-      [0,3,7,10,0,5,7,3],
-      [0,2,5,7,0,3,5,2],
-      [0,3,7,12,10,7,3,0],
-      [-3,0,2,5,0,-3,0,5]
-    ];
-    const dungMotifs = [
-      [0,5,3,7,5,0,3,5],
-      [0,7,0,10,5,0,7,3],
-      [-5,-2,0,5,0,-2,5,3],
-      [0,5,8,0,3,7,0,5],
-      [0,3,7,0,5,8,0,3]
-    ];
-
-    const motifSet = isDungeon ? dungMotifs : overMotifs;
-    let motifIdx = isDungeon ? (level - 1) % dungMotifs.length : (level - 1) % overMotifs.length;
-    const motif = motifSet[motifIdx];
-    const root = roots[(level - 1) % roots.length];
-    const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [-0.5, 0, 0.5]; // Lower octaves for darker sound
-    const octave = Math.pow(2, octaveOffsets[(level - 1) % octaveOffsets.length]);
-    const base = root * octave;
-
-    let notes = [];
-    motif.forEach(step => {
-      if (step === null) {
-        notes.push(0); // rest
-      } else {
-        notes.push(base * Math.pow(2, step / 12));
-      }
-    });
-
-    const bpm = isDungeon ? 110 + Math.min(level, 20) : 155 + ((level - 1) % 6) * 3; // Faster tempo
-    return {notes, bpm};
-  },
-  play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='square'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.06,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.85)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
+  generateDarkTrack(level,isDungeon){ const roots=[110,130.81,146.83,164.81,174.61]; let base=roots[(level-1)%roots.length]; let p=(level-1)%3, notes=[], intervals=[]; if(isDungeon){ base*=0.5; intervals=[0,0,6,0,7,6,13,0]; } else { if(p===0) intervals=[0,3,7,12,0,3,7,12,0,0,12,12,7,7,3,3]; else if(p===1) intervals=[0,0,12,0,3,0,12,0,7,0,12,0,5,0,12,0]; else intervals=[0,1,0,1,5,7,5,7,12,1,12,1,0,0,12,0]; } for(let i=0;i<intervals.length;i++){ notes.push(base*Math.pow(2,intervals[i]/12)); } return {notes, bpm: isDungeon?90+level:125+level*2}; },
+  play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
 
 
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
-  // 1) Azure Lake (lighter start)
-  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
-  // 2) Crystal Cavern
+  // 1) Crystal Cavern
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
-  // 3) Gold Waste
-  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
-  // 4) Icy Tundra
-  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
-  // 5) Volcanic Badlands
+  // 2) Volcanic Badlands
   {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
-  // 6) Midnight Zone
-  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
-  // 7) Neon Wasteland
+  // 3) Icy Tundra
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
+  // 4) Gold Waste (kept, enemy cooled to teal)
+  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
+  // 5) Azure Lake (kept)
+  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
+  // 6) Neon Wasteland
   {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
-  // 8) Violet Void
+  // 7) Midnight Zone (kept, hotter enemy for silhouette)
+  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
+  // 8) Violet Void (kept, enemy shifted to pale gold)
   {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#f5e29f"},
   // 9) Starfall Peaks
   {name: "Starfall Peaks", grass:"#0e1a35", wall:"#102b59", wallEdge:"#0b1022", boss:"#f4f7ff", enemy:"#d8783a"},
-  // 10) INFERNO
+  // 10) INFERNO (kept, enemy cooled to cyan)
   {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff3b30", enemy:"#22c5c5"}
 ];
 
@@ -926,7 +745,6 @@ const statsBox = document.getElementById('stats-box');
 const playBtn = document.getElementById('play-btn');
 const menuBtn = document.getElementById('menu-btn');
 const closeMenuBtn = document.getElementById('close-menu-btn');
-const ingameMenuBtn = document.getElementById('ingame-menu-btn');
 const continueBtn = document.getElementById('continue-btn');
 const titleText = document.getElementById('title-text');
 const victoryTimeDisplay = document.getElementById('victory-time-display');
@@ -941,7 +759,7 @@ const panelSound = document.getElementById('panel-sound');
 const panelSettings = document.getElementById('panel-settings');
 const panelTips = document.getElementById('panel-tips');
 const trackGrid = document.getElementById('track-grid');
-const swBiomScreen = document.getElementById('custom-screen
+const swBiome = document.getElementById('sw-biome');
 const swDungeon = document.getElementById('sw-dungeon');
 
 const customPanel = document.getElementById('custom-panel');
@@ -980,19 +798,11 @@ function pauseGame(showOverlay = true) {
   if (showOverlay) {
     document.getElementById('pause-overlay').classList.remove('hidden');
   }
-  
-  // Show menu button when game is paused
-  if (gameRunning) {
-    ingameMenuBtn.style.display = 'block';
-  }
 }
 
 function resumeGame() {
   // Hide pause overlay
   document.getElementById('pause-overlay').classList.add('hidden');
-  
-  // Hide menu button when resuming
-  ingameMenuBtn.style.display = 'none';
   
   // Adjust startTime to freeze the clock during pause
   if (pauseTimestamp > 0) {
@@ -1055,6 +865,9 @@ function handleCanvasTap(e) {
 /* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
 const initAudioInteraction = () => {
   Music.init();
+  if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
+    Music.play('title');
+  }
   window.removeEventListener('click', initAudioInteraction);
   window.removeEventListener('touchstart', initAudioInteraction);
 };
@@ -1069,30 +882,15 @@ playBtn.addEventListener('click', () => {
   statsBox.style.display = 'none';
 });
 
-wicustomScreen.classList.add('hidden');
-  titleText.style.display = 'block';
-  document.querySelector('.author-sub').style.display = 'block';
-  statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none;
-  document.querySelector('.author-sub').style.display = 'block';
-  statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none');
-  customPanel.classList.add('hidden');
-};
-screen as full overlay
-    diffBtns.classList.add('hidden');
-    customScreen.classList.remove('hidden');
+window.selectDifficulty = (diff) => {
+  if (diff === 'custom') {
+    // Show custom panel instead of starting immediately
+    customPanel.classList.remove('hidden');
     return;
   }
   currentDifficulty = diff;
   Music.init();
   Music.playSFX('start'); 
-  setTimeout(() => {
-    startGame();
-  }, 450);
-};
-
-window.goBackToDifficulty = () => {
-  customScreen.classList.add('hidden');
-  diffBtns.classList.remove('hidden'playSFX('start'); 
   setTimeout(() => {
     startGame();
   }, 450);
@@ -1119,14 +917,6 @@ menuBtn.addEventListener('click', () => {
   pauseGame(false);
 
   Music.init();
-  startScreen.classList.add('hidden');
-  menuScreen.classList.remove('hidden');
-  renderTrackButtons();
-  tabSound.click();
-});
-
-ingameMenuBtn.addEventListener('click', () => {
-  pauseGame(false);
   startScreen.classList.add('hidden');
   menuScreen.classList.remove('hidden');
   renderTrackButtons();
@@ -1167,14 +957,11 @@ tabTips.addEventListener('click', () => {
 closeMenuBtn.addEventListener('click', () => {
   Music.stop();
   menuScreen.classList.add('hidden');
+  startScreen.classList.remove('hidden');
+  Music.play('title');
 
-  // If a run is active, return to play without surfacing the home UI; otherwise show home.
-  if (gameRunning) {
-    startScreen.classList.add('hidden');
-    resumeGame();
-  } else {
-    startScreen.classList.remove('hidden');
-  }
+  // Resume the game only if it was active before the menu was opened (resumeGame checks that)
+  resumeGame();
 });
 
 swBiome.addEventListener('click', () => {
@@ -1280,7 +1067,6 @@ function showGameOver() {
   gameActive = false;
   gameOver = true;
   gameRunning = false;
-  Music.stop();
   Music.playSFX('gameover');
   
   elBiome.innerText = biomeLevel;
@@ -1302,7 +1088,6 @@ function showGameOver() {
   diffBtns.classList.add('hidden');
   
   startScreen.classList.remove('hidden');
-  ingameMenuBtn.style.display = 'none';
 }
 
 function showVictoryScreen() {
@@ -1314,7 +1099,6 @@ function showVictoryScreen() {
     let finalTime = Date.now() - startTime;
     victoryTimeDisplay.innerText = formatTime(finalTime);
     victoryScreen.classList.remove('hidden');
-    ingameMenuBtn.style.display = 'none';
 }
 
 function startGame() {
@@ -1348,8 +1132,8 @@ function generateWorld(reset) {
     let sp = findSafePos();
     // use MAX_HP constant for player's max HP
     player = { x: sp.x, y: sp.y, hp: 10, max: MAX_HP, swordLvl: 1, bowLvl: 1, dir: 0, swing: 0, hitTimer: 0 };
-    biomeLevel = Math.floor(Math.random() * biomes.length) + 1; // Random starting biome
     player.glowColor = biomes[(biomeLevel - 1) % biomes.length].boss || biomes[(biomeLevel - 1) % biomes.length].enemy;
+    biomeLevel = 1;
     startTime = Date.now();
     enemiesKilled = 0;
     heartsCollected = 0;
