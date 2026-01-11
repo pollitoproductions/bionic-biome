@@ -527,26 +527,7 @@
           <span class="hint">Tune drops, density, damage.</span>
         </button>
       </div>
-
-      <!-- Custom Difficulty Panel -->
-      <div class="custom-panel hidden" id="custom-panel">
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>DROP RATE</span>
-            <span class="slider-value" id="drop-rate-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
-        </div>
-        
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>ENEMY COUNT</span>
-            <span class="slider-value" id="enemy-count-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
-        </div>
-
-        <div class="slider-container">
+      <button class="btn-std" style="margin-top:8px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;" onclick="goBackToHome()">BACK</button>
           <div class="slider-label">
             <span>ENEMY DIFFICULTY</span>
             <span class="slider-value" id="enemy-difficulty-val">Normal</span>
@@ -557,9 +538,9 @@
         <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
       </div>
 
-      <!-- Tip added per request: pause on map, resume anywhere -->
+      <!-- Tip added per request: pause on map -->
       <div style="width:100%; text-align:center; margin-top:10px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-        TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
+        TAP MAP (TOP RIGHT) TO PAUSE
       </div>
     </div>
   </div>
@@ -765,13 +746,16 @@ const Music = {
       [0,-3,0,2,5,7,10,null,12,null,7,5]
     ];
     const dungMotifs = [
-      [0,0,6,0,7,6,13,0,10,0,6,0],
-      [0,3,5,0,7,0,10,0,12,0,10,7],
-      [0,0,8,0,3,0,10,0,5,0,12,0]
+      [0,5,3,null,10,8,null,6,0,null,5,3],
+      [0,null,7,0,null,12,5,0,null,10,null,7],
+      [-2,0,null,5,7,0,null,10,12,0,null,8],
+      [0,6,null,11,0,5,null,13,0,null,7,5],
+      [0,null,3,8,0,null,6,10,0,null,5,null]
     ];
 
     const motifSet = isDungeon ? dungMotifs : overMotifs;
-    const motif = motifSet[(level - 1) % motifSet.length];
+    let motifIdx = isDungeon ? (level - 1) % dungMotifs.length : (level - 1) % overMotifs.length;
+    const motif = motifSet[motifIdx];
     const root = roots[(level - 1) % roots.length];
     const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [0, 0.5, -0.25, 1];
     const octave = Math.pow(2, octaveOffsets[(level - 1) % octaveOffsets.length]);
@@ -796,25 +780,25 @@ const Music = {
 
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
-  // 1) Crystal Cavern
-  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
-  // 2) Volcanic Badlands
-  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
-  // 3) Icy Tundra
-  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
-  // 4) Gold Waste (kept, enemy cooled to teal)
-  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
-  // 5) Azure Lake (kept)
+  // 1) Azure Lake (lighter start)
   {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
-  // 6) Neon Wasteland
-  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
-  // 7) Midnight Zone (kept, hotter enemy for silhouette)
+  // 2) Crystal Cavern
+  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
+  // 3) Gold Waste
+  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
+  // 4) Icy Tundra
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
+  // 5) Volcanic Badlands
+  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
+  // 6) Midnight Zone
   {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
-  // 8) Violet Void (kept, enemy shifted to pale gold)
+  // 7) Neon Wasteland
+  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
+  // 8) Violet Void
   {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#f5e29f"},
   // 9) Starfall Peaks
   {name: "Starfall Peaks", grass:"#0e1a35", wall:"#102b59", wallEdge:"#0b1022", boss:"#f4f7ff", enemy:"#d8783a"},
-  // 10) INFERNO (kept, enemy cooled to cyan)
+  // 10) INFERNO
   {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff3b30", enemy:"#22c5c5"}
 ];
 
@@ -989,6 +973,15 @@ playBtn.addEventListener('click', () => {
   document.querySelector('.author-sub').style.display = 'none';
   statsBox.style.display = 'none';
 });
+
+window.goBackToHome = () => {
+  mainBtns.classList.remove('hidden');
+  diffBtns.classList.add('hidden');
+  titleText.style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'block';
+  statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none');
+  customPanel.classList.add('hidden');
+};
 
 window.selectDifficulty = (diff) => {
   if (diff === 'custom') {
