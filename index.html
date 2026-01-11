@@ -400,6 +400,45 @@
   /* Make the "SELECT DIFFICULTY" area responsive */
   #diff-btns { gap: 8px; justify-content: center; padding: 6px; }
 
+  /* Fresh difficulty cards */
+  .diff-panel { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .diff-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 10px; }
+  .diff-card {
+    position: relative;
+    border: 1px solid rgba(0,230,255,0.16);
+    background: linear-gradient(145deg, rgba(0,20,40,0.8), rgba(0,6,16,0.8));
+    color: #cfeff6;
+    border-radius: 10px;
+    padding: 14px 12px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  }
+  .diff-card .label { display: block; font-size: 12px; color: #fff; margin-bottom: 6px; }
+  .diff-card .hint { display: block; font-size: 10px; color: #8cd2ff; opacity: 0.9; }
+  .diff-card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,230,255,0.14); border-color: rgba(0,230,255,0.4); }
+  .diff-card:active { transform: translateY(1px); }
+  .diff-easy { background: linear-gradient(145deg, rgba(0,60,30,0.9), rgba(0,35,20,0.9)); }
+  .diff-moderate { background: linear-gradient(145deg, rgba(50,50,0,0.9), rgba(30,20,0,0.9)); }
+  .diff-hard { background: linear-gradient(145deg, rgba(70,10,10,0.9), rgba(40,0,0,0.9)); }
+  .diff-custom { background: linear-gradient(145deg, rgba(40,10,70,0.9), rgba(20,0,40,0.9)); }
+
+  /* Crisper menu box */
+  .menu-box { background: linear-gradient(170deg, rgba(4,6,12,0.95), rgba(10,16,30,0.94)); border: 1px solid rgba(0,230,255,0.18); box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 0 24px rgba(0,230,255,0.04); }
+  .menu-tabs { background: linear-gradient(90deg, rgba(0,12,24,0.4), rgba(0,30,60,0.35)); border-bottom: 1px solid rgba(0,230,255,0.14); }
+  .menu-tab { letter-spacing: 0.5px; }
+  .menu-tab.active { box-shadow: inset 0 -3px 0 rgba(0,230,255,0.6); }
+  .menu-content { background: linear-gradient(180deg, rgba(0,8,20,0.35), rgba(0,4,10,0.5)); border-top: 1px solid rgba(255,255,255,0.04); }
+  .toggle-container { border: 1px solid rgba(255,255,255,0.06); box-shadow: inset 0 0 10px rgba(0,0,0,0.45); }
+
+  /* Tips list without punctuation bullets */
+  .tips-list { list-style: none; padding: 0; margin: 0; }
+  .tips-list li { margin: 10px 0; padding-left: 12px; border-left: 2px solid #00e6ff; color: #cfeff6; }
+  .tips-list li::before { content: ""; }
+
   /* Prevent horizontal overflow */
   html, body {
     overflow-x: hidden;
@@ -446,44 +485,60 @@
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
-    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
-    <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
-    <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
-    <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
-    <button class="btn-std btn-custom" onclick="selectDifficulty('custom')">CUSTOM</button>
-
-    <!-- Custom Difficulty Panel -->
-    <div class="custom-panel hidden" id="custom-panel">
-      <div class="slider-container">
-        <div class="slider-label">
-          <span>DROP RATE</span>
-          <span class="slider-value" id="drop-rate-val">Normal</span>
-        </div>
-        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
-      </div>
-      
-      <div class="slider-container">
-        <div class="slider-label">
-          <span>ENEMY COUNT</span>
-          <span class="slider-value" id="enemy-count-val">Normal</span>
-        </div>
-        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
+    <div class="diff-panel">
+      <div style="width:100%; text-align:center; margin-bottom:4px; font-family:'Press Start 2P'; font-size:12px; color:#cfeff6; letter-spacing:0.5px;">SELECT DIFFICULTY</div>
+      <div class="diff-grid">
+        <button class="diff-card diff-easy" onclick="selectDifficulty('easy')">
+          <span class="label">CASUAL</span>
+          <span class="hint">Forgiving drops and pace.</span>
+        </button>
+        <button class="diff-card diff-moderate" onclick="selectDifficulty('moderate')">
+          <span class="label">MODERATE</span>
+          <span class="hint">Tighter spacing, faster foes.</span>
+        </button>
+        <button class="diff-card diff-hard" onclick="selectDifficulty('impossible')">
+          <span class="label">IMPOSSIBLE</span>
+          <span class="hint">Max pressure, minimal mercy.</span>
+        </button>
+        <button class="diff-card diff-custom" onclick="selectDifficulty('custom')">
+          <span class="label">CUSTOM</span>
+          <span class="hint">Tune drops, density, damage.</span>
+        </button>
       </div>
 
-      <div class="slider-container">
-        <div class="slider-label">
-          <span>ENEMY DIFFICULTY</span>
-          <span class="slider-value" id="enemy-difficulty-val">Normal</span>
+      <!-- Custom Difficulty Panel -->
+      <div class="custom-panel hidden" id="custom-panel">
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>DROP RATE</span>
+            <span class="slider-value" id="drop-rate-val">Normal</span>
+          </div>
+          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
         </div>
-        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
+        
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>ENEMY COUNT</span>
+            <span class="slider-value" id="enemy-count-val">Normal</span>
+          </div>
+          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>ENEMY DIFFICULTY</span>
+            <span class="slider-value" id="enemy-difficulty-val">Normal</span>
+          </div>
+          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
+        </div>
+
+        <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
       </div>
 
-      <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
-    </div>
-
-    <!-- Tip added per request: pause on map, resume anywhere -->
-    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-      TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
+      <!-- Tip added per request: pause on map, resume anywhere -->
+      <div style="width:100%; text-align:center; margin-top:10px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
+        TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
+      </div>
     </div>
   </div>
 </div>
@@ -525,11 +580,11 @@
 
     <div class="menu-content hidden" id="panel-tips">
       <ul class="tips-list">
-        <li>&gt; Enemies do 50% more damage if your back is turned.</li>
-        <li>&gt; Enemies and Bosses scale infinitely.</li>
-        <li>&gt; Defeating the Biome 10 Boss wins the run.</li>
-        <li>&gt; Hold Attack to fire arrows.</li>
-        <li>&gt; Mark the entrance to the dungeon on the map by moving close to it.</li>
+        <li>Enemies do 50% more damage if your back is turned.</li>
+        <li>Enemies and Bosses scale infinitely.</li>
+        <li>Defeating the Biome 10 Boss wins the run.</li>
+        <li>Hold Attack to fire arrows.</li>
+        <li>Mark the entrance to the dungeon on the map by moving close to it.</li>
       </ul>
     </div>
 
