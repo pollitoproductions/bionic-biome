@@ -9,12 +9,18 @@
 <title>Bionic Biome v1.0 © 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  html, body {
+  html {
+    margin: 0; padding: 0; overflow: hidden; background: #000;
+    width: 100vw; height: 100vh;
+    position: relative;
+  }
+  body {
     margin: 0; padding: 0; overflow: hidden; background: #000;
     touch-action: none; font-family: 'Courier New', sans-serif;
-    width: 100vw; height: 100vh;
+    width: 100%; height: 100%;
     display: flex; justify-content: center; align-items: center;
     color: white;
+    position: relative;
   }
   canvas {
     display: block; max-width: 100%; max-height: 100%;
@@ -95,7 +101,7 @@
 
   /* SCREENS */
   .screen-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
