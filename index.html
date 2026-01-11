@@ -102,6 +102,27 @@
     z-index: 200; pointer-events: auto;
     backdrop-filter: blur(4px);
   }
+
+  /* In-game menu button */
+  .ingame-menu-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 180;
+    padding: 10px 14px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: #001218;
+    background: linear-gradient(135deg, #00e6ff, #0099cc);
+    border: 1px solid rgba(0,230,255,0.4);
+    border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+    cursor: pointer;
+    pointer-events: auto;
+    display: none;
+  }
+  .ingame-menu-btn:active { transform: translateY(1px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
   
   h1 { 
     margin: 0 0 10px 0; 
@@ -462,6 +483,7 @@
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <!-- action button text removed, just shaded -->
   <div class="btn-action" id="act" aria-label="attack button"></div>
+  <button class="ingame-menu-btn" id="ingame-menu-btn" aria-label="open menu">MENU</button>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -733,7 +755,40 @@ const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
-  generateDarkTrack(level,isDungeon){ const roots=[110,130.81,146.83,164.81,174.61]; let base=roots[(level-1)%roots.length]; let p=(level-1)%3, notes=[], intervals=[]; if(isDungeon){ base*=0.5; intervals=[0,0,6,0,7,6,13,0]; } else { if(p===0) intervals=[0,3,7,12,0,3,7,12,0,0,12,12,7,7,3,3]; else if(p===1) intervals=[0,0,12,0,3,0,12,0,7,0,12,0,5,0,12,0]; else intervals=[0,1,0,1,5,7,5,7,12,1,12,1,0,0,12,0]; } for(let i=0;i<intervals.length;i++){ notes.push(base*Math.pow(2,intervals[i]/12)); } return {notes, bpm: isDungeon?90+level:125+level*2}; },
+  generateDarkTrack(level,isDungeon){
+    // More varied motifs per level with rests for breathing room
+    const roots = [98,110,130.81,146.83,164.81,196];
+    const overMotifs = [
+      [0,3,7,10,null,5,7,12,0,10,7,3],
+      [0,2,5,9,null,7,12,null,9,5,2,null],
+      [0,3,7,12,10,7,3,null,12,15,null,7],
+      [0,-3,0,2,5,7,10,null,12,null,7,5]
+    ];
+    const dungMotifs = [
+      [0,0,6,0,7,6,13,0,10,0,6,0],
+      [0,3,5,0,7,0,10,0,12,0,10,7],
+      [0,0,8,0,3,0,10,0,5,0,12,0]
+    ];
+
+    const motifSet = isDungeon ? dungMotifs : overMotifs;
+    const motif = motifSet[(level - 1) % motifSet.length];
+    const root = roots[(level - 1) % roots.length];
+    const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [0, 0.5, -0.25, 1];
+    const octave = Math.pow(2, octaveOffsets[(level - 1) % octaveOffsets.length]);
+    const base = root * octave;
+
+    let notes = [];
+    motif.forEach(step => {
+      if (step === null) {
+        notes.push(0); // rest
+      } else {
+        notes.push(base * Math.pow(2, step / 12));
+      }
+    });
+
+    const bpm = isDungeon ? 92 + Math.min(level, 18) : 126 + ((level - 1) % 6) * 3;
+    return {notes, bpm};
+  },
   play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
@@ -800,6 +855,7 @@ const statsBox = document.getElementById('stats-box');
 const playBtn = document.getElementById('play-btn');
 const menuBtn = document.getElementById('menu-btn');
 const closeMenuBtn = document.getElementById('close-menu-btn');
+const ingameMenuBtn = document.getElementById('ingame-menu-btn');
 const continueBtn = document.getElementById('continue-btn');
 const titleText = document.getElementById('title-text');
 const victoryTimeDisplay = document.getElementById('victory-time-display');
@@ -920,9 +976,6 @@ function handleCanvasTap(e) {
 /* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
 const initAudioInteraction = () => {
   Music.init();
-  if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
-    Music.play('title');
-  }
   window.removeEventListener('click', initAudioInteraction);
   window.removeEventListener('touchstart', initAudioInteraction);
 };
@@ -978,6 +1031,14 @@ menuBtn.addEventListener('click', () => {
   tabSound.click();
 });
 
+ingameMenuBtn.addEventListener('click', () => {
+  pauseGame(false);
+  startScreen.classList.add('hidden');
+  menuScreen.classList.remove('hidden');
+  renderTrackButtons();
+  tabSound.click();
+});
+
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
   tabSettings.classList.remove('active');
@@ -1012,11 +1073,14 @@ tabTips.addEventListener('click', () => {
 closeMenuBtn.addEventListener('click', () => {
   Music.stop();
   menuScreen.classList.add('hidden');
-  startScreen.classList.remove('hidden');
-  Music.play('title');
 
-  // Resume the game only if it was active before the menu was opened (resumeGame checks that)
-  resumeGame();
+  // If a run is active, return to play without surfacing the home UI; otherwise show home.
+  if (gameRunning) {
+    startScreen.classList.add('hidden');
+    resumeGame();
+  } else {
+    startScreen.classList.remove('hidden');
+  }
 });
 
 swBiome.addEventListener('click', () => {
@@ -1112,6 +1176,7 @@ continueBtn.addEventListener('click', () => {
     victoryScreen.classList.add('hidden');
     gameActive = true;
     gameRunning = true;
+    ingameMenuBtn.style.display = 'block';
     biomeLevel++;
     generateWorld(false);
   }, 450);
@@ -1122,6 +1187,7 @@ function showGameOver() {
   gameActive = false;
   gameOver = true;
   gameRunning = false;
+  Music.stop();
   Music.playSFX('gameover');
   
   elBiome.innerText = biomeLevel;
@@ -1143,6 +1209,7 @@ function showGameOver() {
   diffBtns.classList.add('hidden');
   
   startScreen.classList.remove('hidden');
+  ingameMenuBtn.style.display = 'none';
 }
 
 function showVictoryScreen() {
@@ -1154,6 +1221,7 @@ function showVictoryScreen() {
     let finalTime = Date.now() - startTime;
     victoryTimeDisplay.innerText = formatTime(finalTime);
     victoryScreen.classList.remove('hidden');
+    ingameMenuBtn.style.display = 'none';
 }
 
 function startGame() {
@@ -1162,6 +1230,7 @@ function startGame() {
   // Mark the game as logically running and active (unless another mechanism paused it)
   gameRunning = true;
   gameActive = true;
+  ingameMenuBtn.style.display = 'block';
   generateWorld(true);
 }
 
