@@ -160,30 +160,110 @@
 
   .btn-menu { background: linear-gradient(90deg,#9b59b6,#3498db); color: #fff; box-shadow: 0 6px 0px rgba(20,20,40,0.7); }
 
-  /* DIFFICULTY BUTTONS - updated to match menu visual style */
+  /* DIFFICULTY BUTTONS - Modern, polished design */
+  #diff-btns {
+    background: linear-gradient(180deg, rgba(10,10,20,0.5), rgba(20,10,30,0.5));
+    border-radius: 12px;
+    padding: 30px 20px;
+    border: 1px solid rgba(0,200,255,0.2);
+    box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+  }
+  
+  .difficulty-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Press Start 2P';
+    font-size: 14px;
+    color: #00e6ff;
+    text-shadow: 0 0 10px rgba(0,230,255,0.5);
+    letter-spacing: 2px;
+  }
+  
   .btn-easy {
-    background: linear-gradient(90deg,#2ecc71,#27ae60);
-    color: #001218;
-    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
-    border: 2px solid rgba(0,200,255,0.14);
-  }
-  .btn-moderate {
-    background: linear-gradient(90deg,#f1c40f,#d4ac0d);
-    color: #001218;
-    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
-    border: 2px solid rgba(0,200,255,0.14);
-  }
-  .btn-hard {
-    background: linear-gradient(90deg,#e74c3c,#c0392b);
-    color: #001218;
-    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
-    border: 2px solid rgba(0,200,255,0.14);
-  }
-  .btn-custom {
-    background: linear-gradient(90deg,#9b59b6,#8e44ad);
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
     color: #fff;
-    box-shadow: 0 10px 40px rgba(155,89,182,0.2);
-    border: 2px solid rgba(155,89,182,0.3);
+    box-shadow: 0 6px 0 #1e8449, 0 8px 25px rgba(46,204,113,0.4);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: all 0.15s;
+  }
+  .btn-easy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #1e8449, 0 10px 30px rgba(46,204,113,0.6);
+  }
+  .btn-easy:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #1e8449;
+  }
+  
+  .btn-moderate {
+    background: linear-gradient(135deg, #f39c12, #f1c40f);
+    color: #fff;
+    box-shadow: 0 6px 0 #c87f0a, 0 8px 25px rgba(241,196,15,0.4);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: all 0.15s;
+  }
+  .btn-moderate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #c87f0a, 0 10px 30px rgba(241,196,15,0.6);
+  }
+  .btn-moderate:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #c87f0a;
+  }
+  
+  .btn-hard {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    color: #fff;
+    box-shadow: 0 6px 0 #922b21, 0 8px 25px rgba(231,76,60,0.4);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: all 0.15s;
+  }
+  .btn-hard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #922b21, 0 10px 30px rgba(231,76,60,0.6);
+  }
+  .btn-hard:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #922b21;
+  }
+  
+  .btn-custom {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+    color: #fff;
+    box-shadow: 0 6px 0 #6c3483, 0 8px 25px rgba(155,89,182,0.4);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: all 0.15s;
+  }
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #6c3483, 0 10px 30px rgba(155,89,182,0.6);
+  }
+  .btn-custom:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #6c3483;
+  }
+  
+  .btn-back {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    color: #ecf0f1;
+    box-shadow: 0 6px 0 #1a252f, 0 8px 25px rgba(44,62,80,0.4);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: all 0.15s;
+    margin-top: 15px;
+  }
+  .btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #1a252f, 0 10px 30px rgba(44,62,80,0.6);
+  }
+  .btn-back:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #1a252f;
   }
 
   /* Custom Difficulty Panel */
@@ -194,9 +274,12 @@
     border-radius: 8px;
     margin-top: 15px;
     font-family: 'Press Start 2P', cursive;
+    width: 100%;
+    max-width: 400px;
   }
   .slider-container {
     margin: 15px 0;
+    min-height: 60px;
   }
   .slider-label {
     color: #00e6ff;
@@ -204,9 +287,13 @@
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   .slider-value {
     color: #fff;
+    min-width: 90px;
+    text-align: right;
+    display: inline-block;
   }
   .custom-slider {
     width: 100%;
@@ -347,6 +434,7 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 150;
@@ -360,6 +448,11 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     padding: 20px;
     line-height: 1.6;
+  }
+  
+  #pause-menu-btn {
+    pointer-events: auto;
+    margin-top: 20px;
   }
 
   /* === Responsive fixes (added per request) === */
@@ -446,14 +539,24 @@
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
-    <div style="width:100%; text-align:center; margin-bottom:10px; font-family:'Press Start 2P'; font-size:12px; color:#aaa;">SELECT DIFFICULTY</div>
+    <div class="difficulty-title">SELECT DIFFICULTY</div>
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="selectDifficulty('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="selectDifficulty('impossible')">IMPOSSIBLE</button>
     <button class="btn-std btn-custom" onclick="selectDifficulty('custom')">CUSTOM</button>
+    <button class="btn-std btn-back" onclick="backToHome()">BACK</button>
 
-    <!-- Custom Difficulty Panel -->
-    <div class="custom-panel hidden" id="custom-panel">
+    <!-- Tip about pausing on map -->
+    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
+      TAP MAP (TOP RIGHT) TO PAUSE
+    </div>
+  </div>
+
+  <!-- Custom Difficulty Submenu (separate from main difficulty menu) -->
+  <div class="btn-row hidden" id="custom-submenu">
+    <div class="difficulty-title">CUSTOM SETTINGS</div>
+    
+    <div class="custom-panel">
       <div class="slider-container">
         <div class="slider-label">
           <span>DROP RATE</span>
@@ -479,11 +582,7 @@
       </div>
 
       <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
-    </div>
-
-    <!-- Tip added per request: pause on map, resume anywhere -->
-    <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-      TAP MAP (TOP RIGHT) TO PAUSE — TAP ANYWHERE TO RESUME
+      <button class="btn-std btn-back" onclick="backToDifficulty()">BACK</button>
     </div>
   </div>
 </div>
@@ -549,6 +648,7 @@
 
 <div id="pause-overlay" class="hidden">
   <div class="pause-text">TAP ANYWHERE TO RESUME</div>
+  <button class="btn-std btn-menu" id="pause-menu-btn">MENU</button>
 </div>
 
 <script>
@@ -678,7 +778,41 @@ const Music = {
   ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
-  generateDarkTrack(level,isDungeon){ const roots=[110,130.81,146.83,164.81,174.61]; let base=roots[(level-1)%roots.length]; let p=(level-1)%3, notes=[], intervals=[]; if(isDungeon){ base*=0.5; intervals=[0,0,6,0,7,6,13,0]; } else { if(p===0) intervals=[0,3,7,12,0,3,7,12,0,0,12,12,7,7,3,3]; else if(p===1) intervals=[0,0,12,0,3,0,12,0,7,0,12,0,5,0,12,0]; else intervals=[0,1,0,1,5,7,5,7,12,1,12,1,0,0,12,0]; } for(let i=0;i<intervals.length;i++){ notes.push(base*Math.pow(2,intervals[i]/12)); } return {notes, bpm: isDungeon?90+level:125+level*2}; },
+  generateDarkTrack(level,isDungeon){ 
+    // Darker, more heroic musical intervals - minor keys, lower register
+    const roots=[82.41,87.31,92.50,98.00,103.83]; // Lower bass notes (E2, F2, F#2, G2, G#2)
+    let base=roots[(level-1)%roots.length]; 
+    let p=(level-1)%4; // 4 patterns for more variety
+    let notes=[], intervals=[];
+    
+    if(isDungeon){ 
+      base*=0.5; // Even lower for dungeon ambience
+      // Ominous, tense dungeon progression
+      intervals=[0,0,5,0,7,5,12,0,3,0,7,0,10,0,12,0];
+    } else { 
+      // Heroic overworld themes with darker minor progressions
+      if(p===0) {
+        // Heroic minor march
+        intervals=[0,7,12,7,0,5,12,5,0,3,7,12,0,7,5,3];
+      } else if(p===1) {
+        // Dramatic tension builder
+        intervals=[0,0,3,5,7,7,10,12,7,5,3,0,12,12,7,5];
+      } else if(p===2) {
+        // Epic battle theme
+        intervals=[0,5,7,12,0,7,10,12,5,7,12,15,12,7,5,0];
+      } else {
+        // Dark atmospheric
+        intervals=[0,3,7,10,12,10,7,5,3,7,12,7,5,3,0,0];
+      }
+    } 
+    
+    for(let i=0;i<intervals.length;i++){ 
+      notes.push(base*Math.pow(2,intervals[i]/12)); 
+    } 
+    
+    // Slower, more dramatic tempo
+    return {notes, bpm: isDungeon ? 140+level*2 : 180+level*3}; 
+  },
   play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
@@ -686,18 +820,18 @@ const Music = {
 
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
-  // 1) Crystal Cavern
-  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
+  // 1) Neon Wasteland - Hook players with cyberpunk atmosphere
+  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
   // 2) Volcanic Badlands
   {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
-  // 3) Icy Tundra
+  // 3) Crystal Cavern
+  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
+  // 4) Icy Tundra
   {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
-  // 4) Gold Waste (kept, enemy cooled to teal)
+  // 5) Gold Waste (kept, enemy cooled to teal)
   {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
-  // 5) Azure Lake (kept)
+  // 6) Azure Lake (kept)
   {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
-  // 6) Neon Wasteland
-  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
   // 7) Midnight Zone (kept, hotter enemy for silhouette)
   {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
   // 8) Violet Void (kept, enemy shifted to pale gold)
@@ -751,6 +885,7 @@ const victoryTimeDisplay = document.getElementById('victory-time-display');
 
 const mainBtns = document.getElementById('main-btns');
 const diffBtns = document.getElementById('diff-btns');
+const customSubmenu = document.getElementById('custom-submenu');
 
 const tabSound = document.getElementById('tab-sound');
 const tabSettings = document.getElementById('tab-settings');
@@ -865,9 +1000,7 @@ function handleCanvasTap(e) {
 /* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
 const initAudioInteraction = () => {
   Music.init();
-  if (!gameActive && startScreen.classList.contains('hidden') === false && menuScreen.classList.contains('hidden')) {
-    Music.play('title');
-  }
+  // Don't play title music on home screen
   window.removeEventListener('click', initAudioInteraction);
   window.removeEventListener('touchstart', initAudioInteraction);
 };
@@ -882,10 +1015,22 @@ playBtn.addEventListener('click', () => {
   statsBox.style.display = 'none';
 });
 
+// Add pause menu button handler
+const pauseMenuBtn = document.getElementById('pause-menu-btn');
+if (pauseMenuBtn) {
+  pauseMenuBtn.addEventListener('click', () => {
+    // Hide pause overlay
+    document.getElementById('pause-overlay').classList.add('hidden');
+    // Open menu (which already handles pausing)
+    menuBtn.click();
+  });
+}
+
 window.selectDifficulty = (diff) => {
   if (diff === 'custom') {
-    // Show custom panel instead of starting immediately
-    customPanel.classList.remove('hidden');
+    // Hide difficulty menu, show custom submenu
+    diffBtns.classList.add('hidden');
+    customSubmenu.classList.remove('hidden');
     return;
   }
   currentDifficulty = diff;
@@ -894,6 +1039,23 @@ window.selectDifficulty = (diff) => {
   setTimeout(() => {
     startGame();
   }, 450);
+};
+
+// Navigation functions
+window.backToHome = () => {
+  diffBtns.classList.add('hidden');
+  customSubmenu.classList.add('hidden');
+  mainBtns.classList.remove('hidden');
+  titleText.style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'block';
+  if (statsBox.style.display !== 'none') {
+    statsBox.style.display = 'block';
+  }
+};
+
+window.backToDifficulty = () => {
+  customSubmenu.classList.add('hidden');
+  diffBtns.classList.remove('hidden');
 };
 
 let soundTestMode = 'overworld'; 
@@ -958,7 +1120,7 @@ closeMenuBtn.addEventListener('click', () => {
   Music.stop();
   menuScreen.classList.add('hidden');
   startScreen.classList.remove('hidden');
-  Music.play('title');
+  // Don't play title music when returning to home
 
   // Resume the game only if it was active before the menu was opened (resumeGame checks that)
   resumeGame();
