@@ -1106,6 +1106,21 @@ window.addEventListener('click', initAudioInteraction);
 window.addEventListener('touchstart', initAudioInteraction);
 
 playBtn.addEventListener('click', () => {
+  // Check if we're on game over screen and reset to main menu
+  if (playBtn.innerText === "MAIN MENU") {
+    // Reset everything to initial state
+    statsBox.style.display = 'none';
+    titleText.innerHTML = "BIONIC<br>BIOME";
+    titleText.style.display = 'block';
+    document.querySelector('.author-sub').style.display = 'block';
+    playBtn.innerText = "PLAY";
+    mainBtns.classList.remove('hidden');
+    diffBtns.classList.add('hidden');
+    customSubmenu.classList.add('hidden');
+    return;
+  }
+  
+  // Normal play button behavior
   mainBtns.classList.add('hidden');
   diffBtns.classList.remove('hidden');
   titleText.style.display = 'none';
@@ -1328,13 +1343,17 @@ function showGameOver() {
 
   titleText.innerText = "RUN OVER"; 
   titleText.style.display = 'block';
-  document.querySelector('.author-sub').style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'none';
   
   statsBox.style.display = "block";
   
-  playBtn.innerText = "RETRY";
+  // Reset the game over state before showing
+  gameOver = false;
+  
+  playBtn.innerText = "MAIN MENU";
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
+  customSubmenu.classList.add('hidden');
   
   startScreen.classList.remove('hidden');
 }
