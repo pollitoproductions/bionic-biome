@@ -571,49 +571,16 @@
       <div class="diff-grid">
         <button class="diff-card diff-easy" onclick="selectDifficulty('easy')">
           <span class="label">CASUAL</span>
-          <span class="hint">Forgiving drops and pace.</span>
         </button>
         <button class="diff-card diff-moderate" onclick="selectDifficulty('moderate')">
           <span class="label">MODERATE</span>
-          <span class="hint">Tighter spacing, faster foes.</span>
         </button>
         <button class="diff-card diff-hard" onclick="selectDifficulty('impossible')">
           <span class="label">IMPOSSIBLE</span>
-          <span class="hint">Max pressure, minimal mercy.</span>
         </button>
         <button class="diff-card diff-custom" onclick="selectDifficulty('custom')">
           <span class="label">CUSTOM</span>
-          <span class="hint">Tune drops, density, damage.</span>
         </button>
-      </div>
-
-      <!-- Custom Difficulty Panel -->
-      <div class="custom-panel hidden" id="custom-panel">
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>DROP RATE</span>
-            <span class="slider-value" id="drop-rate-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
-        </div>
-        
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>ENEMY COUNT</span>
-            <span class="slider-value" id="enemy-count-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
-        </div>
-
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>ENEMY DIFFICULTY</span>
-            <span class="slider-value" id="enemy-difficulty-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
-        </div>
-
-        <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
       </div>
 
       <button class="btn-std" style="margin-top:8px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;" onclick="goBackToHome()">BACK</button>
@@ -621,6 +588,42 @@
       <!-- Tip added per request: pause on map -->
       <div style="width:100%; text-align:center; margin-top:10px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
         TAP MAP (TOP RIGHT) TO PAUSE
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Difficulty Panel (Full Screen) -->
+  <div class="btn-row hidden" id="custom-screen">
+    <div class="diff-panel" style="max-width:500px;">
+      <div style="width:100%; text-align:center; margin-bottom:20px; font-family:'Press Start 2P'; font-size:14px; color:#cfeff6; letter-spacing:0.5px;">CUSTOMIZE DIFFICULTY</div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>DROP RATE</span>
+          <span class="slider-value" id="drop-rate-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY COUNT</span>
+          <span class="slider-value" id="enemy-count-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY DIFFICULTY</span>
+          <span class="slider-value" id="enemy-difficulty-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn-std" onclick="startCustomGame()" style="flex:1; min-width:120px;">START</button>
+        <button class="btn-std" onclick="goBackToDifficulty()" style="flex:1; min-width:120px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;">BACK</button>
       </div>
     </div>
   </div>
@@ -934,7 +937,7 @@ const panelSound = document.getElementById('panel-sound');
 const panelSettings = document.getElementById('panel-settings');
 const panelTips = document.getElementById('panel-tips');
 const trackGrid = document.getElementById('track-grid');
-const swBiome = document.getElementById('sw-biome');
+const swBiomScreen = document.getElementById('custom-screen
 const swDungeon = document.getElementById('sw-dungeon');
 
 const customPanel = document.getElementById('custom-panel');
@@ -973,11 +976,19 @@ function pauseGame(showOverlay = true) {
   if (showOverlay) {
     document.getElementById('pause-overlay').classList.remove('hidden');
   }
+  
+  // Show menu button when game is paused
+  if (gameRunning) {
+    ingameMenuBtn.style.display = 'block';
+  }
 }
 
 function resumeGame() {
   // Hide pause overlay
   document.getElementById('pause-overlay').classList.add('hidden');
+  
+  // Hide menu button when resuming
+  ingameMenuBtn.style.display = 'none';
   
   // Adjust startTime to freeze the clock during pause
   if (pauseTimestamp > 0) {
@@ -1054,24 +1065,30 @@ playBtn.addEventListener('click', () => {
   statsBox.style.display = 'none';
 });
 
-window.goBackToHome = () => {
-  mainBtns.classList.remove('hidden');
-  diffBtns.classList.add('hidden');
+wicustomScreen.classList.add('hidden');
   titleText.style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'block';
+  statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none;
   document.querySelector('.author-sub').style.display = 'block';
   statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none');
   customPanel.classList.add('hidden');
 };
-
-window.selectDifficulty = (diff) => {
-  if (diff === 'custom') {
-    // Show custom panel instead of starting immediately
-    customPanel.classList.remove('hidden');
+screen as full overlay
+    diffBtns.classList.add('hidden');
+    customScreen.classList.remove('hidden');
     return;
   }
   currentDifficulty = diff;
   Music.init();
   Music.playSFX('start'); 
+  setTimeout(() => {
+    startGame();
+  }, 450);
+};
+
+window.goBackToDifficulty = () => {
+  customScreen.classList.add('hidden');
+  diffBtns.classList.remove('hidden'playSFX('start'); 
   setTimeout(() => {
     startGame();
   }, 450);
@@ -1249,7 +1266,6 @@ continueBtn.addEventListener('click', () => {
     victoryScreen.classList.add('hidden');
     gameActive = true;
     gameRunning = true;
-    ingameMenuBtn.style.display = 'block';
     biomeLevel++;
     generateWorld(false);
   }, 450);
@@ -1303,7 +1319,6 @@ function startGame() {
   // Mark the game as logically running and active (unless another mechanism paused it)
   gameRunning = true;
   gameActive = true;
-  ingameMenuBtn.style.display = 'block';
   generateWorld(true);
 }
 
