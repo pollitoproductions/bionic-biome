@@ -452,8 +452,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
   }
-  .diff-card .label { display: block; font-size: 12px; color: #fff; margin-bottom: 6px; }
-  .diff-card .hint { display: block; font-size: 10px; color: #8cd2ff; opacity: 0.9; }
+  .diff-card .label { display: block; font-size: 12px; color: #fff; margin-bottom: 0; }
   .diff-card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,230,255,0.14); border-color: rgba(0,230,255,0.4); }
   .diff-card:active { transform: translateY(1px); }
   .diff-easy { background: linear-gradient(145deg, rgba(0,60,30,0.9), rgba(0,35,20,0.9)); }
@@ -563,49 +562,16 @@
       <div class="diff-grid">
         <button class="diff-card diff-easy" onclick="selectDifficulty('easy')">
           <span class="label">CASUAL</span>
-          <span class="hint">Forgiving drops and pace.</span>
         </button>
         <button class="diff-card diff-moderate" onclick="selectDifficulty('moderate')">
           <span class="label">MODERATE</span>
-          <span class="hint">Tighter spacing, faster foes.</span>
         </button>
         <button class="diff-card diff-hard" onclick="selectDifficulty('impossible')">
           <span class="label">IMPOSSIBLE</span>
-          <span class="hint">Max pressure, minimal mercy.</span>
         </button>
         <button class="diff-card diff-custom" onclick="selectDifficulty('custom')">
           <span class="label">CUSTOM</span>
-          <span class="hint">Tune drops, density, damage.</span>
         </button>
-      </div>
-
-      <!-- Custom Difficulty Panel -->
-      <div class="custom-panel hidden" id="custom-panel">
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>DROP RATE</span>
-            <span class="slider-value" id="drop-rate-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
-        </div>
-        
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>ENEMY COUNT</span>
-            <span class="slider-value" id="enemy-count-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
-        </div>
-
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>ENEMY DIFFICULTY</span>
-            <span class="slider-value" id="enemy-difficulty-val">Normal</span>
-          </div>
-          <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
-        </div>
-
-        <button class="btn-std" style="margin-top:15px;" onclick="startCustomGame()">START GAME</button>
       </div>
 
       <button class="btn-std" style="margin-top:8px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;" onclick="goBackToHome()">BACK</button>
@@ -613,6 +579,42 @@
       <!-- Tip added per request: pause on map -->
       <div style="width:100%; text-align:center; margin-top:10px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
         TAP MAP (TOP RIGHT) TO PAUSE
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Difficulty Panel (Full Screen) -->
+  <div class="btn-row hidden" id="custom-btns">
+    <div class="diff-panel" style="max-width:500px;">
+      <div style="width:100%; text-align:center; margin-bottom:20px; font-family:'Press Start 2P'; font-size:14px; color:#cfeff6; letter-spacing:0.5px;">CUSTOMIZE DIFFICULTY</div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>DROP RATE</span>
+          <span class="slider-value" id="drop-rate-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="drop-rate-slider">
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY COUNT</span>
+          <span class="slider-value" id="enemy-count-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-count-slider">
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>ENEMY DIFFICULTY</span>
+          <span class="slider-value" id="enemy-difficulty-val">Normal</span>
+        </div>
+        <input type="range" min="0" max="4" value="2" step="1" class="custom-slider" id="enemy-difficulty-slider">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn-std" onclick="startCustomGame()" style="flex:1; min-width:120px;">START</button>
+        <button class="btn-std" onclick="goBackToDifficulty()" style="flex:1; min-width:120px; background:linear-gradient(90deg,#666,#444); box-shadow:0 6px 0px #222;">BACK</button>
       </div>
     </div>
   </div>
@@ -809,40 +811,40 @@ const Music = {
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
   generateDarkTrack(level,isDungeon){
-    // More varied motifs per level with rests for breathing room
-    const roots = [98,110,130.81,146.83,164.81,196];
+    // Serious quest music with continuous beat, minimal rests
+    const roots = [82,98,110,130.81,146.83];
     const overMotifs = [
-      [0,3,7,10,null,5,7,12,0,10,7,3],
-      [0,2,5,9,null,7,12,null,9,5,2,null],
-      [0,3,7,12,10,7,3,null,12,15,null,7],
-      [0,-3,0,2,5,7,10,null,12,null,7,5]
+      [0,3,7,10,0,5,7,12],
+      [0,2,5,9,0,7,12,9],
+      [0,3,7,12,10,7,3,0],
+      [0,-3,0,2,5,7,10,12]
     ];
     const dungMotifs = [
-      [0,5,3,null,10,8,null,6,0,null,5,3],
-      [0,null,7,0,null,12,5,0,null,10,null,7],
-      [-2,0,null,5,7,0,null,10,12,0,null,8],
-      [0,6,null,11,0,5,null,13,0,null,7,5],
-      [0,null,3,8,0,null,6,10,0,null,5,null]
+      [0,5,3,10,8,6,0,5],
+      [0,7,0,12,5,0,10,7],
+      [-2,0,5,7,0,10,12,8],
+      [0,6,11,0,5,13,0,7],
+      [0,3,8,0,6,10,0,5]
     ];
 
     const motifSet = isDungeon ? dungMotifs : overMotifs;
     let motifIdx = isDungeon ? (level - 1) % dungMotifs.length : (level - 1) % overMotifs.length;
     const motif = motifSet[motifIdx];
     const root = roots[(level - 1) % roots.length];
-    const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [0, 0.5, -0.25, 1];
+    const octaveOffsets = isDungeon ? [-1, 0, 0.5] : [0, 0.5, -0.25];
     const octave = Math.pow(2, octaveOffsets[(level - 1) % octaveOffsets.length]);
     const base = root * octave;
 
     let notes = [];
     motif.forEach(step => {
       if (step === null) {
-        notes.push(0); // rest
+        notes.push(base * 0.5); // Repeat root note instead of rest for continuous beat
       } else {
         notes.push(base * Math.pow(2, step / 12));
       }
     });
 
-    const bpm = isDungeon ? 92 + Math.min(level, 18) : 126 + ((level - 1) % 6) * 3;
+    const bpm = isDungeon ? 100 + Math.min(level, 15) : 140 + ((level - 1) % 6) * 2;
     return {notes, bpm};
   },
   play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
@@ -929,7 +931,7 @@ const trackGrid = document.getElementById('track-grid');
 const swBiome = document.getElementById('sw-biome');
 const swDungeon = document.getElementById('sw-dungeon');
 
-const customPanel = document.getElementById('custom-panel');
+const customBtns = document.getElementById('custom-btns');
 const dropRateSlider = document.getElementById('drop-rate-slider');
 const enemyCountSlider = document.getElementById('enemy-count-slider');
 const enemyDifficultySlider = document.getElementById('enemy-difficulty-slider');
@@ -1049,16 +1051,17 @@ playBtn.addEventListener('click', () => {
 window.goBackToHome = () => {
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
+  customBtns.classList.add('hidden');
   titleText.style.display = 'block';
   document.querySelector('.author-sub').style.display = 'block';
   statsBox.style.display = gameRunning ? 'none' : (statsBox.style.display === 'block' ? 'block' : 'none');
-  customPanel.classList.add('hidden');
 };
 
 window.selectDifficulty = (diff) => {
   if (diff === 'custom') {
-    // Show custom panel instead of starting immediately
-    customPanel.classList.remove('hidden');
+    // Show custom panel as full screen
+    diffBtns.classList.add('hidden');
+    customBtns.classList.remove('hidden');
     return;
   }
   currentDifficulty = diff;
@@ -1067,6 +1070,12 @@ window.selectDifficulty = (diff) => {
   setTimeout(() => {
     startGame();
   }, 450);
+};
+
+window.goBackToDifficulty = () => {
+  customBtns.classList.add('hidden');
+  diffBtns.classList.remove('hidden');
+};
 };
 
 let soundTestMode = 'overworld'; 
