@@ -820,27 +820,27 @@ const Music = {
   init() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
   playSFX(type){ if(!soundEnabled || !this.ctx) return; const t=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const gain=this.ctx.createGain(); const mod=this.ctx.createOscillator(); const modGain=this.ctx.createGain(); osc.connect(gain); gain.connect(this.ctx.destination); mod.connect(modGain); modGain.connect(osc.frequency); if(type==='start'){ osc.type='square'; osc.frequency.setValueAtTime(110,t); osc.frequency.exponentialRampToValueAtTime(880,t+0.3); mod.type='sawtooth'; mod.frequency.setValueAtTime(50,t); mod.frequency.linearRampToValueAtTime(200,t+0.3); modGain.gain.setValueAtTime(500,t); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.3); osc.start(t); mod.start(t); osc.stop(t+0.3); mod.stop(t+0.3);} else if(type==='gameover'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(400,t); osc.frequency.exponentialRampToValueAtTime(40,t+1.0); mod.type='square'; mod.frequency.setValueAtTime(60,t); mod.frequency.linearRampToValueAtTime(10,t+1.0); modGain.gain.setValueAtTime(1000,t); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.001,t+1.0); osc.start(t); mod.start(t); osc.stop(t+1.0); mod.stop(t+1.0);} },
   generateDarkTrack(level,isDungeon){
-    // More varied motifs per level with rests for breathing room
-    const roots = [98,110,130.81,146.83,164.81,196];
+    // Dark, gritty tones with lower frequencies
+    const roots = [55,65.41,73.42,82.41,98]; // Lower root frequencies
     const overMotifs = [
-      [0,3,7,10,null,5,7,12,0,10,7,3],
-      [0,2,5,9,null,7,12,null,9,5,2,null],
-      [0,3,7,12,10,7,3,null,12,15,null,7],
-      [0,-3,0,2,5,7,10,null,12,null,7,5]
+      [0,3,7,10,0,5,7,3],
+      [0,2,5,7,0,3,5,2],
+      [0,3,7,12,10,7,3,0],
+      [-3,0,2,5,0,-3,0,5]
     ];
     const dungMotifs = [
-      [0,5,3,null,10,8,null,6,0,null,5,3],
-      [0,null,7,0,null,12,5,0,null,10,null,7],
-      [-2,0,null,5,7,0,null,10,12,0,null,8],
-      [0,6,null,11,0,5,null,13,0,null,7,5],
-      [0,null,3,8,0,null,6,10,0,null,5,null]
+      [0,5,3,7,5,0,3,5],
+      [0,7,0,10,5,0,7,3],
+      [-5,-2,0,5,0,-2,5,3],
+      [0,5,8,0,3,7,0,5],
+      [0,3,7,0,5,8,0,3]
     ];
 
     const motifSet = isDungeon ? dungMotifs : overMotifs;
     let motifIdx = isDungeon ? (level - 1) % dungMotifs.length : (level - 1) % overMotifs.length;
     const motif = motifSet[motifIdx];
     const root = roots[(level - 1) % roots.length];
-    const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [0, 0.5, -0.25, 1];
+    const octaveOffsets = isDungeon ? [-1, -0.5, 0] : [-0.5, 0, 0.5]; // Lower octaves for darker sound
     const octave = Math.pow(2, octaveOffsets[(level - 1) % octaveOffsets.length]);
     const base = root * octave;
 
@@ -853,10 +853,10 @@ const Music = {
       }
     });
 
-    const bpm = isDungeon ? 92 + Math.min(level, 18) : 126 + ((level - 1) % 6) * 3;
+    const bpm = isDungeon ? 110 + Math.min(level, 20) : 155 + ((level - 1) % 6) * 3; // Faster tempo
     return {notes, bpm};
   },
-  play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='sawtooth'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.08,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.9)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
+  play(type,override){ if(!soundEnabled) return; let lvl=override||biomeLevel; let id=type; if(type==='overworld'||type==='dungeon') id=type+'_'+lvl; if(this.currentTrackId===id && this.isPlaying) return; this.stop(); this.init(); this.currentTrackId=id; this.isPlaying=true; let td=null; if(type==='title') td={bpm:180,notes:[261,523,392,329,261,523,493,392],loop:true}; else if(type==='victory') td={bpm:120,notes:[261,392,523,659,783,1046,0],loop:false}; else if(type==='overworld'){ td=this.generateDarkTrack(lvl,false); td.loop=true; } else if(type==='dungeon'){ td=this.generateDarkTrack(lvl,true); td.loop=true; } if(!td) return; this.osc=this.ctx.createOscillator(); this.gain=this.ctx.createGain(); this.osc.type='square'; this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.gain.gain.setValueAtTime(0,this.ctx.currentTime); this.osc.start(); let idx=0; const next=()=>{ if(!this.isPlaying) return; let f=td.notes[idx]; const t=this.ctx.currentTime; const dur=td.bpm/1000; if(f>0){ this.osc.frequency.setValueAtTime(f,t); this.gain.gain.cancelScheduledValues(t); this.gain.gain.setValueAtTime(0.06,t); this.gain.gain.exponentialRampToValueAtTime(0.001,t+(dur*0.85)); } else { this.gain.gain.setValueAtTime(0,t); } idx++; if(idx>=td.notes.length){ if(!td.loop){ this.stop(); return; } idx=0; } this.timer = setTimeout(next, td.bpm); }; next(); },
   stop(){ this.isPlaying=false; clearTimeout(this.timer); if(this.osc){ try{ this.osc.stop(); this.osc.disconnect(); } catch(e){} this.osc=null; } this.currentTrackId=null; }
 };
 
