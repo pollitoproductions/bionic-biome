@@ -686,16 +686,26 @@ const Music = {
 
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
-  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#e74c3c"}, 
-  {name: "Venom Swamp", grass:"#117a65", wall:"#48c9b0", wallEdge:"#0e6251", boss:"#f4d03f", enemy:"#ff5722"}, 
-  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"}, 
-  {name: "Grey Peak", grass:"#78909c", wall:"#cfd8dc", wallEdge:"#37474f", boss:"#3498db", enemy:"#f1c40f"},
-  {name: "Emerald Grove", grass:"#00695c", wall:"#004d40", wallEdge:"#b2dfdb", boss:"#2ecc71", enemy:"#d500f9"}, 
-  {name: "Teal Tundra", grass:"#26a69a", wall:"#80cbc4", wallEdge:"#004d40", boss:"#9b59b6", enemy:"#e91e63"}, 
-  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#8e44ad"}, 
-  {name: "Mudlands", grass:"#5d4037", wall:"#8d6e63", wallEdge:"#3e2723", boss:"#e91e63", enemy:"#2ecc71"}, 
-  {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#e74c3c"}, 
-  {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff0000", enemy:"#f1c40f"}  
+  // 1) Crystal Cavern
+  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
+  // 2) Volcanic Badlands
+  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
+  // 3) Icy Tundra
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
+  // 4) Gold Waste (kept, enemy cooled to teal)
+  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
+  // 5) Azure Lake (kept)
+  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
+  // 6) Neon Wasteland
+  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
+  // 7) Midnight Zone (kept, hotter enemy for silhouette)
+  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
+  // 8) Violet Void (kept, enemy shifted to pale gold)
+  {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#f5e29f"},
+  // 9) Starfall Peaks
+  {name: "Starfall Peaks", grass:"#0e1a35", wall:"#102b59", wallEdge:"#0b1022", boss:"#f4f7ff", enemy:"#d8783a"},
+  // 10) INFERNO (kept, enemy cooled to cyan)
+  {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff3b30", enemy:"#22c5c5"}
 ];
 
 function isWall(x, y) {
