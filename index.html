@@ -167,6 +167,9 @@
     padding: 30px 20px;
     border: 2px solid rgba(0,200,255,0.14);
     box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    width: 90%;
+    max-width: 500px;
+    box-sizing: border-box;
   }
   
   #custom-submenu {
@@ -175,6 +178,9 @@
     padding: 30px 20px;
     border: 2px solid rgba(0,200,255,0.14);
     box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    width: 90%;
+    max-width: 500px;
+    box-sizing: border-box;
   }
   
   .difficulty-title {
@@ -379,18 +385,23 @@
     font-family: 'Press Start 2P', cursive;
     width: 100%;
     max-width: 400px;
+    box-sizing: border-box;
   }
   .slider-container {
     margin: 15px 0;
     min-height: 60px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .slider-label {
     color: #00e6ff;
-    font-size: 11px;
+    font-size: 10px;
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    word-break: break-word;
   }
   .slider-value {
     color: #fff;
@@ -635,6 +646,10 @@
     <button class="btn-std" id="play-btn">PLAY</button>
   </div>
 
+  <div class="btn-row hidden" id="game-over-btns">
+    <button class="btn-std" id="main-menu-btn">MAIN MENU</button>
+  </div>
+
   <div class="btn-row hidden" id="diff-btns">
     <div class="difficulty-title">SELECT DIFFICULTY</div>
     <button class="btn-std btn-easy" onclick="selectDifficulty('easy')">CASUAL</button>
@@ -724,7 +739,7 @@
         <li>&gt; Enemies do 50% more damage if your back is turned.</li>
         <li>&gt; Enemies and Bosses scale infinitely.</li>
         <li>&gt; Defeating the Biome 10 Boss wins the run.</li>
-        <li>&gt; Hold Attack to fire arrows.</li>
+        <li>&gt; The Action button swings your sword and fires arrows simultaneously.</li>
         <li>&gt; Mark the entrance to the dungeon on the map by moving close to it.</li>
       </ul>
     </div>
@@ -1124,21 +1139,6 @@ window.addEventListener('click', initAudioInteraction);
 window.addEventListener('touchstart', initAudioInteraction);
 
 playBtn.addEventListener('click', () => {
-  // Check if we're on game over screen and reset to main menu
-  if (playBtn.innerText === "MAIN MENU") {
-    // Reset everything to initial state
-    statsBox.style.display = 'none';
-    titleText.innerHTML = "BIONIC<br>BIOME";
-    titleText.style.display = 'block';
-    document.querySelector('.author-sub').style.display = 'block';
-    playBtn.innerText = "PLAY";
-    menuBtn.style.display = ''; // Show menu button again
-    mainBtns.classList.remove('hidden');
-    diffBtns.classList.add('hidden');
-    customSubmenu.classList.add('hidden');
-    return;
-  }
-  
   // Normal play button behavior
   mainBtns.classList.add('hidden');
   diffBtns.classList.remove('hidden');
@@ -1146,6 +1146,22 @@ playBtn.addEventListener('click', () => {
   document.querySelector('.author-sub').style.display = 'none';
   statsBox.style.display = 'none';
 });
+
+// Main Menu button (shown on game over)
+const mainMenuBtn = document.getElementById('main-menu-btn');
+if (mainMenuBtn) {
+  mainMenuBtn.addEventListener('click', () => {
+    // Reset everything to initial state
+    statsBox.style.display = 'none';
+    titleText.innerHTML = "BIONIC<br>BIOME";
+    titleText.style.display = 'block';
+    document.querySelector('.author-sub').style.display = 'block';
+    document.getElementById('game-over-btns').classList.add('hidden');
+    mainBtns.classList.remove('hidden');
+    diffBtns.classList.add('hidden');
+    customSubmenu.classList.add('hidden');
+  });
+}
 
 window.selectDifficulty = (diff) => {
   if (diff === 'custom') {
@@ -1369,10 +1385,9 @@ function showGameOver() {
   // Reset the game over state before showing
   gameOver = false;
   
-  playBtn.innerText = "MAIN MENU";
-  // Hide the menu button on game over
-  menuBtn.style.display = 'none';
-  mainBtns.classList.remove('hidden');
+  // Hide main buttons, show game over button
+  mainBtns.classList.add('hidden');
+  document.getElementById('game-over-btns').classList.remove('hidden');
   diffBtns.classList.add('hidden');
   customSubmenu.classList.add('hidden');
   
@@ -2031,9 +2046,44 @@ ctx.restore();
 
   if (player.swing > 0) {
     ctx.save();
-    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-    ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 20; ctx.beginPath();
-    ctx.arc(400, 300, PLAYER_RAD + 25, player.dir - 1.75, player.dir + 1.75); ctx.stroke();
+    // Calculate swing progress for animation (5 to 0)
+    const swingProgress = player.swing / 5;
+    const swingAngle = swingProgress * 2.8; // Wider arc that narrows as it progresses
+    
+    // Draw multiple trailing arcs for swoosh effect
+    for (let i = 0; i < 3; i++) {
+      const offset = i * 0.3;
+      const alpha = (0.6 - i * 0.15) * swingProgress;
+      const blur = 20 + i * 5;
+      
+      ctx.shadowBlur = blur;
+      ctx.shadowColor = `rgba(0,180,255,${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+      ctx.lineWidth = 18 - i * 4;
+      ctx.lineCap = 'round';
+      
+      ctx.beginPath();
+      ctx.arc(400, 300, PLAYER_RAD + 25 + i * 5, 
+              player.dir - swingAngle + offset, 
+              player.dir + swingAngle - offset);
+      ctx.stroke();
+    }
+    
+    // Add sharp edge effect at the tip
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "rgba(255,255,255,0.9)";
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    
+    const tipRadius = PLAYER_RAD + 30;
+    const tipStart = player.dir + swingAngle * 0.8;
+    const tipEnd = player.dir + swingAngle;
+    
+    ctx.beginPath();
+    ctx.arc(400, 300, tipRadius, tipStart, tipEnd);
+    ctx.stroke();
+    
     ctx.restore();
   }
 
