@@ -647,7 +647,7 @@
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
-    <button class="btn-std" id="main-menu-btn">MAIN MENU</button>
+    <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
   <div class="btn-row hidden" id="diff-btns">
@@ -1147,22 +1147,6 @@ playBtn.addEventListener('click', () => {
   statsBox.style.display = 'none';
 });
 
-// Main Menu button (shown on game over)
-const mainMenuBtn = document.getElementById('main-menu-btn');
-if (mainMenuBtn) {
-  mainMenuBtn.addEventListener('click', () => {
-    // Reset everything to initial state
-    statsBox.style.display = 'none';
-    titleText.innerHTML = "BIONIC<br>BIOME";
-    titleText.style.display = 'block';
-    document.querySelector('.author-sub').style.display = 'block';
-    document.getElementById('game-over-btns').classList.add('hidden');
-    mainBtns.classList.remove('hidden');
-    diffBtns.classList.add('hidden');
-    customSubmenu.classList.add('hidden');
-  });
-}
-
 window.selectDifficulty = (diff) => {
   if (diff === 'custom') {
     // Hide difficulty menu, show custom submenu
@@ -1176,6 +1160,18 @@ window.selectDifficulty = (diff) => {
   setTimeout(() => {
     startGame();
   }, 450);
+};
+
+// Function to reset to main menu from game over
+window.resetToMainMenu = () => {
+  statsBox.style.display = 'none';
+  titleText.innerHTML = "BIONIC<br>BIOME";
+  titleText.style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'block';
+  document.getElementById('game-over-btns').classList.add('hidden');
+  mainBtns.classList.remove('hidden');
+  diffBtns.classList.add('hidden');
+  customSubmenu.classList.add('hidden');
 };
 
 // Navigation functions
