@@ -972,8 +972,8 @@ const biomes = [
   {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
   // 3) Crystal Cavern
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
-  // 4) Icy Tundra
-  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
+  // 4) Icy Tundra - dark weapon colors for visibility on light background
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e", wpnTrail:"#8b0000", wpnShaft:"#2c2c2c", wpnHead:"#1a1a2e"},
   // 5) Gold Waste - darker tones for better weapon visibility
   {name: "Gold Waste", grass:"#3d3208", wall:"#5c4d0f", wallEdge:"#1f1804", boss:"#e67e22", enemy:"#0f6177"},
   // 6) Azure Lake (kept)
@@ -2146,13 +2146,18 @@ ctx.restore();
 
   // DRAW SHOTS (positions updated in update(dt))
   shots.forEach(s => {
-    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2;
+    // Use biome-specific weapon colors if available, otherwise use default colors
+    const trailColor = b.wpnTrail || "#f1c40f";
+    const shaftColor = b.wpnShaft || "#bdc3c7";
+    const headColor = b.wpnHead || "#dfeef6";
+    
+    ctx.strokeStyle = trailColor; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
     // draw a little trail backwards scaled by current per-second velocity magnitude (approx)
     ctx.lineTo(s.x - cx - (s.dx / FPS) * 2, s.y - cy - (s.dy / FPS) * 2); ctx.stroke();
 
     // Draw shaft + diamond (unchanged visuals)
-    ctx.fillStyle = "#bdc3c7"; 
+    ctx.fillStyle = shaftColor; 
     let ang = Math.atan2(s.dy, s.dx);
     ctx.save();
     ctx.translate(s.x - cx, s.y - cy);
@@ -2167,7 +2172,7 @@ ctx.restore();
     ctx.save();
     ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
     ctx.beginPath();
-    ctx.fillStyle = "#dfeef6";
+    ctx.fillStyle = headColor;
     ctx.moveTo(10, 0);
     ctx.lineTo(14, -5);
     ctx.lineTo(18, 0);
