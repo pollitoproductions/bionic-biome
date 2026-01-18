@@ -974,8 +974,8 @@ const biomes = [
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
   // 4) Icy Tundra
   {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e"},
-  // 5) Gold Waste (kept, enemy cooled to teal)
-  {name: "Gold Waste", grass:"#d4ac0d", wall:"#f9e79f", wallEdge:"#7d6608", boss:"#e67e22", enemy:"#0f6177"},
+  // 5) Gold Waste - darker tones for better weapon visibility
+  {name: "Gold Waste", grass:"#3d3208", wall:"#5c4d0f", wallEdge:"#1f1804", boss:"#e67e22", enemy:"#0f6177"},
   // 6) Azure Lake (kept)
   {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
   // 7) Midnight Zone (kept, hotter enemy for silhouette)
@@ -2221,15 +2221,26 @@ ctx.restore();
       ctx.translate(dx, dy);
       ctx.rotate(-Math.PI / 4);
 
-      // Draw bow wood with glow
-      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-      ctx.strokeStyle = "#deb887"; 
-      ctx.lineWidth = 4; ctx.lineCap = "round"; 
+      // Draw metallic bow limbs with chrome/silver gradient effect
+      ctx.shadowBlur = 25; ctx.shadowColor = "rgba(180,200,220,0.9)";
+      ctx.strokeStyle = "#c0d0e0"; // Bright metallic silver
+      ctx.lineWidth = 5; ctx.lineCap = "round"; 
       ctx.beginPath();
       ctx.moveTo(0, -5); 
       ctx.quadraticCurveTo(-15, -10, -10, -20);
       ctx.moveTo(0, 5);
       ctx.quadraticCurveTo(-15, 10, -10, 20);
+      ctx.stroke();
+      
+      // Add highlight edges for metallic sheen
+      ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255,255,255,0.8)";
+      ctx.strokeStyle = "#e8f0f8"; // Very bright highlight
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -5);
+      ctx.quadraticCurveTo(-14, -9, -9, -19);
+      ctx.moveTo(0, 5);
+      ctx.quadraticCurveTo(-14, 9, -9, 19);
       ctx.stroke();
 
       // Draw bow string with glow
@@ -2238,10 +2249,17 @@ ctx.restore();
       ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
       ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
 
-      // Draw grip over string
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 5;
+      // Draw metallic grip over string
+      ctx.shadowBlur = 10; ctx.shadowColor = "rgba(150,150,150,0.6)";
+      ctx.strokeStyle = "#909090"; // Dark metallic gray
+      ctx.lineWidth = 6;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
+      
+      // Add grip highlight
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "#b8b8b8"; // Lighter metallic highlight
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-1, -5); ctx.lineTo(-1, 5); ctx.stroke();
 
       ctx.restore();
     }
