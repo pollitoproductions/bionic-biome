@@ -967,25 +967,35 @@ const Music = {
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
   // 1) Neon Wasteland - Hook players with cyberpunk atmosphere
-  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00"},
+  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 2) Volcanic Badlands
-  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5"},
+  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 3) Crystal Cavern
-  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b"},
-  // 4) Icy Tundra - dark weapon colors for visibility on light background
-  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e", wpnTrail:"#8b0000", wpnShaft:"#2c2c2c", wpnHead:"#1a1a2e"},
+  {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 4) Icy Tundra - cyan glow for contrast on light background
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 5) Gold Waste - darker tones for better weapon visibility
-  {name: "Gold Waste", grass:"#3d3208", wall:"#5c4d0f", wallEdge:"#1f1804", boss:"#e67e22", enemy:"#0f6177"},
-  // 6) Azure Lake (kept)
-  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400"},
-  // 7) Midnight Zone (kept, hotter enemy for silhouette)
-  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d"},
-  // 8) Violet Void (kept, enemy shifted to pale gold)
-  {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#f5e29f"},
+  {name: "Gold Waste", grass:"#3d3208", wall:"#5c4d0f", wallEdge:"#1f1804", boss:"#e67e22", enemy:"#0f6177",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 6) Azure Lake
+  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 7) Midnight Zone
+  {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 8) Violet Void
+  {name: "Violet Void", grass:"#4a235a", wall:"#a569bd", wallEdge:"#150b1a", boss:"#ecf0f1", enemy:"#f5e29f",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 9) Starfall Peaks
-  {name: "Starfall Peaks", grass:"#0e1a35", wall:"#102b59", wallEdge:"#0b1022", boss:"#f4f7ff", enemy:"#d8783a"},
-  // 10) INFERNO (kept, enemy cooled to cyan)
-  {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff3b30", enemy:"#22c5c5"}
+  {name: "Starfall Peaks", grass:"#0e1a35", wall:"#102b59", wallEdge:"#0b1022", boss:"#f4f7ff", enemy:"#d8783a",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 10) INFERNO
+  {name: "INFERNO", grass:"#c0392b", wall:"#e6b0aa", wallEdge:"#641e16", boss:"#ff3b30", enemy:"#22c5c5",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"}
 ];
 
 function isWall(x, y) {
@@ -2038,23 +2048,101 @@ function draw() {
     ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
- // PLAYER
+ // PLAYER - Animated energy orb with swirling blue energy
 ctx.save();
-if (player.hitTimer > 0) {
-  ctx.shadowBlur = 36;
-  ctx.shadowColor = "rgba(255,255,255,0.95)";
-  ctx.fillStyle = "#ffffff";
-} else {
-  ctx.shadowBlur = 18;
-  ctx.shadowColor = player.glowColor || "rgba(0,180,255,0.75)";
-  ctx.fillStyle = "#3498db";
-}
+ctx.translate(400, 300);
+
+// Outer glow pulse
+const time = Date.now() / 1000;
+const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
+ctx.shadowBlur = 25;
+ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(0,200,255,0.8)";
+ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.15)" : "rgba(0,180,255,0.15)";
 ctx.beginPath();
-ctx.arc(400, 300, PLAYER_RAD, 0, Math.PI * 2);
+ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
 ctx.fill();
-ctx.lineWidth = 2;
-ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.8)";
+
+// Main orb base with gradient
+const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
+if (player.hitTimer > 0) {
+  gradient.addColorStop(0, "rgba(255,255,255,0.95)");
+  gradient.addColorStop(0.5, "rgba(200,220,255,0.9)");
+  gradient.addColorStop(1, "rgba(180,200,255,0.8)");
+} else {
+  gradient.addColorStop(0, "rgba(100,200,255,0.9)");
+  gradient.addColorStop(0.5, "rgba(50,150,255,0.85)");
+  gradient.addColorStop(1, "rgba(20,100,200,0.75)");
+}
+ctx.shadowBlur = 20;
+ctx.fillStyle = gradient;
+ctx.beginPath();
+ctx.arc(0, 0, PLAYER_RAD, 0, Math.PI * 2);
+ctx.fill();
+
+// Swirling energy streams (3 rotating streams)
+for (let i = 0; i < 3; i++) {
+  const rotation = (time * 2 + i * (Math.PI * 2 / 3)) % (Math.PI * 2);
+  ctx.save();
+  ctx.rotate(rotation);
+  
+  // Create swirl path
+  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
+  
+  ctx.beginPath();
+  for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+    const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+    const x = Math.cos(a * 2) * r;
+    const y = Math.sin(a * 2) * r;
+    if (a === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Inner energy particles
+const particleCount = 8;
+for (let i = 0; i < particleCount; i++) {
+  const angle = (time * 1.5 + i * (Math.PI * 2 / particleCount)) % (Math.PI * 2);
+  const radius = 6 + Math.sin(time * 4 + i) * 4;
+  const x = Math.cos(angle) * radius;
+  const y = Math.sin(angle) * radius;
+  
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
+  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
+  ctx.beginPath();
+  ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Outer ring with glow
+ctx.shadowBlur = 15;
+ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
+ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
+ctx.lineWidth = 2.5;
+ctx.beginPath();
+ctx.arc(0, 0, PLAYER_RAD, 0, Math.PI * 2);
 ctx.stroke();
+
+// Energy spark highlights
+const sparkCount = 4;
+for (let i = 0; i < sparkCount; i++) {
+  const sparkAngle = (time * 5 + i * (Math.PI * 2 / sparkCount)) % (Math.PI * 2);
+  const sparkX = Math.cos(sparkAngle) * (PLAYER_RAD - 3);
+  const sparkY = Math.sin(sparkAngle) * (PLAYER_RAD - 3);
+  
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(200,240,255,0.95)";
+  ctx.beginPath();
+  ctx.arc(sparkX, sparkY, 1, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 ctx.restore();
 
   if (player.swing > 0) {
@@ -2063,6 +2151,24 @@ ctx.restore();
     const swingProgress = player.swing / 5;
     const swingAngle = swingProgress * 2.8; // Wider arc that narrows as it progresses
     
+    // Get weapon glow color for this biome
+    const glowColor = b.wpnGlow || "#00e6ff";
+    const glowRGB = glowColor === "#00e6ff" ? "0,230,255" : "0,180,255";
+    
+    // Draw outer glow/outline for visibility
+    ctx.shadowBlur = 35;
+    ctx.shadowColor = glowColor;
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = 24;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.4 * swingProgress;
+    ctx.beginPath();
+    ctx.arc(400, 300, PLAYER_RAD + 25, 
+            player.dir - swingAngle, 
+            player.dir + swingAngle);
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+    
     // Draw multiple trailing arcs for swoosh effect
     for (let i = 0; i < 3; i++) {
       const offset = i * 0.3;
@@ -2070,7 +2176,7 @@ ctx.restore();
       const blur = 20 + i * 5;
       
       ctx.shadowBlur = blur;
-      ctx.shadowColor = `rgba(0,180,255,${alpha})`;
+      ctx.shadowColor = `rgba(${glowRGB},${alpha})`;
       ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
       ctx.lineWidth = 18 - i * 4;
       ctx.lineCap = 'round';
@@ -2146,48 +2252,84 @@ ctx.restore();
 
   // DRAW SHOTS (positions updated in update(dt))
   shots.forEach(s => {
-    // Use biome-specific weapon colors if available, otherwise use default colors
+    // Use biome-specific weapon colors
     const trailColor = b.wpnTrail || "#f1c40f";
     const shaftColor = b.wpnShaft || "#bdc3c7";
     const headColor = b.wpnHead || "#dfeef6";
+    const glowColor = b.wpnGlow || "#00e6ff";
     
-    ctx.strokeStyle = trailColor; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(s.x - cx, s.y - cy);
-    // draw a little trail backwards scaled by current per-second velocity magnitude (approx)
-    ctx.lineTo(s.x - cx - (s.dx / FPS) * 2, s.y - cy - (s.dy / FPS) * 2); ctx.stroke();
-
-    // Draw shaft + diamond (unchanged visuals)
-    ctx.fillStyle = shaftColor; 
     let ang = Math.atan2(s.dy, s.dx);
     ctx.save();
     ctx.translate(s.x - cx, s.y - cy);
     ctx.rotate(ang);
 
-    // Shaft extended so its end touches the diamond head
+    // Draw glow outline first for visibility
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = glowColor;
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.5;
     ctx.beginPath();
-    ctx.rect(-18, -1.5, 28, 3);
-    ctx.fill();
+    ctx.moveTo(-18, 0);
+    ctx.lineTo(18, 0);
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
 
-    // Diamond arrowhead with glow
-    ctx.save();
-    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
+    // Draw trail
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = trailColor;
+    ctx.strokeStyle = trailColor;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
     ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-12, 0);
+    ctx.stroke();
+
+    // Draw shaft with outline
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#000";
+    ctx.fillRect(-19, -2, 28, 4);
+    ctx.fillStyle = shaftColor;
+    ctx.fillRect(-18, -1.5, 28, 3);
+
+    // Diamond arrowhead with glow and outline
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = glowColor;
+    
+    // Dark outline
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(15, -6);
+    ctx.lineTo(19, 0);
+    ctx.lineTo(15, 6);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Main diamond head
     ctx.fillStyle = headColor;
+    ctx.beginPath();
     ctx.moveTo(10, 0);
     ctx.lineTo(14, -5);
     ctx.lineTo(18, 0);
     ctx.lineTo(14, 5);
     ctx.closePath();
     ctx.fill();
+    
+    // Bright outline
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.arc(14, 0, 1.2, 0, Math.PI*2);
+    // Highlight dot
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#ffffff";
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.beginPath();
+    ctx.arc(14, 0, 1.5, 0, Math.PI*2);
     ctx.fill();
-    ctx.restore();
 
     ctx.restore();
   });
