@@ -677,6 +677,7 @@
     <div class="stat-row"><span class="stat-label">SWORD LEVEL:</span> <span class="stat-val" id="st-sword">1</span></div>
     <div class="stat-row"><span class="stat-label">BOW LEVEL:</span> <span class="stat-val" id="st-bow">1</span></div>
     <div class="stat-row"><span class="stat-label">DIFFICULTY:</span> <span class="stat-val" id="st-diff">CASUAL</span></div>
+    <div class="stat-row"><span class="stat-label">CONTINUES USED:</span> <span class="stat-val" id="st-continues">0</span></div>
   </div>
   
   <div class="btn-row" id="main-btns">
@@ -792,7 +793,8 @@
   <div class="victory-time">
     YOU HAVE DEFEATED THE<br>INFERNO BOSS!<br><br>
     OFFICIAL TIME:<br>
-    <span id="victory-time-display" style="color:#2ecc71; font-size: 20px;">00:00</span>
+    <span id="victory-time-display" style="color:#2ecc71; font-size: 20px;">00:00</span><br><br>
+    <span id="victory-continues" style="color:#aaa; font-size: 12px;"></span>
   </div>
   <button class="btn-std" id="continue-btn">CONTINUE</button>
 </div>
@@ -910,6 +912,7 @@ const ARROW_SPEED_PPS = ARROW_BASE_SPEED * FPS;   // px per second
 let startTime = 0;
 let enemiesKilled = 0;
 let heartsCollected = 0;
+let continuesUsed = 0;
 let beatGameTime = null;
 
 let player, world;
@@ -1420,6 +1423,7 @@ function showGameOver() {
   elSword.innerText = player.swordLvl;
   elBow.innerText = player.bowLvl;
   elDiff.innerText = (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase();
+  document.getElementById('st-continues').innerText = continuesUsed;
 
   titleText.innerText = "RUN OVER"; 
   titleText.style.display = 'block';
@@ -1447,6 +1451,12 @@ function showVictoryScreen() {
     Music.play('victory');
     let finalTime = Date.now() - startTime;
     victoryTimeDisplay.innerText = formatTime(finalTime);
+    var contEl = document.getElementById('victory-continues');
+    if (contEl) {
+      contEl.innerText = continuesUsed > 0
+        ? 'CONTINUES USED: ' + continuesUsed
+        : 'NO CONTINUES USED!';
+    }
     victoryScreen.classList.remove('hidden');
 }
 
@@ -1486,6 +1496,7 @@ function generateWorld(reset) {
     startTime = Date.now();
     enemiesKilled = 0;
     heartsCollected = 0;
+    continuesUsed = 0;
     beatGameTime = null;
   } else {
     let sp = findSafePos();
@@ -2566,13 +2577,16 @@ canvas.addEventListener('touchstart', (e) => {
 
 /* ===== Revive Player (Ad Reward) ===== */
 window.revivePlayer = function () {
-  player.hp  = player.max;
+  continuesUsed++;
+  player.hp  = 67;
   gameOver   = false;
   gameActive = true;
   gameRunning = true;
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-over-btns').classList.add('hidden');
-  console.log('Player Revived!');
+  console.log('Player Revived! Continues used: ' + continuesUsed);
+  // Immediately pause so the player lands on the pause screen
+  if (typeof pauseGame === 'function') pauseGame(true);
 };
 
 /* Request the Android wrapper to show a rewarded ad */
