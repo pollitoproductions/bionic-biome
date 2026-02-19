@@ -1,53 +1,27 @@
-🧬 Bionic Biome
+🎮 Bionic Biome
 
-Bionic Biome is a compact, arcade-style dungeon crawler built around fast runs, simple mechanics, and replayability. You control a blue orb capable of wielding both melee and ranged weapons while navigating hostile biomes filled with aggressive entities.
+Bionic Biome is an independently developed arcade experience created and maintained by Pollito Productions.
 
-The game is intentionally focused, minimal, and designed to feel responsive and learnable within seconds.
+📢 Monetization Update
 
-🎮 Gameplay
+Effective today, February 19, 2026, in-app advertising has been implemented to support the continued development, maintenance, and expansion of Bionic Biome.
 
-Top-down, real-time action
+Implementation Details
 
-Dual combat system (sword and bow)
+Ads are integrated in a user-conscious manner.
 
-Biome-based progression
+Rewarded advertisements are optional and provide in-game benefits (e.g., an extra life).
 
-Distinct enemy types represented as hostile orbs
+Advertisements will not interrupt active gameplay.
 
-Health pickups represented as light blue energy orbs
+The goal is to maintain a balanced experience while supporting ongoing development costs.
 
-Short, repeatable play sessions
+Revenue generated from advertising will be reinvested into:
 
-Each run is designed to be quick, challenging, and slightly different from the last.
+Feature enhancements
 
-🛠 Technical Overview
+Performance improvements
 
-HTML5 / JavaScript
+New content and future releases
 
-Canvas-based rendering
-
-Mobile-focused input handling
-
-Built and packaged for Android distribution
-
-The project prioritizes stability, clarity, and performance over complexity.
-
-📱 Distribution
-
-Platform: Google Play
-
-Free to play
-
-Ad-supported with optional ad removal
-
-🔐 Privacy
-
-The game does not intentionally collect personal user data beyond what is required for platform services such as advertising.
-A publicly accessible privacy policy is provided for transparency and compliance.
-
-📌 Notes
-
-Bionic Biome began as an experiment and evolved through iterative refinement into a finished, playable game.
-It is intentionally small in scope and complete in execution.
-
-Pollito Productions
+Thank you for your continued support.
