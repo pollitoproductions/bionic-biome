@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-50:12
-INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-50:12
-INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-50:12
-INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-50:12
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-51:12
+INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-51:12
+INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-51:12
+INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:2:1-51:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/codespace/.gradle/caches/8.11.1/transforms/da4a0d4f651c223dde2392c96afa895c/transformed/constraintlayout-2.1.4/AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/codespace/.gradle/caches/8.11.1/transforms/fbfe013d1bd20b42e6d590351bb64b02/transformed/jetified-appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat:1.6.1] /home/codespace/.gradle/caches/8.11.1/transforms/ca48d139dae705bfb4b4efcdf9e00205/transformed/appcompat-1.6.1/AndroidManifest.xml:17:1-22:12
@@ -96,8 +96,8 @@ MERGED from [com.google.android.gms:play-services-measurement-sdk-api:20.1.2] /h
 	android:name
 		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:9:22-76
 application
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:11:5-48:19
-INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:11:5-48:19
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:11:5-49:19
+INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:11:5-49:19
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/codespace/.gradle/caches/8.11.1/transforms/da4a0d4f651c223dde2392c96afa895c/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/codespace/.gradle/caches/8.11.1/transforms/da4a0d4f651c223dde2392c96afa895c/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
 MERGED from [com.google.android.gms:play-services-ads-lite:23.6.0] /home/codespace/.gradle/caches/8.11.1/transforms/f05e77285120adefd21bdfce39603bae/transformed/jetified-play-services-ads-lite-23.6.0/AndroidManifest.xml:70:5-110:19
@@ -186,21 +186,23 @@ ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:35:
 	android:name
 		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:36:13-103
 activity#com.pollitoproductions.bionicbiome.MainActivity
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:39:9-46:20
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:39:9-47:20
 	android:exported
 		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:41:13-36
+	android:configChanges
+		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:42:13-87
 	android:name
 		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:40:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:42:13-45:29
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:43:13-46:29
 action#android.intent.action.MAIN
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:43:17-69
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:44:17-69
 	android:name
-		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:43:25-66
+		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:44:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:44:17-77
+ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:45:17-77
 	android:name
-		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:44:27-74
+		ADDED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml:45:27-74
 uses-sdk
 INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /workspaces/bionic-biome/android/app/src/main/AndroidManifest.xml
