@@ -2541,6 +2541,26 @@ canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
   handleCanvasTap(e);
 }, {passive: false});
+
+/* ===== Revive Player (Ad Reward) ===== */
+window.revivePlayer = function () {
+  player.hp  = player.max;
+  gameOver   = false;
+  gameActive = true;
+  gameRunning = true;
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game-over-btns').classList.add('hidden');
+  console.log('Player Revived!');
+};
+
+/* ===== Override showGameOver to notify Android wrapper ===== */
+var _originalShowGameOver = showGameOver;
+showGameOver = function () {
+  _originalShowGameOver.apply(this, arguments);
+  if (window.Android && window.Android.onGameOver) {
+    window.Android.onGameOver();
+  }
+};
 </script>
 </body>
 </html>
