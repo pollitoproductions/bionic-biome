@@ -158,6 +158,27 @@
   }
   .btn-std:active { transform: translateY(4px); box-shadow: none; }
 
+  .btn-revive {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    border: 2px solid #DAA520;
+    box-shadow: 0 6px 0px #8B6914, 0 0 20px rgba(255,165,0,0.35);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    animation: revivePulse 2s ease-in-out infinite;
+  }
+  .btn-revive:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+  .btn-revive.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  @keyframes revivePulse {
+    0%, 100% { box-shadow: 0 6px 0px #8B6914, 0 0 20px rgba(255,165,0,0.35); }
+    50% { box-shadow: 0 6px 0px #8B6914, 0 0 30px rgba(255,215,0,0.6); }
+  }
+
   .btn-menu { background: linear-gradient(90deg,#9b59b6,#3498db); color: #fff; box-shadow: 0 6px 0px rgba(20,20,40,0.7); }
 
   /* DIFFICULTY BUTTONS - Cyberpunk theme matching main menu */
@@ -664,6 +685,7 @@
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
+    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; WATCH AD TO CONTINUE</button>
     <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
@@ -2553,12 +2575,32 @@ window.revivePlayer = function () {
   console.log('Player Revived!');
 };
 
-/* ===== Override showGameOver to notify Android wrapper ===== */
+/* Request the Android wrapper to show a rewarded ad */
+function requestReviveAd() {
+  var btn = document.getElementById('revive-ad-btn');
+  if (btn) {
+    btn.classList.add('disabled');
+    btn.textContent = 'LOADING AD...';
+  }
+  if (window.Android && window.Android.onGameOver) {
+    window.Android.onGameOver();
+  } else {
+    console.warn('Android ad interface not available');
+    if (btn) {
+      btn.classList.remove('disabled');
+      btn.textContent = '\u25B6 WATCH AD TO CONTINUE';
+    }
+  }
+}
+
+/* Reset revive button state each time game over screen shows */
 var _originalShowGameOver = showGameOver;
 showGameOver = function () {
   _originalShowGameOver.apply(this, arguments);
-  if (window.Android && window.Android.onGameOver) {
-    window.Android.onGameOver();
+  var btn = document.getElementById('revive-ad-btn');
+  if (btn) {
+    btn.classList.remove('disabled');
+    btn.textContent = '\u25B6 WATCH AD TO CONTINUE';
   }
 };
 </script>
