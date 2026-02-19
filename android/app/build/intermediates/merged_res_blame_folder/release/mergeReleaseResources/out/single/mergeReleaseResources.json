@@ -1,0 +1,74 @@
+[
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/drawable_ic_launcher_web_maxfill_scaled.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/drawable/ic_launcher_web_maxfill_scaled.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xhdpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/layout_activity_main.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-mdpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/drawable_ic_launcher_web_maxfill.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/drawable/ic_launcher_web_maxfill.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/drawable_ic_launcher_web.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/drawable/ic_launcher_web.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xxhdpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-xxxhdpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/mipmap-hdpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.pollitoproductions.bionicbiome.app-release-30:/drawable_ic_launcher_web_maxfill_image.xml.flat",
+        "source": "com.pollitoproductions.bionicbiome.app-main-31:/drawable/ic_launcher_web_maxfill_image.xml"
+    }
+]

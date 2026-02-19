@@ -1,0 +1,23 @@
+#!/bin/bash
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+GRADLE_USER_HOME="${GRADLE_USER_HOME:=$HOME/.gradle}"
+WRAPPER_DIR="$GRADLE_USER_HOME/wrapper/dists"
+GRADLE_VERSION="8.6"
+DIST_NAME="gradle-${GRADLE_VERSION}-bin"
+ZIP_URL="https://services.gradle.org/distributions/${DIST_NAME}.zip"
+DIST_DIR="$WRAPPER_DIR/${DIST_NAME}"
+ZIP_PATH="$WRAPPER_DIR/${DIST_NAME}.zip"
+
+# Download Gradle if not present (keep working dir at project root)
+if [ ! -f "$DIST_DIR/gradle-${GRADLE_VERSION}/bin/gradle" ]; then
+    mkdir -p "$DIST_DIR"
+    if [ ! -f "$ZIP_PATH" ]; then
+        mkdir -p "$WRAPPER_DIR"
+        ( cd "$WRAPPER_DIR" && ( wget -q "$ZIP_URL" 2>/dev/null || curl -s -O "$ZIP_URL" ) )
+    fi
+    rm -rf "$DIST_DIR"/gradle-${GRADLE_VERSION}
+    unzip -q "$ZIP_PATH" -d "$DIST_DIR"
+fi
+
+GRADLE_BIN="$DIST_DIR/gradle-${GRADLE_VERSION}/bin/gradle"
+exec "$GRADLE_BIN" "$@"

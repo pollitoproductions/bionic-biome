@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace "com.pollitoproductions.bionicbiome"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.pollitoproductions.bionicbiome"
+        minSdk 24
+        targetSdk 35
+        versionCode 103
+        versionName "103"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../upload-keystore.jks")
+            storePassword "BionicBiome2025!"
+            keyAlias "upload"
+            keyPassword "BionicBiome2025!"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
+}
