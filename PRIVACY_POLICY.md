@@ -1,4 +1,4 @@
-ffective Date: January 25, 2026
+Effective Date: January 25, 2026
 
 This app does not collect personal information for app functionality purposes.
 
