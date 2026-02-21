@@ -1738,11 +1738,11 @@ function update(dt) {
       if (d < (PLAYER_RAD + 20) && (e.atkDelay <= 0)) {
         let angleToEnemy = Math.atan2(e.y - player.y, e.x - player.x);
         let angleDiff = Math.abs(angleToEnemy - player.dir);
-        while (angle > Math.PI) angle -= Math.PI * 2;
-        while (angle < -Math.PI) angle += Math.PI * 2;
-        angle = Math.abs(angle);
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        angleDiff = Math.abs(angleDiff);
 
-        let isBackstab = angle > (Math.PI / 1.5);
+        let isBackstab = angleDiff > (Math.PI / 1.5);
         let damage = e.dmg;
         if(isBackstab) {
            damage = Math.floor(damage * 1.5); 
@@ -1761,8 +1761,8 @@ function update(dt) {
     // MELEE HIT (player.swing is decremented by dt*FPS above)
     if (player.swing > 0 && d < (PLAYER_RAD + 45)) {
       let angleToEnemy = Math.atan2(e.y - player.y, e.x - player.x);
-      let  = angleToEnemy - player.dir;
-      while ( > Math.PI) diff -= Math.PI * 2;
+      let diff = angleToEnemy - player.dir;
+      while (diff > Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
 
       if (Math.abs(diff) < 1.75) {
