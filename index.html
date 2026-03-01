@@ -686,7 +686,7 @@
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
-    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; WATCH AD TO CONTINUE</button>
+    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; Reward Ad for 50HP Revive</button>
     <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
@@ -2602,7 +2602,7 @@ function requestReviveAd() {
     console.warn('Android ad interface not available');
     if (btn) {
       btn.classList.remove('disabled');
-      btn.textContent = '\u25B6 WATCH AD TO CONTINUE';
+      btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
     }
   }
 }
@@ -2614,7 +2614,7 @@ showGameOver = function () {
   var btn = document.getElementById('revive-ad-btn');
   if (btn) {
     btn.classList.remove('disabled');
-    btn.textContent = '\u25B6 WATCH AD TO CONTINUE';
+    btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
   }
 };
 </script>
