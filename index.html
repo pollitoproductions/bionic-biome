@@ -686,7 +686,7 @@
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
-    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; Reward Ad for 50HP Revive</button>
+    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; Reward Ad for 30HP Revive</button>
     <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
@@ -2578,7 +2578,7 @@ canvas.addEventListener('touchstart', (e) => {
 /* ===== Revive Player (Ad Reward) ===== */
 window.revivePlayer = function () {
   continuesUsed++;
-  player.hp  = 50;
+  player.hp  = 30;
   gameOver   = false;
   gameActive = true;
   gameRunning = true;
@@ -2602,7 +2602,7 @@ function requestReviveAd() {
     console.warn('Android ad interface not available');
     if (btn) {
       btn.classList.remove('disabled');
-      btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
+      btn.textContent = '\u25B6 Reward Ad for 30HP Revive';
     }
   }
 }
@@ -2614,7 +2614,7 @@ showGameOver = function () {
   var btn = document.getElementById('revive-ad-btn');
   if (btn) {
     btn.classList.remove('disabled');
-    btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
+    btn.textContent = '\u25B6 Reward Ad for 30HP Revive';
   }
 };
 </script>
