@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isLoadingAd = false;
     private volatile boolean isShowingAd = false;
     private static final String GAME_URL = "https://pollitoproductions.github.io/bionic-biome/";
+    private int adRetryAttempt = 0;
+    private static final int MAX_RETRY_ATTEMPTS = 5;
+    private String lastAdError = "none";
 
     // Real AdMob Rewarded Ad Unit ID
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-7858482153655813/5665829293";
@@ -117,7 +120,8 @@ public class MainActivity extends AppCompatActivity {
                 public void onAdLoaded(@NonNull RewardedAd ad) {
                     rewardedAd = ad;
                     isLoadingAd = false;
-                    Log.d(TAG, "Rewarded ad loaded");
+                    adRetryAttempt = 0;
+                    Log.d(TAG, "Rewarded ad loaded successfully!");
 
                     rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                         @Override
@@ -166,7 +170,22 @@ public class MainActivity extends AppCompatActivity {
                 public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                     rewardedAd = null;
                     isLoadingAd = false;
-                    Log.e(TAG, "Ad failed to load: " + loadAdError.getMessage());
+                    lastAdError = "code:" + loadAdError.getCode() + " " + loadAdError.getMessage();
+                    Log.e(TAG, "Ad failed to load — code: " + loadAdError.getCode()
+                        + ", message: " + loadAdError.getMessage()
+                        + ", domain: " + loadAdError.getDomain());
+
+                    // Retry with exponential backoff
+                    if (adRetryAttempt < MAX_RETRY_ATTEMPTS) {
+                        adRetryAttempt++;
+                        long delayMs = (long) Math.pow(2, adRetryAttempt) * 1000L; // 2s, 4s, 8s, 16s, 32s
+                        Log.d(TAG, "Retrying ad load in " + delayMs + "ms (attempt " + adRetryAttempt + "/" + MAX_RETRY_ATTEMPTS + ")");
+                        new android.os.Handler(android.os.Looper.getMainLooper())
+                            .postDelayed(() -> loadRewardedAd(), delayMs);
+                    } else {
+                        Log.w(TAG, "Max ad retry attempts reached. Will retry on next user interaction.");
+                        adRetryAttempt = 0;
+                    }
                 }
             });
     }
@@ -174,13 +193,14 @@ public class MainActivity extends AppCompatActivity {
     private void showReviveAd() {
         if (isShowingAd) return;
         if (rewardedAd == null) {
+            final String errMsg = lastAdError;
             runOnUiThread(() -> {
                 if (webView != null) {
                     webView.evaluateJavascript(
                         "(function(){" +
                         "  var btn=document.getElementById('revive-ad-btn');" +
-                        "  if(btn){btn.classList.remove('disabled');btn.textContent='AD NOT READY';}" +
-                        "  setTimeout(function(){if(btn){btn.textContent='\\u25B6 WATCH AD TO CONTINUE';}},2000);" +
+                        "  if(btn){btn.classList.remove('disabled');btn.textContent='AD NOT READY (" + errMsg.replace("'", "") + ")';}" +
+                        "  setTimeout(function(){if(btn){btn.textContent='\\u25B6 WATCH AD TO CONTINUE';}},5000);" +
                         "})()", null);
                 }
             });
