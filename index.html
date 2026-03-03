@@ -60,6 +60,17 @@
 }
 .btn-action:active { transform: translateY(3px); }
 
+.action-hold-label {
+  position: relative;
+  z-index: 1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 2px;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* subtle top-to-bottom glossy shade over the action button */
 .btn-action::after {
   content: "";
@@ -798,8 +809,7 @@
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
-  <!-- action button text removed, just shaded -->
-  <div class="btn-action" id="act" aria-label="attack button"></div>
+  <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -936,10 +946,10 @@
 
     <div class="menu-content hidden" id="panel-tips">
       <ul class="tips-list">
+        <li>HOLD DOWN the Action button to swing your sword and fire arrows continuously.</li>
         <li>Enemies do 50% more damage if your back is turned.</li>
         <li>Enemies and Bosses scale infinitely.</li>
         <li>Defeating the Biome 10 Boss wins the run.</li>
-        <li>The Action button swings your sword and fires arrows simultaneously.</li>
         <li>Mark the entrance to the dungeon on the map by moving close to it.</li>
       </ul>
     </div>
