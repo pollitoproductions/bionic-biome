@@ -1694,7 +1694,8 @@ window.showHighScoresFor = (difficulty) => {
   const body = document.getElementById('hs-list-body');
 
   if (scores.length === 0) {
-    body.innerHTML = '<div class="hs-empty">NO SCORES YET<br><br>PLAY A ' + diffName + ' GAME<br>TO SET A RECORD!</div>';
+    var article = /^[aeiou]/i.test(diffName) ? 'AN' : 'A';
+    body.innerHTML = '<div class="hs-empty">NO SCORES YET<br><br>PLAY ' + article + ' ' + diffName + ' GAME<br>TO SET A RECORD!</div>';
   } else {
     let html = '<table class="hs-table"><thead><tr>' +
       '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REV</th>' +
