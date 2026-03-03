@@ -1610,11 +1610,27 @@ function addHighScore(difficulty, name, kills, biome, time, revives) {
   saveHighScores(difficulty, scores.slice(0, HS_MAX_ENTRIES));
 }
 
+// Profanity filter — blocks common offensive words/slurs at name entry
+const _BLOCKED_WORDS = [
+  'fuck','shit','damn','hell','ass','bitch','cunt','dick','cock','piss',
+  'slut','whore','fag','nigga','nigger','retard','rape','nazi','penis',
+  'vagina','anus','dildo','porn','sex','tits','boob','wank','twat','prick',
+  'bastard','stfu','wtf','lmao','kys','die','kill'
+];
+function isNameClean(name) {
+  const lower = name.toLowerCase().replace(/[^a-z]/g, '');
+  for (let i = 0; i < _BLOCKED_WORDS.length; i++) {
+    if (lower.includes(_BLOCKED_WORDS[i])) return false;
+  }
+  return true;
+}
+
 function showNameEntry(kills, biome, time, revives) {
   pendingScore = { difficulty: currentDifficulty, kills, biome, time, revives };
   document.getElementById('name-entry-score-text').textContent =
     'BIOME ' + biome + ' \u2022 ' + kills + ' KILLS \u2022 ' + formatTime(time);
   nameEntryInput.value = '';
+  nameEntryInput.style.borderColor = 'rgba(0,230,255,0.3)';
   nameEntryOverlay.classList.remove('hidden');
   setTimeout(() => nameEntryInput.focus(), 100);
 }
@@ -1624,6 +1640,13 @@ window.saveHighScore = () => {
   let name = nameEntryInput.value.trim();
   if (!name) name = 'ANON';
   name = name.substring(0, 10).toUpperCase();
+  if (!isNameClean(name)) {
+    nameEntryInput.style.borderColor = 'rgba(231,76,60,0.8)';
+    nameEntryInput.value = '';
+    nameEntryInput.placeholder = 'TRY AGAIN';
+    nameEntryInput.focus();
+    return;
+  }
   addHighScore(pendingScore.difficulty, name, pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
   nameEntryOverlay.classList.add('hidden');
   pendingScore = null;
