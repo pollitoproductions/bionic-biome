@@ -865,9 +865,9 @@
     <button class="btn-std btn-back" onclick="backFromHighScoreDiff()">BACK</button>
   </div>
 
-  <!-- High Scores: Top 10 List -->
+  <!-- High Scores: Top 3 List -->
   <div class="hidden" id="highscore-list-screen">
-    <div class="difficulty-title" id="hs-list-title">CASUAL - TOP 10</div>
+    <div class="difficulty-title" id="hs-list-title">CASUAL - TOP 3</div>
     <div id="hs-list-body"></div>
     <div style="text-align:center; margin-top:15px;">
       <button class="btn-std btn-back" onclick="backFromHighScoreList()">BACK</button>
@@ -1590,7 +1590,7 @@ window.startCustomGame = () => {
 
 /* === HIGH SCORES SYSTEM === */
 const HS_STORAGE_KEY = 'bionicBiome_highscores';
-const HS_MAX_ENTRIES = 10;
+const HS_MAX_ENTRIES = 3;
 let pendingScore = null; // holds data while name entry is shown
 
 function getHighScores(difficulty) {
@@ -1699,7 +1699,7 @@ window.backFromHighScoreList = () => {
 window.showHighScoresFor = (difficulty) => {
   highscoreDiffBtns.classList.add('hidden');
   const diffName = DIFFICULTY_SETTINGS[difficulty]?.name || difficulty.toUpperCase();
-  document.getElementById('hs-list-title').textContent = diffName + ' - TOP 10';
+  document.getElementById('hs-list-title').textContent = diffName + ' - TOP 3';
   const scores = getHighScores(difficulty);
   const body = document.getElementById('hs-list-body');
 
