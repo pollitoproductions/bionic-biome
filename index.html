@@ -577,6 +577,144 @@
   
   .hidden { display: none !important; }
 
+  /* HIGH SCORES */
+  #highscore-diff-btns {
+    background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
+    border-radius: 8px;
+    padding: 30px 20px;
+    border: 2px solid rgba(0,200,255,0.14);
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    width: 90%;
+    max-width: 500px;
+    box-sizing: border-box;
+    gap: 8px;
+    justify-content: center;
+  }
+  .btn-highscore {
+    background: linear-gradient(135deg, rgba(241,196,15,0.2), rgba(243,156,18,0.3));
+    color: #f1c40f;
+    border: 2px solid rgba(241,196,15,0.4);
+    box-shadow: 0 0 20px rgba(241,196,15,0.15), inset 0 0 20px rgba(241,196,15,0.05);
+    text-shadow: 0 0 8px rgba(241,196,15,0.6);
+  }
+  .btn-highscore:hover {
+    border-color: rgba(241,196,15,0.8);
+    box-shadow: 0 0 30px rgba(241,196,15,0.4), inset 0 0 30px rgba(241,196,15,0.1);
+    text-shadow: 0 0 12px rgba(241,196,15,1);
+  }
+
+  #highscore-list-screen {
+    background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
+    border-radius: 8px;
+    padding: 20px 15px;
+    border: 2px solid rgba(0,200,255,0.14);
+    box-shadow: 0 10px 40px rgba(0,150,255,0.06);
+    width: 90%;
+    max-width: 500px;
+    box-sizing: border-box;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+  .hs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    margin-top: 10px;
+  }
+  .hs-table th {
+    color: #00e6ff;
+    text-align: left;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(0,230,255,0.3);
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .hs-table td {
+    color: #cfeff6;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .hs-table tr:nth-child(1) td { color: #f1c40f; }
+  .hs-table tr:nth-child(2) td { color: #bdc3c7; }
+  .hs-table tr:nth-child(3) td { color: #cd7f32; }
+  .hs-rank { text-align: center; width: 30px; }
+  .hs-empty {
+    text-align: center;
+    color: #555;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    padding: 30px 10px;
+    line-height: 1.8;
+  }
+
+  /* NAME ENTRY MODAL */
+  #name-entry-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 300; pointer-events: auto;
+    backdrop-filter: blur(6px);
+  }
+  .name-entry-box {
+    background: linear-gradient(180deg, rgba(6,6,12,0.98), rgba(18,6,34,0.98));
+    border: 2px solid rgba(241,196,15,0.4);
+    border-radius: 8px;
+    padding: 25px 20px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(241,196,15,0.15);
+  }
+  .name-entry-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    color: #f1c40f;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px rgba(241,196,15,0.6);
+  }
+  .name-entry-subtitle {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    color: #aaa;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .name-entry-input {
+    background: rgba(0,0,0,0.6);
+    border: 2px solid rgba(0,230,255,0.3);
+    border-radius: 6px;
+    color: #00e6ff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    padding: 12px 15px;
+    width: 80%;
+    max-width: 280px;
+    text-align: center;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    caret-color: #00e6ff;
+  }
+  .name-entry-input:focus {
+    border-color: rgba(0,230,255,0.7);
+    box-shadow: 0 0 20px rgba(0,230,255,0.2);
+  }
+  .name-entry-input::placeholder {
+    color: rgba(0,230,255,0.25);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .name-entry-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
   /* PAUSE OVERLAY */
   #pause-overlay {
     position: fixed;
@@ -683,6 +821,7 @@
   <div class="btn-row" id="main-btns">
     <button class="btn-std btn-menu" id="menu-btn">MENU</button>
     <button class="btn-std" id="play-btn">PLAY</button>
+    <button class="btn-std btn-highscore" id="highscore-btn">HIGH SCORES</button>
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
@@ -701,6 +840,24 @@
     <!-- Tip about pausing on map -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
       TAP MAP (TOP RIGHT) TO PAUSE
+    </div>
+  </div>
+
+  <!-- High Scores: Difficulty Selection -->
+  <div class="btn-row hidden" id="highscore-diff-btns">
+    <div class="difficulty-title">HIGH SCORES</div>
+    <button class="btn-std btn-easy" onclick="showHighScoresFor('easy')">CASUAL</button>
+    <button class="btn-std btn-moderate" onclick="showHighScoresFor('moderate')">MODERATE</button>
+    <button class="btn-std btn-hard" onclick="showHighScoresFor('impossible')">IMPOSSIBLE</button>
+    <button class="btn-std btn-back" onclick="backFromHighScoreDiff()">BACK</button>
+  </div>
+
+  <!-- High Scores: Top 10 List -->
+  <div class="hidden" id="highscore-list-screen">
+    <div class="difficulty-title" id="hs-list-title">CASUAL - TOP 10</div>
+    <div id="hs-list-body"></div>
+    <div style="text-align:center; margin-top:15px;">
+      <button class="btn-std btn-back" onclick="backFromHighScoreList()">BACK</button>
     </div>
   </div>
 
@@ -801,6 +958,19 @@
 
 <div id="pause-overlay" class="hidden">
   <div class="pause-text">TAP ANYWHERE TO RESUME</div>
+</div>
+
+<!-- Name Entry Modal -->
+<div id="name-entry-overlay" class="hidden">
+  <div class="name-entry-box">
+    <div class="name-entry-title">NEW HIGH SCORE!</div>
+    <div class="name-entry-subtitle" id="name-entry-score-text">SCORE: 0 KILLS</div>
+    <input type="text" class="name-entry-input" id="name-entry-input" maxlength="10" placeholder="YOUR NAME" autocomplete="off" spellcheck="false">
+    <div class="name-entry-btns">
+      <button class="btn-std" id="name-entry-save" onclick="saveHighScore()">SAVE</button>
+      <button class="btn-std btn-back" onclick="skipHighScore()">SKIP</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1067,6 +1237,11 @@ const victoryTimeDisplay = document.getElementById('victory-time-display');
 const mainBtns = document.getElementById('main-btns');
 const diffBtns = document.getElementById('diff-btns');
 const customSubmenu = document.getElementById('custom-submenu');
+const highscoreDiffBtns = document.getElementById('highscore-diff-btns');
+const highscoreListScreen = document.getElementById('highscore-list-screen');
+const highscoreBtn = document.getElementById('highscore-btn');
+const nameEntryOverlay = document.getElementById('name-entry-overlay');
+const nameEntryInput = document.getElementById('name-entry-input');
 
 const tabSound = document.getElementById('tab-sound');
 const tabSettings = document.getElementById('tab-settings');
@@ -1230,6 +1405,8 @@ window.resetToMainMenu = () => {
 window.backToHome = () => {
   diffBtns.classList.add('hidden');
   customSubmenu.classList.add('hidden');
+  highscoreDiffBtns.classList.add('hidden');
+  highscoreListScreen.classList.add('hidden');
   mainBtns.classList.remove('hidden');
   titleText.style.display = 'block';
   document.querySelector('.author-sub').style.display = 'block';
@@ -1398,6 +1575,127 @@ window.startCustomGame = () => {
   }, 450);
 };
 
+/* === HIGH SCORES SYSTEM === */
+const HS_STORAGE_KEY = 'bionicBiome_highscores';
+const HS_MAX_ENTRIES = 10;
+let pendingScore = null; // holds data while name entry is shown
+
+function getHighScores(difficulty) {
+  try {
+    const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
+    return (all[difficulty] || []).slice(0, HS_MAX_ENTRIES);
+  } catch(e) { return []; }
+}
+
+function saveHighScores(difficulty, scores) {
+  try {
+    const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
+    all[difficulty] = scores.slice(0, HS_MAX_ENTRIES);
+    localStorage.setItem(HS_STORAGE_KEY, JSON.stringify(all));
+  } catch(e) { console.warn('Could not save high scores', e); }
+}
+
+function isHighScore(difficulty, biome, kills) {
+  if (difficulty === 'custom') return false; // no leaderboard for custom
+  const scores = getHighScores(difficulty);
+  if (scores.length < HS_MAX_ENTRIES) return true;
+  const worst = scores[scores.length - 1];
+  return biome > worst.biome || (biome === worst.biome && kills > worst.kills);
+}
+
+function addHighScore(difficulty, name, kills, biome, time, revives) {
+  const scores = getHighScores(difficulty);
+  scores.push({ name: name.toUpperCase(), kills, biome, time, revives });
+  scores.sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time);
+  saveHighScores(difficulty, scores.slice(0, HS_MAX_ENTRIES));
+}
+
+function showNameEntry(kills, biome, time, revives) {
+  pendingScore = { difficulty: currentDifficulty, kills, biome, time, revives };
+  document.getElementById('name-entry-score-text').textContent =
+    'BIOME ' + biome + ' \u2022 ' + kills + ' KILLS \u2022 ' + formatTime(time);
+  nameEntryInput.value = '';
+  nameEntryOverlay.classList.remove('hidden');
+  setTimeout(() => nameEntryInput.focus(), 100);
+}
+
+window.saveHighScore = () => {
+  if (!pendingScore) { skipHighScore(); return; }
+  let name = nameEntryInput.value.trim();
+  if (!name) name = 'ANON';
+  name = name.substring(0, 10).toUpperCase();
+  addHighScore(pendingScore.difficulty, name, pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+  nameEntryOverlay.classList.add('hidden');
+  pendingScore = null;
+};
+
+window.skipHighScore = () => {
+  nameEntryOverlay.classList.add('hidden');
+  pendingScore = null;
+};
+
+// Allow pressing Enter to save
+nameEntryInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { saveHighScore(); }
+});
+
+// High scores navigation
+highscoreBtn.addEventListener('click', () => {
+  mainBtns.classList.add('hidden');
+  highscoreDiffBtns.classList.remove('hidden');
+  titleText.style.display = 'none';
+  document.querySelector('.author-sub').style.display = 'none';
+  statsBox.style.display = 'none';
+});
+
+window.backFromHighScoreDiff = () => {
+  highscoreDiffBtns.classList.add('hidden');
+  mainBtns.classList.remove('hidden');
+  titleText.style.display = 'block';
+  document.querySelector('.author-sub').style.display = 'block';
+};
+
+window.backFromHighScoreList = () => {
+  highscoreListScreen.classList.add('hidden');
+  highscoreDiffBtns.classList.remove('hidden');
+};
+
+window.showHighScoresFor = (difficulty) => {
+  highscoreDiffBtns.classList.add('hidden');
+  const diffName = DIFFICULTY_SETTINGS[difficulty]?.name || difficulty.toUpperCase();
+  document.getElementById('hs-list-title').textContent = diffName + ' - TOP 10';
+  const scores = getHighScores(difficulty);
+  const body = document.getElementById('hs-list-body');
+
+  if (scores.length === 0) {
+    body.innerHTML = '<div class="hs-empty">NO SCORES YET<br><br>PLAY A ' + diffName + ' GAME<br>TO SET A RECORD!</div>';
+  } else {
+    let html = '<table class="hs-table"><thead><tr>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REV</th>' +
+      '</tr></thead><tbody>';
+    for (let i = 0; i < scores.length; i++) {
+      const s = scores[i];
+      html += '<tr>' +
+        '<td class="hs-rank">' + (i + 1) + '</td>' +
+        '<td>' + escapeHtml(s.name) + '</td>' +
+        '<td>' + s.biome + '</td>' +
+        '<td>' + s.kills + '</td>' +
+        '<td>' + formatTime(s.time) + '</td>' +
+        '<td>' + (s.revives || 0) + '</td>' +
+        '</tr>';
+    }
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+  highscoreListScreen.classList.remove('hidden');
+};
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 continueBtn.addEventListener('click', () => {
   Music.playSFX('start');
   setTimeout(() => {
@@ -1433,6 +1731,12 @@ function showGameOver() {
   
   // Reset the game over state before showing
   gameOver = false;
+  
+  // Check for high score (non-custom only)
+  const runTime = Date.now() - startTime;
+  if (isHighScore(currentDifficulty, biomeLevel, enemiesKilled)) {
+    showNameEntry(enemiesKilled, biomeLevel, runTime, continuesUsed);
+  }
   
   // Hide main buttons, show game over button
   mainBtns.classList.add('hidden');
