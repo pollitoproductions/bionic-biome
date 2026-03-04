@@ -1177,9 +1177,9 @@ const biomes = [
   // 1) Neon Wasteland - Hook players with cyberpunk atmosphere
   {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
-  // 2) Volcanic Badlands
-  {name: "Volcanic Badlands", grass:"#5a0f0f", wall:"#9b1d1d", wallEdge:"#2f0909", boss:"#f7f7f7", enemy:"#22c5c5",
-   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 2) Scorched Ashlands - charcoal & ember tones, distinct from INFERNO
+  {name: "Scorched Ashlands", grass:"#2a2520", wall:"#4a3f35", wallEdge:"#e87d20", boss:"#f7f7f7", enemy:"#e8a030",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#e87d20"},
   // 3) Crystal Cavern
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
@@ -2676,7 +2676,7 @@ ctx.restore();
   if (inDungeon && world.boss) {
     const bx = world.boss.x - cx, by = world.boss.y - cy;
     const BRAD = 50;
-    const bossColor = hexToRgb(b.boss || b.enemy);
+    const bossColor = hexToRgb(b.enemy);
     ctx.save();
     ctx.translate(bx, by);
 
