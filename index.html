@@ -2521,27 +2521,6 @@ for (let i = 0; i < ringSegments; i++) {
 }
 ctx.globalAlpha = 1.0;
 
-// Flickering corona wisps — short radial lines that dance around the edge
-const wispCount = 6;
-for (let i = 0; i < wispCount; i++) {
-  const wAngle = (time * 2.2 + i * (Math.PI * 2 / wispCount)) % (Math.PI * 2);
-  const wLen = 3 + Math.sin(time * 5 + i * 2.1) * 2.5;
-  const wAlpha = 0.4 + 0.4 * Math.sin(time * 6 + i * 1.7);
-  const wx1 = Math.cos(wAngle) * PLAYER_RAD;
-  const wy1 = Math.sin(wAngle) * PLAYER_RAD;
-  const wx2 = Math.cos(wAngle) * (PLAYER_RAD + wLen);
-  const wy2 = Math.sin(wAngle) * (PLAYER_RAD + wLen);
-  ctx.shadowBlur = 10;
-  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.8)" : "rgba(80,200,255,0.8)";
-  ctx.strokeStyle = player.hitTimer > 0 ? `rgba(255,255,255,${wAlpha})` : `rgba(140,220,255,${wAlpha})`;
-  ctx.lineWidth = 1.5;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(wx1, wy1);
-  ctx.lineTo(wx2, wy2);
-  ctx.stroke();
-}
-
 ctx.restore();
 
   if (player.swing > 0) {
