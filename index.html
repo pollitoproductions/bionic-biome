@@ -2848,14 +2848,28 @@ ctx.restore();
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
+      // glowing pulse colored like the player (uses player's glowColor)
+      const time = Date.now() / 1000;
+      const baseRadius = 10;
+      const pulseRadius = Math.sin(time * 4) * 1.5 + baseRadius;
+      const color = player && player.glowColor ? player.glowColor : "#00e6ff";
+
       ctx.save();
-      ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-      ctx.fillStyle = "#3498db"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(dx, dy, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      // outer glow
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = color;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(dx, dy, pulseRadius, 0, Math.PI*2); ctx.fill();
+      // subtle white stroke for definition
+      ctx.strokeStyle = "rgba(255,255,255,0.8)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // inner highlight
       ctx.shadowBlur = 0;
-      ctx.fillStyle = "rgba(255,255,255,0.7)"; 
-      ctx.beginPath(); ctx.arc(dx-3, dy-3, 3, 0, Math.PI*2); ctx.fill();
-      ctx.restore(); 
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.beginPath(); ctx.arc(dx - 3, dy - 3, 3, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
 
     } else if (d.type === "Sword") {
       ctx.save();
