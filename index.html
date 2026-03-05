@@ -1873,7 +1873,18 @@ function generateWorld(reset) {
   let enemyHp = Math.max(1, Math.round(hpMult));
 
   for (let i = 0; i < enemyCount; i++) {
-    let enp = findSafePos();
+    // pick a position separated from player and other enemies
+    let enp;
+    const minDist = 40;
+    let attempts = 0;
+    do {
+      enp = findSafePos();
+      attempts++;
+      if (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500) continue;
+    } while ((Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 ||
+              world.enemies.some(e => Math.hypot(enp.x - e.x, enp.y - e.y) < minDist))
+             && attempts < 1000);
+
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
       world.enemies.push({ 
         x: enp.x, 
@@ -2339,7 +2350,18 @@ function enterDungeon() {
   let enemyHp = Math.max(1, Math.round(hpMult));
 
   for (let i = 0; i < enemyCount; i++) {
-    let enp = findSafePos();
+    // pick a separated spawn point
+    let enp;
+    const minDist = 40;
+    let attempts = 0;
+    do {
+      enp = findSafePos();
+      attempts++;
+      if (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500) continue;
+    } while ((Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 ||
+              world.enemies.some(e => Math.hypot(enp.x - e.x, enp.y - e.y) < minDist))
+             && attempts < 1000);
+
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
       world.enemies.push({ 
         x: enp.x, 
