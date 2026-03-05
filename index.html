@@ -8,6 +8,8 @@
 <meta name="author" content="Brant Fuller">
 <meta name="theme-color" content="#000000">
 <title>Bionic Biome v1.13 © 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   html, body {
@@ -117,7 +119,7 @@
   
   h1 { 
     margin: 0 0 10px 0; 
-    font-family: 'Press Start 2P', cursive; 
+    font-family: 'Press Start 2P', monospace; 
     font-size: 42px; 
     text-shadow: 6px 6px 0px #3498db; 
     color: #fff; 
@@ -127,7 +129,7 @@
   
   .author-sub {
     font-size: 10px; color: #aaa; margin-bottom: 25px; text-align: center; line-height: 1.6;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     max-width: 90%;
   }
 
@@ -140,7 +142,7 @@
     width: 380px; 
     text-align: left; 
     margin-bottom: 15px;
-    font-family: 'Press Start 2P', cursive; 
+    font-family: 'Press Start 2P', monospace; 
   }
   .stat-row { 
     display: flex; justify-content: space-between; 
@@ -163,7 +165,7 @@
     cursor: pointer;
     box-shadow: 0 6px 0px #003f4d, 0 0 18px rgba(0,230,255,0.08);
     transition: transform 0.08s, box-shadow 0.12s;
-    font-family: 'Press Start 2P', cursive; 
+    font-family: 'Press Start 2P', monospace; 
     text-transform: uppercase;
     margin: 5px;
     pointer-events: auto;
@@ -415,7 +417,7 @@
     padding: 15px;
     border-radius: 8px;
     margin-top: 10px;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     width: 100%;
     max-width: 400px;
     box-sizing: border-box;
@@ -516,7 +518,7 @@
     background: linear-gradient(180deg, rgba(6,6,12,0.96), rgba(18,6,34,0.96));
     border: 2px solid rgba(0, 200, 255, 0.14);
     padding: 0; width: 90%; max-width: 420px;
-    text-align: center; font-family: 'Press Start 2P', cursive;
+    text-align: center; font-family: 'Press Start 2P', monospace;
     overflow: hidden;
     display: flex; flex-direction: column;
     box-shadow: 0 10px 40px rgba(0,150,255,0.06);
@@ -528,7 +530,7 @@
   }
   .menu-tab {
     flex: 1; background: transparent; color: #9fbcd3; cursor: pointer;
-    padding: 14px 0; font-size: 12px; border: none; font-family: 'Press Start 2P', cursive;
+    padding: 14px 0; font-size: 12px; border: none; font-family: 'Press Start 2P', monospace;
     position: relative;
   }
   .menu-tab.active {
@@ -541,7 +543,7 @@
   .track-btn {
     background: linear-gradient(180deg,#14121a,#1f1b29); border: 1px solid rgba(0,200,255,0.06); color: #9fbcd3;
     padding: 10px 4px; cursor: pointer; font-size: 12px; border-radius: 6px;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     transition: box-shadow 0.12s, transform 0.06s;
     box-shadow: 0 2px 0 rgba(0,0,0,0.7);
   }
@@ -578,14 +580,14 @@
 
   .btn-close {
     background: linear-gradient(90deg,#ff4d4d,#c0392b); color: white; border: none; padding: 10px 20px;
-    margin: 15px; cursor: pointer; font-family: 'Press Start 2P', cursive;
+    margin: 15px; cursor: pointer; font-family: 'Press Start 2P', monospace;
     box-shadow: 0 6px 0 rgba(150,20,20,0.7); align-self: center; border-radius:6px;
   }
   .btn-close:active { transform: translate(0,4px); box-shadow: none; }
 
   /* VICTORY SPECIFIC */
   .victory-title { color: #f1c40f; text-shadow: 4px 4px 0px #e67e22; margin-bottom: 20px; }
-  .victory-time { font-family: 'Press Start 2P', cursive; color: #fff; margin-bottom: 30px; font-size: 14px; text-align: center; line-height: 1.6; }
+  .victory-time { font-family: 'Press Start 2P', monospace; color: #fff; margin-bottom: 30px; font-size: 14px; text-align: center; line-height: 1.6; }
   
   .hidden { display: none !important; }
 
@@ -630,7 +632,7 @@
   .hs-table {
     width: 100%;
     border-collapse: collapse;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     margin-top: 10px;
   }
@@ -655,7 +657,7 @@
   .hs-empty {
     text-align: center;
     color: #555;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     padding: 30px 10px;
     line-height: 1.8;
@@ -682,14 +684,14 @@
     box-shadow: 0 0 40px rgba(241,196,15,0.15);
   }
   .name-entry-title {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 14px;
     color: #f1c40f;
     margin-bottom: 8px;
     text-shadow: 0 0 10px rgba(241,196,15,0.6);
   }
   .name-entry-subtitle {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     color: #aaa;
     margin-bottom: 20px;
@@ -700,7 +702,7 @@
     border: 2px solid rgba(0,230,255,0.3);
     border-radius: 6px;
     color: #00e6ff;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 16px;
     padding: 12px 15px;
     width: 80%;
@@ -742,7 +744,7 @@
     pointer-events: none;
   }
   .pause-text {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
     font-size: 15px;
     color: #00e6ff;
     text-align: center;
