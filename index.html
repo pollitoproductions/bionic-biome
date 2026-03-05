@@ -1920,7 +1920,7 @@ function updateFlowField() {
   while(queue.length > 0) {
     let curr = queue.shift();
     let dist = flowMap[curr.y][curr.x];
-    if(dist > 25) continue; 
+    // propagate everywhere (previously there was a cap of 25 to reduce work)
     const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
     for(let i=0; i<dirs.length; i++) {
       let nx = curr.x + dirs[i][0];
@@ -2094,8 +2094,47 @@ function update(dt) {
       
       let distToPlayer = Math.hypot(nx - player.x, ny - player.y);
       if (distToPlayer > 30) {
-        if (!isWall(nx, e.y)) e.x = nx;
-        if (!isWall(e.x, ny)) e.y = ny;
+        // try the primary movement first
+        let moved = false;
+        if (!isWall(nx, e.y)) { e.x = nx; moved = true; }
+        if (!isWall(e.x, ny)) { e.y = ny; moved = true; }
+
+        // if both axes were blocked by walls, attempt a minor detour
+        if (!moved) {
+          // perpendicular directions to the desired vector
+          const perpOptions = [
+            {x: vy, y: -vx}, // right
+            {x: -vy, y: vx}  // left
+          ];
+          for (let opt of perpOptions) {
+            let ax = e.x + opt.x * CURRENT_ENEMY_SPEED_PPS * dt;
+            let ay = e.y + opt.y * CURRENT_ENEMY_SPEED_PPS * dt;
+            if (!isWall(ax, ay)) {
+              e.x = ax;
+              e.y = ay;
+              moved = true;
+              break;
+            }
+          }
+        }
+
+        // force enemies back into free space if a rare collision slipped through
+        if (isWall(e.x, e.y)) {
+          let etx = Math.floor(e.x / TILE);
+          let ety = Math.floor(e.y / TILE);
+          const fallbackDirs = [
+            {x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}
+          ];
+          for (let d of fallbackDirs) {
+            let ntx = etx + d.x;
+            let nty = ety + d.y;
+            if (ntx>=0 && nty>=0 && ntx<MAP_SIZE && nty<MAP_SIZE && world.grid[nty][ntx]===0) {
+              e.x = (ntx + 0.5) * TILE;
+              e.y = (nty + 0.5) * TILE;
+              break;
+            }
+          }
+        }
 
         // enforce separation between enemies (max 80% overlap)
         const overlapThresh = PLAYER_RAD * 2 * 0.8; // ~80% of combined diameter
@@ -2113,6 +2152,21 @@ function update(dt) {
             }
           }
         });
+        // ensure the current enemy didn't get shoved into a wall by separation
+        if (isWall(e.x, e.y)) {
+          let etx = Math.floor(e.x / TILE);
+          let ety = Math.floor(e.y / TILE);
+          const dirs = [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}];
+          for (let d of dirs) {
+            let ntx = etx + d.x;
+            let nty = ety + d.y;
+            if (ntx>=0 && nty>=0 && ntx<MAP_SIZE && nty<MAP_SIZE && world.grid[nty][ntx]===0) {
+              e.x = (ntx + 0.5) * TILE;
+              e.y = (nty + 0.5) * TILE;
+              break;
+            }
+          }
+        }
       }
         
       if (d < (PLAYER_RAD + 20) && (e.atkDelay <= 0)) {
