@@ -2848,27 +2848,35 @@ ctx.restore();
   drops.forEach(d => {
     let dx = d.x - cx, dy = d.y - cy;
     if (d.type === "hp") {
-      // glowing pulse colored like the player (uses player's glowColor)
+      // replicate player orb appearance exactly (blue gradient, pulse, hit flash)
       const time = Date.now() / 1000;
       const baseRadius = 10;
-      const pulseRadius = Math.sin(time * 4) * 1.5 + baseRadius;
-      const color = player && player.glowColor ? player.glowColor : "#00e6ff";
+      const pulseSize = Math.sin(time * 3) * 2 + baseRadius;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
       ctx.save();
-      // outer glow
-      ctx.shadowBlur = 30;
-      ctx.shadowColor = color;
-      ctx.fillStyle = color;
-      ctx.beginPath(); ctx.arc(dx, dy, pulseRadius, 0, Math.PI*2); ctx.fill();
-      // subtle white stroke for definition
-      ctx.strokeStyle = "rgba(255,255,255,0.8)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ctx.translate(dx, dy);
 
-      // inner highlight
+      // outer glow/pulse matching player
+      ctx.shadowBlur = isIOS ? 8 : 18;
+      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+      ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+      ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
+
+      // main orb gradient identical to player
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius);
+      if (player.hitTimer > 0) {
+        gradient.addColorStop(0, "rgba(255,255,255,0.95)");
+        gradient.addColorStop(0.5, "rgba(200,220,255,0.9)");
+        gradient.addColorStop(1, "rgba(180,200,255,0.8)");
+      } else {
+        gradient.addColorStop(0, "rgba(100,200,255,0.9)");
+        gradient.addColorStop(0.5, "rgba(50,150,255,0.85)");
+        gradient.addColorStop(1, "rgba(20,100,200,0.75)");
+      }
       ctx.shadowBlur = 0;
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.beginPath(); ctx.arc(dx - 3, dy - 3, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = gradient;
+      ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
     } else if (d.type === "Sword") {
