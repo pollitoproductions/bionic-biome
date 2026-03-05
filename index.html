@@ -2918,6 +2918,11 @@ ctx.restore();
       ctx.shadowBlur = 0;
       ctx.fillStyle = gradient;
       ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, Math.PI * 2); ctx.fill();
+
+      // tiny brightness pulse overlay
+      const brightAlpha = 0.05 * (Math.sin(time * 6) + 1); // 0 to 0.1
+      ctx.fillStyle = `rgba(255,255,255,${brightAlpha})`;
+      ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
     } else if (d.type === "Sword") {
