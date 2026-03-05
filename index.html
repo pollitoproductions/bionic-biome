@@ -2094,6 +2094,23 @@ function update(dt) {
       if (distToPlayer > 30) {
         if (!isWall(nx, e.y)) e.x = nx;
         if (!isWall(e.x, ny)) e.y = ny;
+
+        // enforce separation between enemies (max 80% overlap)
+        const overlapThresh = PLAYER_RAD * 2 * 0.8; // ~80% of combined diameter
+        world.enemies.forEach(o => {
+          if (o !== e) {
+            let dx = e.x - o.x, dy = e.y - o.y;
+            let d = Math.hypot(dx, dy);
+            if (d > 0 && d < overlapThresh) {
+              let push = (overlapThresh - d) / 2;
+              dx /= d; dy /= d;
+              e.x += dx * push;
+              e.y += dy * push;
+              o.x -= dx * push;
+              o.y -= dy * push;
+            }
+          }
+        });
       }
         
       if (d < (PLAYER_RAD + 20) && (e.atkDelay <= 0)) {
