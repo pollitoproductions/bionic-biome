@@ -1174,11 +1174,11 @@ const Music = {
 
 /* === BIOMES, UTILS, DOM (unchanged) === */
 const biomes = [
-  // 1) Neon Wasteland - Hook players with cyberpunk atmosphere
-  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00",
-   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
-  // 2) Scorched Ashlands - charcoal & ember tones, distinct from INFERNO
+  // 1) Scorched Ashlands - now the first biome
   {name: "Scorched Ashlands", grass:"#2a2520", wall:"#4a3f35", wallEdge:"#e87d20", boss:"#f7f7f7", enemy:"#e8a030",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
+  // 2) Neon Wasteland - cyberpunk atmosphere
+  {name: "Neon Wasteland", grass:"#1c1c24", wall:"#2f1b33", wallEdge:"#00e5ff", boss:"#2cfff0", enemy:"#a6ff00",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 3) Crystal Cavern
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b",
@@ -2434,17 +2434,18 @@ function draw() {
 ctx.save();
 ctx.translate(400, 300);
 
-// Outer glow pulse
+// Outer glow pulse (reduced shadow for iOS)
 const time = Date.now() / 1000;
 const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
-ctx.shadowBlur = 25;
-ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(0,200,255,0.8)";
-ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.15)" : "rgba(0,180,255,0.15)";
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+ctx.shadowBlur = isIOS ? 8 : 18;
+ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
 ctx.beginPath();
 ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
 ctx.fill();
 
-// Main orb base with gradient
+// Main orb base with gradient (no shadowBlur for edge)
 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
 if (player.hitTimer > 0) {
   gradient.addColorStop(0, "rgba(255,255,255,0.95)");
@@ -2455,7 +2456,7 @@ if (player.hitTimer > 0) {
   gradient.addColorStop(0.5, "rgba(50,150,255,0.85)");
   gradient.addColorStop(1, "rgba(20,100,200,0.75)");
 }
-ctx.shadowBlur = 20;
+ctx.shadowBlur = 0;
 ctx.fillStyle = gradient;
 ctx.beginPath();
 ctx.arc(0, 0, PLAYER_RAD, 0, Math.PI * 2);
