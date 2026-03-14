@@ -1523,18 +1523,16 @@ function resumeGame() {
     pauseTimestamp = 0;
   }
   
-  // Resume music if it was playing before pause and sound is enabled
-  if (savedMusicTrack && !gameOver && gameRunning) {
-    if (soundEnabled) {
-      if (savedMusicTrack.startsWith('overworld_')) {
-        Music.play('overworld');
-      } else if (savedMusicTrack.startsWith('dungeon_')) {
-        Music.play('dungeon');
-      } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
-        Music.play(savedMusicTrack);
-      }
-      savedMusicTrack = null;
+  // Always resume music if sound is enabled and a track was saved, regardless of muteBtn state
+  if (savedMusicTrack && !gameOver && gameRunning && soundEnabled) {
+    if (savedMusicTrack.startsWith('overworld_')) {
+      Music.play('overworld');
+    } else if (savedMusicTrack.startsWith('dungeon_')) {
+      Music.play('dungeon');
+    } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
+      Music.play(savedMusicTrack);
     }
+    savedMusicTrack = null;
   }
   
   // Resume the game if a run is in progress and not ended
@@ -1714,7 +1712,11 @@ muteBtn.addEventListener('click', () => {
 
   if (!soundEnabled) {
     // Save what was playing so we can resume when unmuted.
-    savedMusicTrack = Music.currentTrackId;
+    // If we're paused, Music.currentTrackId is likely null (since we stopped it),
+    // so keep the last known track if any.
+    if (!savedMusicTrack && Music.currentTrackId) {
+      savedMusicTrack = Music.currentTrackId;
+    }
     Music.stop();
   } else {
     // Always force resume music if a track was saved and game is running
