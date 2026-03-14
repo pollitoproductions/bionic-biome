@@ -1499,7 +1499,10 @@ function pauseGame(showOverlay = true) {
     // Record when we paused to adjust startTime on resume
     pauseTimestamp = Date.now();
     // Save current music state and stop music
-    savedMusicTrack = Music.currentTrackId;
+    // If we already have a saved track (e.g., from muting), don't overwrite it with null.
+    if (!savedMusicTrack && Music.currentTrackId) {
+      savedMusicTrack = Music.currentTrackId;
+    }
     Music.stop();
   }
   gameActive = false;
