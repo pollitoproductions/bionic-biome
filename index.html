@@ -840,8 +840,13 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
-  <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">S</div>
-  <div class="mini-toggle-btn vib-btn" id="vib-btn" aria-label="toggle vibration">V</div>
+  <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9V15H7L12 20V4L7 9H3Z" />
+      <path d="M16.5 12C16.5 10.21 15.7 8.58 14.24 7.59V16.41C15.7 15.42 16.5 13.79 16.5 12Z" />
+      <path d="M19.5 12C19.5 9.79 18.59 7.79 17.06 6.47V17.53C18.59 16.21 19.5 14.21 19.5 12Z" />
+    </svg>
+  </div>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -1435,7 +1440,6 @@ const statsBox = document.getElementById('stats-box');
 const playBtn = document.getElementById('play-btn');
 const menuBtn = document.getElementById('menu-btn');
 const muteBtn = document.getElementById('mute-btn');
-const vibBtn = document.getElementById('vib-btn');
 const closeMenuBtn = document.getElementById('close-menu-btn');
 const continueBtn = document.getElementById('continue-btn');
 const titleText = document.getElementById('title-text');
@@ -1644,16 +1648,14 @@ function renderTrackButtons() {
 }
 
 function updateMiniButtons() {
-  if (!muteBtn || !vibBtn) return;
+  if (!muteBtn) return;
   const show = gameRunning;
   muteBtn.style.display = show ? 'flex' : 'none';
-  vibBtn.style.display = show ? 'flex' : 'none';
   muteBtn.classList.toggle('active', !soundEnabled);
-  vibBtn.classList.toggle('active', !vibrationEnabled);
 }
 
 function updateMiniButtonPositions() {
-  if (!muteBtn || !vibBtn) return;
+  if (!muteBtn) return;
   if (!canvas) return;
 
   const rect = canvas.getBoundingClientRect();
@@ -1670,8 +1672,6 @@ function updateMiniButtonPositions() {
 
   muteBtn.style.left = `${left}px`;
   muteBtn.style.top = `${top}px`;
-  vibBtn.style.left = `${left}px`;
-  vibBtn.style.top = `${top + btnSize + 6}px`;
 }
 
 window.addEventListener('resize', () => {
@@ -1704,13 +1704,6 @@ muteBtn.addEventListener('click', () => {
   }
 });
 
-vibBtn.addEventListener('click', () => {
-  vibrationEnabled = !vibrationEnabled;
-  vibBtn.classList.toggle('active', !vibrationEnabled);
-  if (vibrationEnabled) {
-    vibrate(50);
-  }
-});
 
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
