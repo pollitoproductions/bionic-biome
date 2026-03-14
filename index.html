@@ -75,25 +75,30 @@
 }
 
 /* Mini-map menu button */
-.mini-menu-btn {
+/* Mini-map toggle buttons */
+.mini-toggle-btn {
   position: absolute;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: rgba(0,0,0,0.5);
   border: 2px solid rgba(0,230,255,0.35);
-  box-shadow: 0 0 12px rgba(0,230,255,0.4);
+  box-shadow: 0 0 10px rgba(0,230,255,0.4);
   cursor: pointer;
   display: none;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   color: #00e6ff;
   user-select: none;
   z-index: 160;
 }
-.mini-menu-btn:hover {
+.mini-toggle-btn:hover {
   background: rgba(0,0,0,0.65);
+}
+.mini-toggle-btn.active {
+  background: rgba(0,230,255,0.35);
+  color: #001218;
 }
 
 /* subtle top-to-bottom glossy shade over the action button */
@@ -835,7 +840,8 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
-  <div class="mini-menu-btn" id="mini-menu-btn" aria-label="open menu">⚙</div>
+  <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">🔇</div>
+  <div class="mini-toggle-btn vib-btn" id="vib-btn" aria-label="toggle vibration">📳</div>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -1428,7 +1434,8 @@ const victoryScreen = document.getElementById('victory-screen');
 const statsBox = document.getElementById('stats-box');
 const playBtn = document.getElementById('play-btn');
 const menuBtn = document.getElementById('menu-btn');
-const miniMenuBtn = document.getElementById('mini-menu-btn');
+const muteBtn = document.getElementById('mute-btn');
+const vibBtn = document.getElementById('vib-btn');
 const closeMenuBtn = document.getElementById('close-menu-btn');
 const continueBtn = document.getElementById('continue-btn');
 const titleText = document.getElementById('title-text');
@@ -1636,7 +1643,43 @@ function renderTrackButtons() {
   }
 }
 
-function openMenu() {
+function updateMiniButtons() {
+  if (!muteBtn || !vibBtn) return;
+  const show = gameRunning;
+  muteBtn.style.display = show ? 'flex' : 'none';
+  vibBtn.style.display = show ? 'flex' : 'none';
+  muteBtn.classList.toggle('active', !soundEnabled);
+  vibBtn.classList.toggle('active', !vibrationEnabled);
+}
+
+function updateMiniButtonPositions() {
+  if (!muteBtn || !vibBtn) return;
+  if (!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = rect.width / canvas.width;
+  const scaleY = rect.height / canvas.height;
+
+  const mmX = 650;
+  const mmY = 15;
+  const btnSize = 40;
+  const padding = 6;
+
+  const left = rect.left + mmX * scaleX - btnSize - padding;
+  const top = rect.top + mmY * scaleY;
+
+  muteBtn.style.left = `${left}px`;
+  muteBtn.style.top = `${top}px`;
+  vibBtn.style.left = `${left}px`;
+  vibBtn.style.top = `${top + btnSize + 8}px`;
+}
+
+window.addEventListener('resize', () => {
+  updateMiniButtonPositions();
+  updateMiniButtons();
+});
+
+menuBtn.addEventListener('click', () => {
   // Pause the game whenever the menu is shown
   pauseGame(false);
 
@@ -1650,11 +1693,24 @@ function openMenu() {
   toggleSound.classList.toggle('active', soundEnabled);
   toggleVibration.classList.toggle('active', vibrationEnabled);
 
-  updateMiniMenuButtonPosition();
-}
+  updateMiniButtons();
+});
 
-menuBtn.addEventListener('click', openMenu);
-miniMenuBtn.addEventListener('click', openMenu);
+muteBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  muteBtn.classList.toggle('active', !soundEnabled);
+  if (!soundEnabled) {
+    Music.stop();
+  }
+});
+
+vibBtn.addEventListener('click', () => {
+  vibrationEnabled = !vibrationEnabled;
+  vibBtn.classList.toggle('active', !vibrationEnabled);
+  if (vibrationEnabled) {
+    vibrate(50);
+  }
+});
 
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
@@ -1766,6 +1822,7 @@ enemyDifficultySlider.addEventListener('input', (e) => {
 toggleSound.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   toggleSound.classList.toggle('active');
+  muteBtn.classList.toggle('active', !soundEnabled);
   if (!soundEnabled) {
     Music.stop();
   }
@@ -1774,6 +1831,7 @@ toggleSound.addEventListener('click', () => {
 toggleVibration.addEventListener('click', () => {
   vibrationEnabled = !vibrationEnabled;
   toggleVibration.classList.toggle('active');
+  vibBtn.classList.toggle('active', !vibrationEnabled);
   if (vibrationEnabled) {
     vibrate(50); // Test vibration
   }
@@ -2029,7 +2087,8 @@ function startGame() {
   // Mark the game as logically running and active (unless another mechanism paused it)
   gameRunning = true;
   gameActive = true;
-  updateMiniMenuButtonPosition();
+  updateMiniButtons();
+  updateMiniButtonPositions();
   generateWorld(true);
 }
 
