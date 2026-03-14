@@ -1523,12 +1523,14 @@ function resumeGame() {
     pauseTimestamp = 0;
   }
   
-  // Resume music if it was playing before pause
-  if (savedMusicTrack && !gameOver && gameRunning) {
+  // Resume music if it was playing before pause and sound is enabled
+  if (soundEnabled && savedMusicTrack && !gameOver && gameRunning) {
     if (savedMusicTrack.startsWith('overworld_')) {
       Music.play('overworld');
     } else if (savedMusicTrack.startsWith('dungeon_')) {
       Music.play('dungeon');
+    } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
+      Music.play(savedMusicTrack);
     }
     savedMusicTrack = null;
   }
@@ -1713,7 +1715,7 @@ muteBtn.addEventListener('click', () => {
     savedMusicTrack = Music.currentTrackId;
     Music.stop();
   } else {
-    // Resume the last track when unmuting (only if a run is active).
+    // Resume the last track when unmuting (only if a run is active and not game over)
     if (savedMusicTrack && gameRunning && !gameOver) {
       if (savedMusicTrack.startsWith('overworld_')) {
         Music.play('overworld');
@@ -1722,6 +1724,7 @@ muteBtn.addEventListener('click', () => {
       } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
         Music.play(savedMusicTrack);
       }
+      savedMusicTrack = null;
     }
     savedMusicTrack = null;
   }
