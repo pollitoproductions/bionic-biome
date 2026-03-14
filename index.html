@@ -1114,7 +1114,7 @@ let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
 
 /* --- SOUND / MUSIC --- */
 const Music = {
-  ctx: null, osc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
+  ctx: null, osc: null, subOsc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
   
   init() { 
     if (!this.ctx) { 
@@ -1165,76 +1165,70 @@ const Music = {
   },
   
   generateDarkTrack(level, isDungeon) { 
-    // Roots based on standard Drop-D and E-Standard guitar tunings (very low)
-    // 73.42 (D2), 82.41 (E2), 110.00 (A2)
-    const roots = [82.41, 73.42, 82.41, 110.00, 73.42, 82.41, 110.00, 73.42, 82.41, 73.42]; 
+    // Low, heavy base roots for a darksynth feel (C2, D2, E2, F2, A1)
+    const roots = [65.41, 73.42, 82.41, 87.31, 55.00, 65.41, 73.42, 82.41, 87.31, 55.00]; 
     let safeLevel = Math.max(1, Math.min(10, level));
     let base = roots[safeLevel - 1]; 
     
     let intervals = [];
-    // Slightly slower base speeds (130-220ms) for that head-nodding grunge groove
-    let speedDelay = 180; 
+    // Faster tempos for a driving, action-packed feel (110ms - 140ms)
+    let speedDelay = 130; 
 
-    // The 10 Grunge/Punk Biome Riffs (null = rests/silence)
+    // Driving, rhythmic Cyberpunk/Darksynth Basslines
     switch(safeLevel) {
-      case 1: // "The Seattle Chug" (Classic grunge, heavy root with a bluesy bend)
-        intervals = [0, 0, null, 3, 0, null, 5, 3, 0, 0, null, 3, 0, null, 0, null];
-        speedDelay = 200; 
+      case 1: // Driving Octaves (Classic synthwave pulse)
+        intervals = [0, 0, 12, 0, 0, 0, 12, 0, 0, 3, 0, 5, 0, 0, 12, 0];
+        speedDelay = 140; 
         break;
-      case 2: // "Garage Anthem" (Bouncy, Ramones-style power chords)
-        intervals = [0, 0, 5, 5, 7, 7, null, 7, 0, 0, 5, 5, 7, null, null, null];
-        speedDelay = 160;
+      case 2: // Arpeggiated Flow
+        intervals = [0, 3, 0, 7, 0, 10, 0, 12, 0, null, 0, null, 12, 10, 7, 3];
+        speedDelay = 130;
         break;
-      case 3: // "Sludge Fest" (Slow, chromatic doom/grunge walk down)
-        intervals = [0, null, 6, 5, 0, null, 3, 0, null, null, 6, 5, 3, 0, null, null];
-        speedDelay = 220;
-        break;
-      case 4: // "Skate Punk" (Fast, driving octave jumps)
-        intervals = [0, 0, 12, 12, 0, 0, 10, 10, 0, 0, 7, 7, 5, 5, 3, 3];
+      case 3: // Syncopated Gallop (Lots of gaps for breathing room)
+        intervals = [0, 0, null, 0, 0, null, 0, 12, 0, 0, null, 0, 0, null, 3, 5];
         speedDelay = 140;
         break;
-      case 5: // "The Muddy Arpeggio" (Moody, echoing 90s alternative)
-        intervals = [0, null, 3, null, 7, null, 6, null, 0, null, 3, null, 5, null, 3, null];
-        speedDelay = 190;
+      case 4: // Pedal Point Riff (Constant high drone with shifting bass)
+        intervals = [0, 12, 10, 12, 0, 12, 10, 12, 7, 12, 10, 12, 5, 12, 10, 12];
+        speedDelay = 135;
         break;
-      case 6: // "Syncopated Fuzz" (Heavy syncopated groove)
-        intervals = [0, 12, 0, 10, 0, 0, 8, null, 0, 7, 0, 0, 5, 3, 0, null];
-        speedDelay = 170;
+      case 5: // Punchy Groove
+        intervals = [0, null, 0, 12, null, 0, 0, 3, null, 0, 0, 5, null, 3, 0, null];
+        speedDelay = 130;
         break;
-      case 7: // "Desert Rock" (Stoner rock/garage revival riff)
-        intervals = [0, 0, 3, 0, 5, 0, 6, 5, 0, 0, 3, 0, 5, null, null, null];
-        speedDelay = 180; 
+      case 6: // Phrygian Danger (Dark, creeping feeling)
+        intervals = [0, 0, 7, 0, 8, 0, 7, 0, 3, 0, 5, 0, 7, 0, 3, 5];
+        speedDelay = 135;
         break;
-      case 8: // "Melancholy Flannel" (Minor-chord implied riff)
-        intervals = [0, 7, 10, 7, 0, 7, 8, 7, 0, 7, 10, 7, 12, null, 10, null];
-        speedDelay = 200; 
+      case 7: // Relentless Machine (Rigid, industrial)
+        intervals = [0, 0, 0, 0, 12, 0, 0, 0, 10, 0, 0, 0, 3, 0, 5, 0];
+        speedDelay = 120; 
         break;
-      case 9: // "The Breakbeat" (Punchy, stop-and-start garage punk)
-        intervals = [0, null, 0, null, 7, 7, null, null, 5, null, 5, null, 3, 3, null, null];
-        speedDelay = 150;
+      case 8: // High Energy Jumps
+        intervals = [0, 12, 0, 12, 0, 12, 0, 12, 3, 15, 3, 15, 5, 17, 5, 17];
+        speedDelay = 125; 
         break;
-      case 10: // "Mosh Pit Finale" (High energy, fast punk climax)
-        intervals = [0, 0, 7, 0, 10, 0, 12, 0, 10, 0, 7, 0, 5, 3, 0, null];
-        speedDelay = 130; 
+      case 9: // Building Tension
+        intervals = [0, null, 0, null, 0, null, 0, null, 12, 12, 10, 10, 7, 7, 5, 5];
+        speedDelay = 120;
+        break;
+      case 10: // The Climax (Fast, descending run)
+        intervals = [0, 0, 12, 0, 10, 0, 8, 0, 7, 0, 5, 0, 3, 0, 2, 0];
+        speedDelay = 110; 
         break;
     }
 
     let notes = [];
     for (let i = 0; i < intervals.length; i++) { 
       if (intervals[i] === null) {
-        notes.push(0); // 0 frequency = silence/rest
+        notes.push(0); 
       } else {
-        let interval = intervals[i];
-        
-        // Dungeons: Simulate a "guitar harmonic squeal" by randomly pitching a note up 2 octaves
-        if (isDungeon && i % 4 === 3) interval += 24; 
-        
-        notes.push(base * Math.pow(2, interval / 12)); 
+        notes.push(base * Math.pow(2, intervals[i] / 12)); 
       }
     } 
     
-    // Dungeons play faster to increase the tension
-    let finalSpeed = isDungeon ? Math.max(80, speedDelay - 30) : speedDelay;
+    // Dungeons simply play slightly faster to increase urgency (no weird pitch shifting)
+    let finalSpeed = isDungeon ? Math.max(80, speedDelay - 15) : speedDelay;
     
     return { notes, bpm: finalSpeed }; 
   },
@@ -1266,14 +1260,19 @@ const Music = {
     if(!td) return; 
     
     this.osc = this.ctx.createOscillator(); 
+    this.subOsc = this.ctx.createOscillator(); // ADDED: Sub-bass for massive depth
     this.gain = this.ctx.createGain(); 
     
-    // Sawtooth gives that distorted, fuzzy guitar/synth tone
-    this.osc.type = 'sawtooth'; 
+    this.osc.type = 'sawtooth'; // Gritty lead
+    this.subOsc.type = 'square'; // Fat, hollow sub-bass
+    
     this.osc.connect(this.gain); 
+    this.subOsc.connect(this.gain); 
     this.gain.connect(this.ctx.destination); 
     this.gain.gain.setValueAtTime(0, this.ctx.currentTime); 
+    
     this.osc.start(); 
+    this.subOsc.start(); 
     
     let idx = 0; 
     const next = () => { 
@@ -1284,11 +1283,13 @@ const Music = {
       
       if(f > 0){ 
         this.osc.frequency.setValueAtTime(f, t); 
+        this.subOsc.frequency.setValueAtTime(f / 2, t); // Sub-bass plays exactly 1 octave lower
+        
         this.gain.gain.cancelScheduledValues(t); 
-        this.gain.gain.setValueAtTime(0.08, t); // Overall volume
-        this.gain.gain.exponentialRampToValueAtTime(0.001, t + (dur * 0.9)); // Plucky, chugging decay
+        this.gain.gain.setValueAtTime(0.06, t); // Slightly lower volume to account for two oscillators
+        this.gain.gain.exponentialRampToValueAtTime(0.001, t + (dur * 0.95)); // Slightly longer decay
       } else { 
-        this.gain.gain.setValueAtTime(0, t); // Hard silence for rests
+        this.gain.gain.setValueAtTime(0, t); 
       } 
       
       idx++; 
@@ -1314,6 +1315,13 @@ const Music = {
       } catch(e){} 
       this.osc = null; 
     } 
+    if(this.subOsc){ 
+      try{ 
+        this.subOsc.stop(); 
+        this.subOsc.disconnect(); 
+      } catch(e){} 
+      this.subOsc = null; 
+    }
     this.currentTrackId = null; 
   }
 };
