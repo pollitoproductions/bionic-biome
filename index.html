@@ -74,6 +74,28 @@
   user-select: none;
 }
 
+/* Mini-map menu button */
+.mini-menu-btn {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  border: 2px solid rgba(0,230,255,0.35);
+  box-shadow: 0 0 12px rgba(0,230,255,0.4);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #00e6ff;
+  user-select: none;
+  z-index: 160;
+}
+.mini-menu-btn:hover {
+  background: rgba(0,0,0,0.65);
+}
+
 /* subtle top-to-bottom glossy shade over the action button */
 .btn-action::after {
   content: "";
@@ -813,6 +835,7 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
+  <div class="mini-menu-btn" id="mini-menu-btn" aria-label="open menu">⚙</div>
 </div>
 
 <div id="start-screen" class="screen-overlay">
@@ -1405,6 +1428,7 @@ const victoryScreen = document.getElementById('victory-screen');
 const statsBox = document.getElementById('stats-box');
 const playBtn = document.getElementById('play-btn');
 const menuBtn = document.getElementById('menu-btn');
+const miniMenuBtn = document.getElementById('mini-menu-btn');
 const closeMenuBtn = document.getElementById('close-menu-btn');
 const continueBtn = document.getElementById('continue-btn');
 const titleText = document.getElementById('title-text');
@@ -1612,7 +1636,7 @@ function renderTrackButtons() {
   }
 }
 
-menuBtn.addEventListener('click', () => {
+function openMenu() {
   // Pause the game whenever the menu is shown
   pauseGame(false);
 
@@ -1620,8 +1644,17 @@ menuBtn.addEventListener('click', () => {
   startScreen.classList.add('hidden');
   menuScreen.classList.remove('hidden');
   renderTrackButtons();
-  tabSound.click();
-});
+  tabSettings.click();
+
+  // Ensure toggles reflect current state
+  toggleSound.classList.toggle('active', soundEnabled);
+  toggleVibration.classList.toggle('active', vibrationEnabled);
+
+  updateMiniMenuButtonPosition();
+}
+
+menuBtn.addEventListener('click', openMenu);
+miniMenuBtn.addEventListener('click', openMenu);
 
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
@@ -1663,6 +1696,32 @@ closeMenuBtn.addEventListener('click', () => {
   // Resume the game only if it was active before the menu was opened (resumeGame checks that)
   resumeGame();
 });
+
+function updateMiniMenuButtonPosition() {
+  if (!miniMenuBtn) return;
+  if (!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = rect.width / canvas.width;
+  const scaleY = rect.height / canvas.height;
+
+  // Minimap is drawn at (650, 15) in canvas coords, with size MAP_SIZE.
+  const mmX = 650;
+  const mmY = 15;
+  const btnSize = 44;
+  const padding = 6;
+
+  const left = rect.left + mmX * scaleX - btnSize - padding;
+  const top = rect.top + mmY * scaleY;
+
+  miniMenuBtn.style.left = `${left}px`;
+  miniMenuBtn.style.top = `${top}px`;
+
+  // Only show when a game is running (not on main menu)
+  miniMenuBtn.style.display = gameRunning ? 'flex' : 'none';
+}
+
+window.addEventListener('resize', updateMiniMenuButtonPosition);
 
 swBiome.addEventListener('click', () => {
   swBiome.classList.add('selected');
@@ -1970,6 +2029,7 @@ function startGame() {
   // Mark the game as logically running and active (unless another mechanism paused it)
   gameRunning = true;
   gameActive = true;
+  updateMiniMenuButtonPosition();
   generateWorld(true);
 }
 
