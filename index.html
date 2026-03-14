@@ -1715,32 +1715,20 @@ muteBtn.addEventListener('click', () => {
     savedMusicTrack = Music.currentTrackId;
     Music.stop();
   } else {
-    // Resume music if not game over
-    if (!gameOver) {
-      // Resume saved track if available
-      if (savedMusicTrack) {
-        if (savedMusicTrack.startsWith('overworld_')) {
-          Music.play('overworld');
-        } else if (savedMusicTrack.startsWith('dungeon_')) {
-          Music.play('dungeon');
-        } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
-          Music.play(savedMusicTrack);
-        }
-        savedMusicTrack = null;
-      } else {
-        // Resume music based on game state
-        if (gameRunning && inDungeon) {
-          Music.play('dungeon');
-        } else if (gameRunning && !inDungeon) {
-          Music.play('overworld');
-        } else if (!gameRunning) {
-          Music.play('title');
-        }
+    // Resume the last track when unmuting (only if a track was saved and not game over)
+    if (savedMusicTrack && !gameOver) {
+      if (savedMusicTrack.startsWith('overworld_')) {
+        Music.play('overworld');
+      } else if (savedMusicTrack.startsWith('dungeon_')) {
+        Music.play('dungeon');
+      } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
+        Music.play(savedMusicTrack);
       }
+      savedMusicTrack = null;
     }
+    // Otherwise, let game logic handle music
   }
 });
-
 
 tabSound.addEventListener('click', () => {
   tabSound.classList.add('active');
@@ -2112,6 +2100,8 @@ function showVictoryScreen() {
 }
 
 function startGame() {
+  soundEnabled = true;
+  muteBtn.classList.remove('active');
   startScreen.classList.add('hidden');
   victoryScreen.classList.add('hidden');
   // Mark the game as logically running and active (unless another mechanism paused it)
@@ -3103,6 +3093,18 @@ ctx.restore();
         ctx.save();
         ctx.rotate(rot);
         ctx.strokeStyle = `rgba(${Math.min(bossColor.r+80,255)},${Math.min(bossColor.g+80,255)},${Math.min(bossColor.b+80,255)},0.45)`;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.8)`;
+        ctx.beginPath();
+        for (let a = 0; a < Math.PI * 1.3; a += 0.12) {
+          const r = (BRAD - 12) * (1 - a / (Math.PI * 1.3));
+          const x = Math.cos(a * 2) * r;
+          const y = Math.sin(a * 2) * r;
+          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.shadowBlur = 12;
