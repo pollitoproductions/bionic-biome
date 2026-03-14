@@ -1707,8 +1707,23 @@ menuBtn.addEventListener('click', () => {
 muteBtn.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   muteBtn.classList.toggle('active', !soundEnabled);
+
   if (!soundEnabled) {
+    // Save what was playing so we can resume when unmuted.
+    savedMusicTrack = Music.currentTrackId;
     Music.stop();
+  } else {
+    // Resume the last track when unmuting (only if a run is active).
+    if (savedMusicTrack && gameRunning && !gameOver) {
+      if (savedMusicTrack.startsWith('overworld_')) {
+        Music.play('overworld');
+      } else if (savedMusicTrack.startsWith('dungeon_')) {
+        Music.play('dungeon');
+      } else if (savedMusicTrack === 'title' || savedMusicTrack === 'victory') {
+        Music.play(savedMusicTrack);
+      }
+    }
+    savedMusicTrack = null;
   }
 });
 
