@@ -100,6 +100,13 @@
   background: rgba(200,200,200,0.18);
   color: #fff;
 }
+.mini-toggle-btn svg .slash {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.mini-toggle-btn.active svg .slash {
+  opacity: 1;
+}
 
 /* subtle top-to-bottom glossy shade over the action button */
 .btn-action::after {
@@ -845,6 +852,7 @@
       <path d="M3 9V15H7L12 20V4L7 9H3Z" />
       <path d="M16.5 12C16.5 10.21 15.7 8.58 14.24 7.59V16.41C15.7 15.42 16.5 13.79 16.5 12Z" />
       <path d="M19.5 12C19.5 9.79 18.59 7.79 17.06 6.47V17.53C18.59 16.21 19.5 14.21 19.5 12Z" />
+      <path class="slash" d="M5 5L19 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
     </svg>
   </div>
 </div>
