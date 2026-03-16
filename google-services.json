@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "416647438474",
+    "project_id": "bionic-biome-scoreboard",
+    "storage_bucket": "bionic-biome-scoreboard.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416647438474:android:bfc0510ca7373c3c848d73",
+        "android_client_info": {
+          "package_name": "com.pollitoproductions.bionicbiome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDte9xsqt4t5eDpcIZcNbcoPgLiZGEO9QI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
