@@ -910,9 +910,9 @@
     <button class="btn-std btn-back" onclick="backFromHighScoreDiff()">BACK</button>
   </div>
 
-  <!-- High Scores: Top 3 List -->
+  <!-- High Scores: Top 5 List -->
   <div class="hidden" id="highscore-list-screen">
-    <div class="difficulty-title" id="hs-list-title">CASUAL - TOP 3</div>
+    <div class="difficulty-title" id="hs-list-title">CASUAL - TOP 5</div>
     <div id="hs-list-body"></div>
     <div style="text-align:center; margin-top:15px;">
       <button class="btn-std btn-back" onclick="backFromHighScoreList()">BACK</button>
@@ -1985,7 +1985,7 @@ window.startCustomGame = () => {
 
 /* === HIGH SCORES SYSTEM === */
 const HS_STORAGE_KEY = 'bionicBiome_highscores';
-const HS_MAX_ENTRIES = 3;
+const HS_MAX_ENTRIES = 5;
 let pendingScore = null; // holds data while name entry is shown
 let deferNameEntryUntilMenu = false; // when true, show name entry after player chooses MAIN MENU post-game-over
 
@@ -2163,7 +2163,7 @@ window.showHighScoresFor = (difficulty) => {
   // Show local header immediately, then fetch global scores
   highscoreDiffBtns.classList.add('hidden');
   const diffName = DIFFICULTY_SETTINGS[difficulty]?.name || difficulty.toUpperCase();
-  document.getElementById('hs-list-title').textContent = diffName + ' - TOP 3 (GLOBAL)';
+  document.getElementById('hs-list-title').textContent = diffName + ' - TOP ' + HS_MAX_ENTRIES + ' (GLOBAL)';
   const body = document.getElementById('hs-list-body');
 
   // Show loading state
