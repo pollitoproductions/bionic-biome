@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- v105 DIAGNOSTIC: bare-bones theme, no custom window flags -->
-    <style name="Theme.BionicBiome" parent="Theme.AppCompat.DayNight.DarkActionBar">
-    </style>
-
-</resources>

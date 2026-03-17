@@ -1,9 +1,0 @@
-plugins {
-    id 'com.android.application' version '8.4.0' apply false
-}
-
-tasks.register('clean', Delete) {
-    delete rootProject.buildDir
-}
-
-// Java compilation defaults are controlled per-module (see app/build.gradle)
