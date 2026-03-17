@@ -2978,6 +2978,12 @@ function draw() {
   const b = biomes[(biomeLevel - 1) % biomes.length];
   let cx = player.x - 400, cy = player.y - 300;
 
+  // Choose brighter base colors for the overworld (before entering dungeon)
+  const overworldBrighten = 0.10; // increase lightness for overworld
+  const overworldSaturate = 0.00;
+  const grassColor = !inDungeon ? adjustColor(b.grass || '#000', overworldBrighten, overworldSaturate) : (b.grass || '#000');
+  const wallColor = !inDungeon ? adjustColor(b.wall || '#000', overworldBrighten * 0.6, overworldSaturate) : (b.wall || '#000');
+
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   let startX = Math.max(0, Math.floor(cx / TILE));
@@ -2991,7 +2997,7 @@ function draw() {
       let drawY = y * TILE - cy;
 
       if (world.grid[y][x] === 1) {
-        ctx.fillStyle = b.wall; 
+        ctx.fillStyle = wallColor; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
         
         ctx.fillStyle = "rgba(255,255,255,0.2)";
@@ -3005,7 +3011,7 @@ function draw() {
         ctx.strokeRect(drawX, drawY, TILE, TILE);
 
       } else if (!inDungeon) {
-        ctx.fillStyle = b.grass; 
+        ctx.fillStyle = grassColor; 
         ctx.fillRect(drawX, drawY, TILE, TILE);
         
         let noise = ((x * 13 + y * 23) % 10) / 10;
