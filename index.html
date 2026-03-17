@@ -1411,6 +1411,80 @@ function hexToRgb(hex) {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
+function rgbToHex(rgb) {
+  const r = Math.round(rgb.r);
+  const g = Math.round(rgb.g);
+  const b = Math.round(rgb.b);
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function rgbToHsl({r, g, b}) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return { h: h * 360, s: s, l: l };
+}
+
+function hslToRgb(h, s, l) {
+  h /= 360;
+  let r, g, b;
+  if (s === 0) r = g = b = l;
+  else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+function adjustColor(hex, deltaL = 0, deltaS = 0) {
+  try {
+    const rgb = hexToRgb(hex);
+    const hsl = rgbToHsl(rgb);
+    hsl.l = Math.max(0, Math.min(1, hsl.l + deltaL));
+    hsl.s = Math.max(0, Math.min(1, hsl.s + deltaS));
+    const newRgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+    return rgbToHex(newRgb);
+  } catch (e) {
+    return hex;
+  }
+}
+
+// Apply subtle visual improvements to all biomes: darken bases, brighten edges and important actors
+function enhanceBiomes() {
+  if (!Array.isArray(biomes)) return;
+  biomes.forEach(b => {
+    if (b.grass) b.grass = adjustColor(b.grass, -0.10, 0);
+    if (b.wall) b.wall = adjustColor(b.wall, -0.10, 0);
+    if (b.wallEdge) b.wallEdge = adjustColor(b.wallEdge, 0.12, 0.08);
+    if (b.boss) b.boss = adjustColor(b.boss, 0.12, 0.10);
+    if (b.enemy) b.enemy = adjustColor(b.enemy, 0.12, 0.12);
+    if (b.wpnGlow) b.wpnGlow = adjustColor(b.wpnGlow, 0.15, 0.18);
+  });
+}
+
+enhanceBiomes();
+
 function isWall(x, y) {
   let tx = Math.floor(x / TILE);
   let ty = Math.floor(y / TILE);
@@ -1476,6 +1550,14 @@ const customPanel = document.getElementById('custom-panel');
 const dropRateSlider = document.getElementById('drop-rate-slider');
 const enemyCountSlider = document.getElementById('enemy-count-slider');
 const enemyDifficultySlider = document.getElementById('enemy-difficulty-slider');
+
+// Add a subtle overlay element for depth/texture without affecting input
+if (!document.getElementById('biome-overlay')) {
+  const ov = document.createElement('div');
+  ov.id = 'biome-overlay';
+  ov.className = 'biome-overlay';
+  document.body.appendChild(ov);
+}
 const dropRateVal = document.getElementById('drop-rate-val');
 const enemyCountVal = document.getElementById('enemy-count-val');
 const enemyDifficultyVal = document.getElementById('enemy-difficulty-val');
