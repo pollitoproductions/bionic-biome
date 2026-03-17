@@ -1898,6 +1898,37 @@ const HS_STORAGE_KEY = 'bionicBiome_highscores';
 const HS_MAX_ENTRIES = 3;
 let pendingScore = null; // holds data while name entry is shown
 
+// Firebase Realtime Database URL (anonymous/simple board)
+const DATABASE_URL = 'https://bionic-biome-scoreboard-default-rtdb.firebaseio.com';
+
+// Send a score object to Firebase at /scores/{playerName}.json using fetch().
+// playerName should be a simple identifier (no slashes). scoreData is any JSON-serializable object.
+function sendScoreToFirebase(playerName, scoreData) {
+  if (!playerName) return;
+  const safeName = encodeURIComponent(playerName);
+  const url = `${DATABASE_URL}/scores/${safeName}.json`;
+  try {
+    fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scoreData)
+    }).then(res => {
+      if (!res.ok) console.warn('Failed to send score to Firebase', res.statusText);
+    }).catch(err => console.warn('Error sending score to Firebase', err));
+  } catch (e) {
+    console.warn('Could not send score to Firebase', e);
+  }
+}
+
+// Make a filesystem/DB-safe key from an entered name: uppercase, allow A-Z0-9,_- only.
+function makeSafeKey(name) {
+  if (!name) return 'ANON_' + Math.floor(Date.now() / 1000);
+  // strip non-alphanumeric, keep underscore and dash
+  let k = name.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+  if (!k) k = 'ANON_' + Math.floor(Date.now() / 1000);
+  return k;
+}
+
 function getHighScores(difficulty) {
   try {
     const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
@@ -1966,6 +1997,25 @@ window.saveHighScore = () => {
     return;
   }
   addHighScore(pendingScore.difficulty, name, pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+
+  // Send the entered (filtered) name and score to Firebase
+  try {
+    const scorePayload = {
+      name: name,
+      difficulty: pendingScore.difficulty,
+      kills: pendingScore.kills,
+      biome: pendingScore.biome,
+      time: pendingScore.time,
+      revives: pendingScore.revives,
+      ts: Date.now()
+    };
+    // Use a sanitized key for the DB path, but keep the display name in the payload
+    const keyName = makeSafeKey(name);
+    sendScoreToFirebase(keyName, scorePayload);
+  } catch (e) {
+    console.warn('Failed to send saved high score to Firebase', e);
+  }
+
   nameEntryOverlay.classList.add('hidden');
   pendingScore = null;
 };
