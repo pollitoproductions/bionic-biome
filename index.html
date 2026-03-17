@@ -1623,6 +1623,14 @@ window.resetToMainMenu = () => {
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
   customSubmenu.classList.add('hidden');
+  // If a high-score was detected at game over and the player chose MAIN MENU (i.e., declined revive),
+  // show the name-entry modal now so they can save their score.
+  if (deferNameEntryUntilMenu && pendingScore) {
+    // Clear flag before showing so repeated calls don't reopen it
+    deferNameEntryUntilMenu = false;
+    // Show name entry using the pending score values
+    showNameEntry(pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+  }
 };
 
 // Navigation functions
@@ -1897,6 +1905,7 @@ window.startCustomGame = () => {
 const HS_STORAGE_KEY = 'bionicBiome_highscores';
 const HS_MAX_ENTRIES = 3;
 let pendingScore = null; // holds data while name entry is shown
+let deferNameEntryUntilMenu = false; // when true, show name entry after player chooses MAIN MENU post-game-over
 
 // Firebase Realtime Database URL (anonymous/simple board)
 const DATABASE_URL = 'https://bionic-biome-scoreboard-default-rtdb.firebaseio.com';
@@ -2127,7 +2136,11 @@ function showGameOver() {
   // Check for high score (non-custom only)
   const runTime = Date.now() - startTime;
   if (isHighScore(currentDifficulty, biomeLevel, enemiesKilled)) {
-    showNameEntry(enemiesKilled, biomeLevel, runTime, continuesUsed);
+    // Defer showing the name entry until the player explicitly chooses MAIN MENU (i.e., commits to not reviving)
+    pendingScore = { difficulty: currentDifficulty, kills: enemiesKilled, biome: biomeLevel, time: runTime, revives: continuesUsed };
+    document.getElementById('name-entry-score-text').textContent =
+      'BIOME ' + biomeLevel + '  ' + enemiesKilled + ' KILLS  ' + formatTime(runTime);
+    deferNameEntryUntilMenu = true;
   }
   
   // Hide main buttons, show game over button
