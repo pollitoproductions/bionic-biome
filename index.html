@@ -1989,7 +1989,13 @@ function showNameEntry(kills, biome, time, revives) {
     'BIOME ' + biome + ' \u2022 ' + kills + ' KILLS \u2022 ' + formatTime(time);
   nameEntryInput.value = '';
   nameEntryInput.style.borderColor = 'rgba(0,230,255,0.3)';
+  // Ensure overlay is visible even if inline styles or service-worker cache previously hid it
   nameEntryOverlay.classList.remove('hidden');
+  try {
+    nameEntryOverlay.style.setProperty('display', 'flex', 'important');
+  } catch (e) {
+    nameEntryOverlay.style.display = 'flex';
+  }
   setTimeout(() => nameEntryInput.focus(), 100);
 }
 
@@ -2025,12 +2031,23 @@ window.saveHighScore = () => {
     console.warn('Failed to send saved high score to Firebase', e);
   }
 
+  // Hide overlay reliably
   nameEntryOverlay.classList.add('hidden');
+  try {
+    nameEntryOverlay.style.setProperty('display', 'none', 'important');
+  } catch (e) {
+    nameEntryOverlay.style.display = 'none';
+  }
   pendingScore = null;
 };
 
 window.skipHighScore = () => {
   nameEntryOverlay.classList.add('hidden');
+  try {
+    nameEntryOverlay.style.setProperty('display', 'none', 'important');
+  } catch (e) {
+    nameEntryOverlay.style.display = 'none';
+  }
   pendingScore = null;
 };
 
