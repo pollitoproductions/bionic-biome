@@ -2185,7 +2185,7 @@ window.showHighScoresFor = (difficulty) => {
     let html = '<table class="hs-table"><thead><tr>' +
       '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
-    for (let i = 0; i < Math.min(scores.length, 50); i++) {
+    for (let i = 0; i < Math.min(scores.length, HS_MAX_ENTRIES); i++) {
       const s = scores[i];
       html += '<tr>' +
         '<td class="hs-rank">' + (i + 1) + '</td>' +
