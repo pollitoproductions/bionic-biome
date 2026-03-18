@@ -71,8 +71,10 @@
 .action-thumbprint {
   width: 80px;
   height: 96px;
-  transform: rotate(-35deg);
-  transform-origin: 65% 65%;
+  transform: rotate(-30deg);
+  transform-origin: 50% 50%;
+  display: block;
+  margin: 0 auto;
   color: rgba(255,255,255,0.18); /* matches previous "HOLD" transparency */
   pointer-events: none;
   user-select: none;
@@ -861,11 +863,13 @@
         <path d="M60 58 A20 30 0 1 1 59.9 58" />
         <path d="M60 74 A14 22 0 1 1 59.9 74" />
         <path d="M60 88 A9 14 0 1 1 59.9 88" />
-        <!-- Inner short whorl to simulate the fingerprint core -->
-        <path d="M60 96 C64 94, 66 98, 62 102 C58 106, 54 104, 56 100" />
-        <!-- Slight offsets and small arcs to avoid perfectly symmetric look -->
-        <path d="M48 32 C46 34, 46 38, 48 40" opacity="0.95" />
-        <path d="M72 48 C74 50, 74 54, 72 56" opacity="0.95" />
+        <!-- Inner whorl (tight spiral-like core) -->
+        <path d="M60 96 C62 92, 66 94, 65 98 C64 102, 60 101, 60 97" />
+        <path d="M60 90 C62 88, 66 90, 66 94" />
+        <!-- Additional subtle ridge lines for realism -->
+        <path d="M50 36 C48 38, 48 42, 50 44" opacity="0.95" />
+        <path d="M70 50 C72 52, 72 56, 70 58" opacity="0.95" />
+        <path d="M44 64 C46 62, 50 62, 52 64" opacity="0.9" />
       </g>
     </svg>
   </div>
