@@ -2994,6 +2994,19 @@ function enterDungeon() {
 const ctx = document.getElementById("c").getContext("2d");
 const canvas = document.getElementById("c");
 
+// High-DPI canvas setup for consistent line/stroke rendering across devices
+const DPR = Math.max(1, window.devicePixelRatio || 1);
+const CSS_W = 800, CSS_H = 600;
+canvas.style.width = CSS_W + 'px';
+canvas.style.height = CSS_H + 'px';
+canvas.width = Math.round(CSS_W * DPR);
+canvas.height = Math.round(CSS_H * DPR);
+// Use setTransform to scale drawing operations to logical CSS pixels
+ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+// Detect iOS once for conditional fallbacks
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 function draw() {
   // If there is no world yet, clear and return
   if (!world || !player) {
@@ -3081,7 +3094,7 @@ ctx.translate(400, 300);
 const time = Date.now() / 1000;
 const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-ctx.shadowBlur = isIOS ? 8 : 18;
+ctx.shadowBlur = isIOS ? 6 : 18;
 ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
 ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
 ctx.beginPath();
@@ -3115,7 +3128,7 @@ for (let i = 0; i < 3; i++) {
   ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = isIOS ? 6 : 15;
   ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
   
   ctx.beginPath();
@@ -3138,7 +3151,7 @@ for (let i = 0; i < particleCount; i++) {
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
   
-  ctx.shadowBlur = 10;
+  ctx.shadowBlur = isIOS ? 5 : 10;
   ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
   ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
   ctx.beginPath();
@@ -3147,7 +3160,7 @@ for (let i = 0; i < particleCount; i++) {
 }
 
 // Outer ring — segmented rotating energy arcs
-ctx.shadowBlur = 15;
+ctx.shadowBlur = isIOS ? 6 : 15;
 ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
 ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
 ctx.lineWidth = 2;
