@@ -1796,8 +1796,9 @@ function updateMiniButtonPositions() {
   const btnSize = 34;
   const padding = 4;
 
-  const left = rect.left + mmX * scaleX - btnSize - padding;
-  const top = rect.top + mmY * scaleY;
+  // Position the mini-buttons at the minimap's top-left corner
+  const left = rect.left + mmX * scaleX + padding;
+  const top = rect.top + mmY * scaleY + padding;
 
   muteBtn.style.left = `${left}px`;
   muteBtn.style.top = `${top}px`;
@@ -3149,7 +3150,7 @@ for (let i = 0; i < 3; i++) {
   ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
-  ctx.shadowBlur = isIOS ? 6 : 15;
+  ctx.shadowBlur = isIOS ? 0 : 15;
   ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
   
   ctx.beginPath();
@@ -3172,7 +3173,7 @@ for (let i = 0; i < particleCount; i++) {
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
   
-  ctx.shadowBlur = isIOS ? 5 : 10;
+  ctx.shadowBlur = isIOS ? 0 : 10;
   ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
   ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
   ctx.beginPath();
@@ -3181,7 +3182,7 @@ for (let i = 0; i < particleCount; i++) {
 }
 
 // Outer ring — segmented rotating energy arcs
-ctx.shadowBlur = isIOS ? 6 : 15;
+ctx.shadowBlur = isIOS ? 0 : 15;
 ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
 ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
 ctx.lineWidth = 2;
