@@ -2034,6 +2034,11 @@ function saveHighScores(difficulty, scores) {
   } catch(e) { console.warn('Could not save high scores', e); }
 }
 
+function _compareHighScores(a, b) {
+  // Primary: kills (enemy count), secondary: biome, tertiary: faster time
+  return (b.kills - a.kills) || (b.biome - a.biome) || (a.time - b.time);
+}
+
 function isHighScore(difficulty, biome, kills) {
   if (difficulty === 'custom') return false; // no leaderboard for custom
   if (!kills || kills <= 0) return false; // don't prompt for no kills
@@ -2047,11 +2052,18 @@ function isHighScore(difficulty, biome, kills) {
   } catch (e) {
     scores = [];
   }
-  scores.sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time);
+  scores.sort(_compareHighScores);
   scores = scores.slice(0, HS_MAX_ENTRIES);
   if (scores.length < HS_MAX_ENTRIES) return true;
   const worst = scores[scores.length - 1];
-  return biome > worst.biome || (biome === worst.biome && kills > worst.kills);
+  return kills > worst.kills || (kills === worst.kills && biome > worst.biome);
+}
+
+function addHighScore(difficulty, name, kills, biome, time, revives) {
+  const scores = getHighScores(difficulty);
+  scores.push({ name: name.toUpperCase(), kills, biome, time, revives });
+  scores.sort(_compareHighScores);
+  saveHighScores(difficulty, scores.slice(0, HS_MAX_ENTRIES));
 }
 
 function addHighScore(difficulty, name, kills, biome, time, revives) {
@@ -2193,10 +2205,14 @@ window.showHighScoresFor = (difficulty) => {
       scores = local;
     }
 
+    // Ensure scores are ordered by kills, then biome, then time.
+    scores.sort(_compareHighScores);
+    scores = scores.slice(0, HS_MAX_ENTRIES);
+
     let html = '<table class="hs-table"><thead><tr>' +
       '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
-    for (let i = 0; i < Math.min(scores.length, HS_MAX_ENTRIES); i++) {
+    for (let i = 0; i < scores.length; i++) {
       const s = scores[i];
       html += '<tr>' +
         '<td class="hs-rank">' + (i + 1) + '</td>' +
