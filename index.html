@@ -1802,11 +1802,11 @@ function updateMiniButtonPositions() {
   const btnSize = 34;
   const padding = 6;
 
-  // Position the mute button to the right of the minimap (keeps it out of the left-side stats area)
-  let left = rect.left + (mmX + mmW) * scaleX + padding;
+  // Position the mute button to the LEFT of the minimap and level with its top
+  let left = rect.left + mmX * scaleX - btnSize - padding;
   const top = rect.top + mmY * scaleY;
 
-  // Clamp so the button never goes off the visible canvas area
+  // Clamp so the button never goes off the visible canvas area on the left or right
   const maxLeft = rect.left + rect.width - btnSize - padding;
   if (left > maxLeft) left = maxLeft;
   if (left < rect.left + padding) left = rect.left + padding;
@@ -1921,11 +1921,11 @@ function updateMiniMenuButtonPosition() {
   const btnSize = 44;
   const padding = 6;
 
-  // Position mini-menu button to the right of the minimap
-  let left = rect.left + (mmX + mmW) * scaleX + padding;
+  // Position mini-menu button to the LEFT of the minimap and level with its top
+  let left = rect.left + mmX * scaleX - btnSize - padding;
   const top = rect.top + mmY * scaleY;
 
-  // Clamp to canvas bounds
+  // Clamp to canvas bounds (prevent off-screen placement)
   const maxLeft = rect.left + rect.width - btnSize - padding;
   if (left > maxLeft) left = maxLeft;
   if (left < rect.left + padding) left = rect.left + padding;
