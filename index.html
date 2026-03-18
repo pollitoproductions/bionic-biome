@@ -3090,16 +3090,37 @@ function draw() {
 ctx.save();
 ctx.translate(400, 300);
 
-// Outer glow pulse (reduced shadow for iOS)
+// Outer glow pulse. Use a radial gradient on iOS to avoid Safari's shadow artifacts.
 const time = Date.now() / 1000;
 const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-ctx.shadowBlur = isIOS ? 6 : 18;
-ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-ctx.beginPath();
-ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
-ctx.fill();
+if (isIOS) {
+  // Draw a soft radial gradient instead of relying on shadowBlur
+  if (player.hitTimer > 0) {
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, pulseSize);
+    g.addColorStop(0, 'rgba(255,255,255,0.95)');
+    g.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+  } else {
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, pulseSize);
+    g.addColorStop(0, 'rgba(0,200,255,0.45)');
+    g.addColorStop(0.6, 'rgba(0,180,255,0.10)');
+    g.addColorStop(1, 'rgba(0,180,255,0)');
+    ctx.fillStyle = g;
+  }
+  ctx.beginPath();
+  ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+  ctx.fill();
+} else {
+  // Desktop / non-iOS: keep shadow-based glow for richer effect
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+  ctx.beginPath();
+  ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+  ctx.fill();
+}
 
 // Main orb base with gradient (no shadowBlur for edge)
 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
