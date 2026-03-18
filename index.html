@@ -856,16 +856,17 @@
   <div class="btn-action" id="act" aria-label="attack button">
     <svg class="action-thumbprint" viewBox="0 0 120 160" aria-hidden="true" focusable="false">
       <g fill="none" stroke="currentColor" stroke-linecap="butt" stroke-linejoin="bevel">
-        <!-- Nine uniform, parallel concentric ellipses (clean arch within the oval) -->
-        <ellipse cx="60" cy="70" rx="40" ry="58" stroke-width="2.6" opacity="0.95" />
-        <ellipse cx="60" cy="70" rx="34" ry="50" stroke-width="2.4" opacity="0.93" />
-        <ellipse cx="60" cy="70" rx="30" ry="44" stroke-width="2.2" opacity="0.91" />
-        <ellipse cx="60" cy="70" rx="26" ry="38" stroke-width="2.0" opacity="0.89" />
-        <ellipse cx="60" cy="70" rx="22" ry="32" stroke-width="1.8" opacity="0.87" />
-        <ellipse cx="60" cy="70" rx="18" ry="26" stroke-width="1.6" opacity="0.85" />
-        <ellipse cx="60" cy="70" rx="14" ry="20" stroke-width="1.4" opacity="0.83" />
-        <ellipse cx="60" cy="70" rx="10" ry="14" stroke-width="1.2" opacity="0.81" />
-        <ellipse cx="60" cy="70" rx="6" ry="8" stroke-width="1.0" opacity="0.79" />
+        <!-- Nine parallel concentric ellipses with slight horizontal offset so they converge toward the outside corner -->
+        <!-- Right-edge-aligned ellipses: set cx so cx+rx ~= 99 to converge toward corner -->
+        <ellipse cx="59" cy="70" rx="40" ry="58" stroke-width="2.6" opacity="0.95" />
+        <ellipse cx="65" cy="70" rx="34" ry="50" stroke-width="2.4" opacity="0.93" />
+        <ellipse cx="69" cy="70" rx="30" ry="44" stroke-width="2.2" opacity="0.91" />
+        <ellipse cx="73" cy="70" rx="26" ry="38" stroke-width="2.0" opacity="0.89" />
+        <ellipse cx="77" cy="70" rx="22" ry="32" stroke-width="1.8" opacity="0.87" />
+        <ellipse cx="81" cy="70" rx="18" ry="26" stroke-width="1.6" opacity="0.85" />
+        <ellipse cx="85" cy="70" rx="14" ry="20" stroke-width="1.4" opacity="0.83" />
+        <ellipse cx="89" cy="70" rx="10" ry="14" stroke-width="1.2" opacity="0.81" />
+        <ellipse cx="93" cy="70" rx="6" ry="8" stroke-width="1.0" opacity="0.79" />
       </g>
     </svg>
   </div>
