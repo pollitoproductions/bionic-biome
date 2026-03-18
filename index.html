@@ -798,12 +798,17 @@
   }
   .pause-text {
     font-family: 'Press Start 2P', monospace;
-    font-size: 15px;
+    font-size: 22px;
     color: #00e6ff;
+    font-weight: bold;
     text-align: center;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    padding: 20px;
-    line-height: 1.6;
+    text-shadow: 0 0 16px #00e6ff, 2px 2px 8px #000;
+    padding: 32px 20px;
+    line-height: 1.8;
+    letter-spacing: 2px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.35);
+    box-shadow: 0 0 32px #00e6ff44;
   }
 
   /* === Responsive fixes (added per request) === */
@@ -1689,12 +1694,13 @@ function handleCanvasTap(e) {
   const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
-  if (gameActive) {
-    if (onMinimap) {
-      pauseGame();
-    }
-  } else {
-    // When paused, any tap resumes
+  // Always pause if minimap is tapped
+  if (onMinimap && gameActive) {
+    pauseGame();
+    return;
+  }
+  // When paused, any tap resumes
+  if (!gameActive) {
     resumeGame();
   }
 }
