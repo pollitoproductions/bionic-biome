@@ -1693,6 +1693,21 @@ window.selectDifficulty = (diff) => {
 };
 
 // Function to reset to main menu from game over
+function _shouldPromptForName(pendingScore) {
+  // First, check local scores (fast). If it fails, no prompt.
+  if (!isHighScore(pendingScore.difficulty, pendingScore.biome, pendingScore.kills)) return Promise.resolve(false);
+
+  // Then check remote/global scores (if available). If the global board is strong, we may still not qualify.
+  return fetchRemoteScores(pendingScore.difficulty)
+    .then(remoteScores => {
+      if (!remoteScores || remoteScores.length === 0) return true;
+      remoteScores.sort(_compareHighScores);
+      const top = remoteScores.slice(0, HS_MAX_ENTRIES);
+      const worst = top[top.length - 1];
+      return pendingScore.kills > worst.kills || (pendingScore.kills === worst.kills && pendingScore.biome > worst.biome);
+    }).catch(() => true); // If remote fails, fall back to local decision.
+}
+
 window.resetToMainMenu = () => {
   statsBox.style.display = 'none';
   titleText.innerHTML = "BIONIC<br>BIOME";
@@ -1702,15 +1717,17 @@ window.resetToMainMenu = () => {
   mainBtns.classList.remove('hidden');
   diffBtns.classList.add('hidden');
   customSubmenu.classList.add('hidden');
+
   // If a high-score was detected at game over and the player chose MAIN MENU (i.e., declined revive),
   // show the name-entry modal now so they can save their score.
   if (deferNameEntryUntilMenu && pendingScore) {
-    // Clear flag before showing so repeated calls don't reopen it
     deferNameEntryUntilMenu = false;
-    // Only prompt for a name if this score still qualifies for the top-5 leaderboard
-    if (isHighScore(pendingScore.difficulty, pendingScore.biome, pendingScore.kills)) {
-      showNameEntry(pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
-    }
+
+    _shouldPromptForName(pendingScore).then(shouldPrompt => {
+      if (shouldPrompt) {
+        showNameEntry(pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+      }
+    });
   }
 };
 
