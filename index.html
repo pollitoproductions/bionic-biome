@@ -24,11 +24,6 @@
     object-fit: contain; background: #000;
     image-rendering: pixelated; 
   }
-  /* Disable iOS tap highlight and focus outline for canvas and controls */
-  canvas, .btn-action, .mini-toggle-btn, .joy-container, .btn-std {
-    -webkit-tap-highlight-color: transparent;
-    outline: none;
-  }
   #ui-layer {
     position: fixed; left: 0; top: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 100;
@@ -69,21 +64,14 @@
 .btn-action:active { transform: translateY(3px); }
 
 .action-hold-label {
-  display: none;
-}
-
-/* Thumbprint replacement for the action button */
-.action-thumbprint {
-  width: 80px;
-  height: 96px;
-  transform: rotate(-30deg) translate(2px,8px);
-  transform-origin: 50% 50%;
-  display: block;
-  margin: 0 auto;
-  color: rgba(255,255,255,0.18); /* matches previous "HOLD" transparency */
+  position: relative;
+  z-index: 1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 2px;
   pointer-events: none;
   user-select: none;
-  z-index: 1;
 }
 
 /* Mini-map toggle buttons (mute / vibration) */
@@ -107,12 +95,10 @@
 }
 .mini-toggle-btn:hover {
   background: rgba(255,255,255,0.08);
-  pointer-events: auto;
 }
 .mini-toggle-btn.active {
   background: rgba(200,200,200,0.18);
   color: #fff;
-  pointer-events: auto;
 }
 .mini-toggle-btn svg .slash {
   opacity: 0;
@@ -791,24 +777,14 @@
     z-index: 150;
     pointer-events: none;
   }
-  /* Allow pointer-events only for resume tap, not for minimap */
-  #pause-overlay.resume-active {
-    pointer-events: auto !important;
-  }
-  }
   .pause-text {
     font-family: 'Press Start 2P', monospace;
     font-size: 15px;
     color: #00e6ff;
     text-align: center;
-    text-shadow: 2px 2px 8px #3498db, 0 0 12px #00e6ff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     padding: 20px;
     line-height: 1.6;
-    line-height: 1.8;
-    letter-spacing: 2px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.35);
-    box-shadow: 0 0 32px #00e6ff44;
   }
 
   /* === Responsive fixes (added per request) === */
@@ -870,26 +846,7 @@
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
-  <div class="btn-action" id="act" aria-label="attack button">
-    <svg class="action-thumbprint" viewBox="0 0 120 160" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="currentColor" stroke-linecap="butt" stroke-linejoin="bevel">
-        <!-- Nine parallel concentric ellipses with slight horizontal offset so they converge toward the outside corner -->
-        <!-- Keep the outermost oval in its original position; skew inner ovals toward SE so their right edges meet lower-right -->
-        <!-- Outermost oval remains centered (cx=60, cy=70). Inner ovals have cx set so cx+rx~=100 and increasing cy to move the touch point southeast. -->
-          <ellipse cx="60" cy="70" rx="40" ry="58" stroke-width="2.6" opacity="0.95" />
-          <!-- Translations along ~42deg toward the narrow outside side; steps reduced to avoid touching -->
-          <!-- Translations adjusted to angle convergence ~60deg downward (15-20deg more south) -->
-          <ellipse cx="60" cy="72" rx="34" ry="50" stroke-width="2.4" opacity="0.93" transform="translate(0.60,1.04)" />
-          <ellipse cx="60" cy="74" rx="30" ry="44" stroke-width="2.2" opacity="0.91" transform="translate(1.20,2.08)" />
-          <ellipse cx="60" cy="76" rx="26" ry="38" stroke-width="2.0" opacity="0.89" transform="translate(1.80,3.12)" />
-          <ellipse cx="60" cy="78" rx="22" ry="32" stroke-width="1.8" opacity="0.87" transform="translate(2.40,4.16)" />
-          <ellipse cx="60" cy="80" rx="18" ry="26" stroke-width="1.6" opacity="0.85" transform="translate(3.00,5.20)" />
-          <ellipse cx="60" cy="82" rx="14" ry="20" stroke-width="1.4" opacity="0.83" transform="translate(3.60,6.24)" />
-          <ellipse cx="60" cy="84" rx="10" ry="14" stroke-width="1.2" opacity="0.81" transform="translate(4.20,7.28)" />
-          <ellipse cx="60" cy="86" rx="6" ry="8" stroke-width="1.0" opacity="0.79" transform="translate(4.80,8.32)" />
-      </g>
-    </svg>
-  </div>
+  <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
   <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9V15H7L12 20V4L7 9H3Z" />
@@ -918,7 +875,7 @@
   
   <div class="btn-row" id="main-btns">
     <button class="btn-std btn-menu" id="menu-btn">MENU</button>
-    <button class="btn-std" id="highscore-btn">LEADERBOARDS</button>
+    <button class="btn-std" id="highscore-btn">HIGH SCORES</button>
     <button class="btn-std" id="play-btn">PLAY</button>
   </div>
 
@@ -943,7 +900,10 @@
 
   <!-- High Scores: Difficulty Selection -->
   <div class="btn-row hidden" id="highscore-diff-btns">
-      <div class="difficulty-title">Global Leaderboards</div>
+    <div class="difficulty-title">HIGH SCORES</div>
+    <div style="width:100%; text-align:center; font-family:'Press Start 2P'; font-size:8px; color:#7f8c8d; margin-bottom:12px; line-height:1.6;">
+      GLOBAL LEADERBOARDS
+    </div>
     <button class="btn-std btn-easy" onclick="showHighScoresFor('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="showHighScoresFor('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="showHighScoresFor('impossible')">IMPOSSIBLE</button>
@@ -1250,9 +1210,6 @@ const Music = {
     // Low, heavy base roots for a darksynth feel (C2, D2, E2, F2, A1)
     const roots = [65.41, 73.42, 82.41, 87.31, 55.00, 65.41, 73.42, 82.41, 87.31, 55.00]; 
     let safeLevel = Math.max(1, Math.min(10, level));
-    // Swap Biome 1 and Biome 8 music: when requested level 1 play 8 and vice-versa
-    if (safeLevel === 1) safeLevel = 8;
-    else if (safeLevel === 8) safeLevel = 1;
     let base = roots[safeLevel - 1]; 
     
     let intervals = [];
@@ -1423,15 +1380,15 @@ const biomes = [
   // 3) Crystal Cavern
   {name: "Crystal Cavern", grass:"#2d1b3f", wall:"#355c7d", wallEdge:"#1a0f2b", boss:"#d9a441", enemy:"#c74b4b",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
-  // 4) Bioluminescent Marsh (visually distinct — neon purple/seafoam glow)
-  {name: "Bioluminescent Marsh", grass:"#072b21", wall:"#071428", wallEdge:"#6affc7", boss:"#9b59ff", enemy:"#ffd166",
-   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#7affd6"},
+  // 4) Icy Tundra - cyan glow for contrast on light background
+  {name: "Icy Tundra", grass:"#a9e8ff", wall:"#e4f6ff", wallEdge:"#6fb4d6", boss:"#ff934f", enemy:"#7a0f2e",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 5) Gold Waste - darker tones for better weapon visibility
   {name: "Gold Waste", grass:"#3d3208", wall:"#5c4d0f", wallEdge:"#1f1804", boss:"#e67e22", enemy:"#0f6177",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
-  // 6) Icy Tundra - cyan glow for contrast on light background
-  {name: "Icy Tundra", grass:"#78cfe8", wall:"#bfdff6", wallEdge:"#4b96bd", boss:"#ff934f", enemy:"#7a0f2e",
-   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#0099cc"},
+  // 6) Azure Lake
+  {name: "Azure Lake", grass:"#85c1e9", wall:"#d6eaf8", wallEdge:"#2e86c1", boss:"#fdfefe", enemy:"#d35400",
+   wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
   // 7) Midnight Zone
   {name: "Midnight Zone", grass:"#2c3e50", wall:"#566573", wallEdge:"#17202a", boss:"#a569bd", enemy:"#ff4d4d",
    wpnTrail:"#f1c40f", wpnShaft:"#bdc3c7", wpnHead:"#dfeef6", wpnGlow:"#00e6ff"},
@@ -1694,13 +1651,12 @@ function handleCanvasTap(e) {
   const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
-  // Always pause if minimap is tapped
-  if (onMinimap && gameActive) {
-    pauseGame();
-    return;
-  }
-  // When paused, any tap resumes
-  if (!gameActive) {
+  if (gameActive) {
+    if (onMinimap) {
+      pauseGame();
+    }
+  } else {
+    // When paused, any tap resumes
     resumeGame();
   }
 }
@@ -1923,18 +1879,11 @@ function updateMiniMenuButtonPosition() {
   // Minimap is drawn at (650, 15) in canvas coords, with size MAP_SIZE.
   const mmX = 650;
   const mmY = 15;
-  const mmW = MAP_SIZE;
   const btnSize = 44;
   const padding = 6;
 
-  // Position mini-menu button to the LEFT of the minimap and level with its top
-  let left = rect.left + mmX * scaleX - btnSize - padding;
+  const left = rect.left + mmX * scaleX - btnSize - padding;
   const top = rect.top + mmY * scaleY;
-
-  // Clamp to canvas bounds (prevent off-screen placement)
-  const maxLeft = rect.left + rect.width - btnSize - padding;
-  if (left > maxLeft) left = maxLeft;
-  if (left < rect.left + padding) left = rect.left + padding;
 
   miniMenuBtn.style.left = `${left}px`;
   miniMenuBtn.style.top = `${top}px`;
@@ -2234,9 +2183,9 @@ window.showHighScoresFor = (difficulty) => {
     }
 
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
-    for (let i = 0; i < Math.min(scores.length, HS_MAX_ENTRIES); i++) {
+    for (let i = 0; i < Math.min(scores.length, 50); i++) {
       const s = scores[i];
       html += '<tr>' +
         '<td class="hs-rank">' + (i + 1) + '</td>' +
@@ -2258,7 +2207,7 @@ window.showHighScoresFor = (difficulty) => {
       return;
     }
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
     for (let i = 0; i < local.length; i++) {
       const s = local[i];
@@ -2541,36 +2490,30 @@ joy.addEventListener("touchend", () => {
 });
 
 function handleTouch(e) {
-  if (!muteBtn) return;
-  if (!canvas) return;
-  // Anchor mute button beside minimap, aligned with stats box
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = rect.width / canvas.width;
-  const scaleY = rect.height / canvas.height;
-  // Stats box is at (boxX, boxY) in canvas coords
-  const boxX = 20;
-  const boxY = 10;
-  const boxW = 360;
-  // Minimap is at (mmX, mmY)
-  const mmX = 650;
-  const mmY = 15;
-  const btnSize = 34;
-  const padding = 4;
-  // Calculate minimap's top-left in screen coordinates
-  const minimapLeft = rect.left + mmX * scaleX;
-  const minimapTop = rect.top + mmY * scaleY;
-  // Place mute button immediately left and top-aligned with minimap
-  let left = minimapLeft - btnSize - padding;
-  let top = minimapTop;
-  // Clamp left/top to stats box area
-  const statsBoxLeft = rect.left + boxX * scaleX;
-  const statsBoxTop = rect.top + boxY * scaleY;
-  // Ensure mute button is never above stats box top
-  if (top < statsBoxTop) top = statsBoxTop;
-  // Ensure mute button is never left of stats box
-  if (left < statsBoxLeft) left = statsBoxLeft;
-  muteBtn.style.left = `${left}px`;
-  muteBtn.style.top = `${top}px`;
+  if (!gameActive) return;
+  e.preventDefault();
+  let t = e.touches[0];
+  for (let i = 0; i < e.touches.length; i++) if (joy.contains(e.touches[i].target)) t = e.touches[i];
+    
+  let r = joy.getBoundingClientRect();
+  let dx = t.clientX - (r.left + r.width / 2);
+  let dy = t.clientY - (r.top + r.height / 2);
+  let d = Math.min(r.width / 2, Math.hypot(dx, dy));
+  let ang = Math.atan2(dy, dx);
+    
+  touchX = Math.cos(ang) * (d / (r.width / 2));
+  touchY = Math.sin(ang) * (d / (r.width / 2));
+  knob.style.transform = "translate(" + (touchX * 40) + "px," + (touchY * 40) + "px)";
+}
+
+actBtn.addEventListener("touchstart", e => {
+  e.preventDefault();
+  if (!gameActive) return; 
+  startAction();
+}, {passive: false});
+
+actBtn.addEventListener("touchend", stopAction);
+actBtn.addEventListener("touchcancel", stopAction);
 
 function doAction() {
   player.swing = 5; 
@@ -3025,19 +2968,6 @@ function enterDungeon() {
 const ctx = document.getElementById("c").getContext("2d");
 const canvas = document.getElementById("c");
 
-// High-DPI canvas setup for consistent line/stroke rendering across devices
-const DPR = Math.max(1, window.devicePixelRatio || 1);
-const CSS_W = 800, CSS_H = 600;
-canvas.style.width = CSS_W + 'px';
-canvas.style.height = CSS_H + 'px';
-canvas.width = Math.round(CSS_W * DPR);
-canvas.height = Math.round(CSS_H * DPR);
-// Use setTransform to scale drawing operations to logical CSS pixels
-ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-// Detect iOS once for conditional fallbacks
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
 function draw() {
   // If there is no world yet, clear and return
   if (!world || !player) {
@@ -3121,34 +3051,16 @@ function draw() {
 ctx.save();
 ctx.translate(400, 300);
 
-// Outer glow pulse (use gradient fallback on iOS to avoid Safari shadow artifact)
+// Outer glow pulse (reduced shadow for iOS)
 const time = Date.now() / 1000;
 const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-if (isIOS) {
-  // soft radial gradient glow behind the orb (no shadowBlur)
-  const glowRad = pulseSize + 12;
-  const g = ctx.createRadialGradient(0, 0, PLAYER_RAD * 0.2, 0, 0, glowRad);
-  if (player.hitTimer > 0) {
-    g.addColorStop(0, 'rgba(255,255,255,0.14)');
-    g.addColorStop(0.6, 'rgba(220,230,255,0.06)');
-  } else {
-    g.addColorStop(0, 'rgba(0,200,255,0.12)');
-    g.addColorStop(0.6, 'rgba(0,150,220,0.04)');
-  }
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(0, 0, glowRad, 0, Math.PI * 2);
-  ctx.fill();
-} else {
-  ctx.shadowBlur = 18;
-  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-  ctx.beginPath();
-  ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
-  ctx.fill();
-}
+ctx.shadowBlur = isIOS ? 8 : 18;
+ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+ctx.beginPath();
+ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+ctx.fill();
 
 // Main orb base with gradient (no shadowBlur for edge)
 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
@@ -3174,50 +3086,21 @@ for (let i = 0; i < 3; i++) {
   ctx.rotate(rotation);
   
   // Create swirl path
-    ctx.lineCap = 'round';
-    if (isIOS) {
-      // Emulate glow without shadow to avoid iOS corona: draw a soft thicker pass then a sharper pass
-      const softColor = player.hitTimer > 0 ? 'rgba(255,255,255,0.42)' : 'rgba(0,180,255,0.48)';
-      ctx.lineWidth = 4.5;
-      ctx.strokeStyle = softColor;
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.beginPath();
-      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
-        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
-        const x = Math.cos(a * 2) * r;
-        const y = Math.sin(a * 2) * r;
-        if (a === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
-      ctx.beginPath();
-      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
-        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
-        const x = Math.cos(a * 2) * r;
-        const y = Math.sin(a * 2) * r;
-        if (a === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.globalCompositeOperation = 'source-over';
-    } else {
-      ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
-      ctx.lineWidth = 2.5;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
-      ctx.beginPath();
-      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
-        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
-        const x = Math.cos(a * 2) * r;
-        const y = Math.sin(a * 2) * r;
-        if (a === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
+  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
+  
+  ctx.beginPath();
+  for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+    const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+    const x = Math.cos(a * 2) * r;
+    const y = Math.sin(a * 2) * r;
+    if (a === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -3229,7 +3112,7 @@ for (let i = 0; i < particleCount; i++) {
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
   
-  ctx.shadowBlur = isIOS ? 5 : 10;
+  ctx.shadowBlur = 10;
   ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
   ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
   ctx.beginPath();
@@ -3238,7 +3121,7 @@ for (let i = 0; i < particleCount; i++) {
 }
 
 // Outer ring — segmented rotating energy arcs
-ctx.shadowBlur = isIOS ? 6 : 15;
+ctx.shadowBlur = 15;
 ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
 ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
 ctx.lineWidth = 2;
@@ -3603,25 +3486,10 @@ ctx.restore();
       ctx.translate(dx, dy);
 
       // outer glow/pulse matching player
-      if (isIOS) {
-        const glowRad = pulseSize + 8;
-        const g = ctx.createRadialGradient(0, 0, baseRadius * 0.2, 0, 0, glowRad);
-        if (player.hitTimer > 0) {
-          g.addColorStop(0, 'rgba(255,255,255,0.12)');
-          g.addColorStop(0.6, 'rgba(220,230,255,0.06)');
-        } else {
-          g.addColorStop(0, 'rgba(0,180,255,0.10)');
-          g.addColorStop(0.6, 'rgba(0,140,200,0.03)');
-        }
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(0, 0, glowRad, 0, Math.PI * 2); ctx.fill();
-      } else {
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-        ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-        ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
-      }
+      ctx.shadowBlur = isIOS ? 8 : 18;
+      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+      ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+      ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
 
       // main orb gradient identical to player
       const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius);
@@ -3884,3 +3752,4 @@ showGameOver = function () {
 </script>
 </body>
 </html>
+
