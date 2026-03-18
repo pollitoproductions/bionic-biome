@@ -2034,7 +2034,11 @@ function saveHighScores(difficulty, scores) {
 
 function isHighScore(difficulty, biome, kills) {
   if (difficulty === 'custom') return false; // no leaderboard for custom
-  const scores = getHighScores(difficulty);
+  // Ensure we always compare against a properly sorted top-5 list.
+  const scores = getHighScores(difficulty)
+    .slice() // copy so we don't mutate anything
+    .sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time)
+    .slice(0, HS_MAX_ENTRIES);
   if (scores.length < HS_MAX_ENTRIES) return true;
   const worst = scores[scores.length - 1];
   return biome > worst.biome || (biome === worst.biome && kills > worst.kills);
