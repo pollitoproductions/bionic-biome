@@ -791,6 +791,11 @@
     z-index: 150;
     pointer-events: none;
   }
+  /* Allow pointer-events only for resume tap, not for minimap */
+  #pause-overlay.resume-active {
+    pointer-events: auto !important;
+  }
+  }
   .pause-text {
     font-family: 'Press Start 2P', monospace;
     font-size: 15px;
