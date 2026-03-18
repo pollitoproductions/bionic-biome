@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" preserveAspectRatio="xMidYMid meet">
-  <!-- White background -->
-  <rect width="200" height="200" fill="#fff" />
+  <!-- Transparent background so SVG blends with button -->
 
-  <!-- Group of 10 nested ovals. Solid black strokes, no dashes. 
+  <!-- Group of 10 nested ovals. Translucent gray strokes to match UI style. 
        Ovals are non-touching, spaced wider at the top and compressed toward the bottom.
        Rotated -35 degrees to point toward top-center. Center of rotation = 100,100. -->
-  <g transform="rotate(-35 100 100)">
-    <!-- Outermost to innermost (stroke-width kept uniform) -->
-    <ellipse cx="100" cy="90" rx="48" ry="78" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="92" rx="44" ry="72" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="94" rx="40" ry="66" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="96" rx="36" ry="60" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="98" rx="32" ry="54" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="100" rx="28" ry="48" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="102" rx="24" ry="42" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="104" rx="20" ry="36" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="106" rx="16" ry="30" fill="none" stroke="#000" stroke-width="4" />
-    <ellipse cx="100" cy="108" rx="12" ry="24" fill="none" stroke="#000" stroke-width="4" />
+  <g transform="rotate(-35 100 100)" stroke="rgba(255,255,255,0.20)" stroke-width="3" fill="none" stroke-linecap="round">
+    <ellipse cx="100" cy="88" rx="46" ry="74" />
+    <ellipse cx="100" cy="90" rx="40" ry="68" />
+    <ellipse cx="100" cy="92" rx="36" ry="62" />
+    <ellipse cx="100" cy="94" rx="32" ry="56" />
+    <ellipse cx="100" cy="96" rx="28" ry="50" />
+    <ellipse cx="100" cy="98" rx="24" ry="44" />
+    <ellipse cx="100" cy="100" rx="20" ry="38" />
+    <ellipse cx="100" cy="102" rx="16" ry="32" />
+    <ellipse cx="100" cy="104" rx="12" ry="26" />
+    <ellipse cx="100" cy="106" rx="8" ry="20" />
   </g>
 
 </svg>
