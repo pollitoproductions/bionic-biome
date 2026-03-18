@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300" preserveAspectRatio="xMidYMid meet">
+  <!-- White background -->
+  <rect width="200" height="300" fill="#fff" />
+
+  <!-- 11 nested U-shaped arches. All strokes black, uniform width. 
+       Stroke dasharray used to fragment lines into short ridges. -->
+  <!-- Parameters: bottomY = 280, top control around y ~ 20-50 to create tall arches -->
+
+  <!-- Outermost -->
+  <path d="M20 280 Q100 24 180 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8" />
+  <!-- 2 -->
+  <path d="M28 280 Q100 30 172 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8" />
+  <!-- 3 -->
+  <path d="M36 280 Q100 36 164 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 7" />
+  <!-- 4 -->
+  <path d="M44 280 Q100 42 156 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 6" />
+  <!-- 5 -->
+  <path d="M52 280 Q100 48 148 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="7 6" />
+  <!-- 6 -->
+  <path d="M60 280 Q100 54 140 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="7 5" />
+  <!-- 7 -->
+  <path d="M68 280 Q100 60 132 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 5" />
+  <!-- 8 -->
+  <path d="M76 280 Q100 66 124 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 4" />
+  <!-- 9 -->
+  <path d="M84 280 Q100 72 116 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="5 4" />
+  <!-- 10 -->
+  <path d="M92 280 Q100 78 108 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="4 3" />
+  <!-- Core (tall narrow hairpin) -->
+  <path d="M96 280 Q100 86 104 280" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-dasharray="3 3" />
+
+</svg>
