@@ -1691,16 +1691,7 @@ function handleCanvasTap(e) {
   if (!startScreen.classList.contains('hidden')) return;
 
   const pos = getCanvasPos(e);
-  // Dynamically get minimap position and size for accuracy
-  const minimap = document.getElementById('minimap');
-  let mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
-  if (minimap) {
-    const rect = minimap.getBoundingClientRect();
-    mmX = (rect.left - canvas.getBoundingClientRect().left) * (canvas.width / canvas.getBoundingClientRect().width);
-    mmY = (rect.top - canvas.getBoundingClientRect().top) * (canvas.height / canvas.getBoundingClientRect().height);
-    mmW = rect.width * (canvas.width / canvas.getBoundingClientRect().width);
-    mmH = rect.height * (canvas.height / canvas.getBoundingClientRect().height);
-  }
+  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
   // Always pause if minimap is tapped
