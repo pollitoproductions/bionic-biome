@@ -1707,8 +1707,10 @@ window.resetToMainMenu = () => {
   if (deferNameEntryUntilMenu && pendingScore) {
     // Clear flag before showing so repeated calls don't reopen it
     deferNameEntryUntilMenu = false;
-    // Show name entry using the pending score values
-    showNameEntry(pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+    // Only prompt for a name if this score still qualifies for the top-5 leaderboard
+    if (isHighScore(pendingScore.difficulty, pendingScore.biome, pendingScore.kills)) {
+      showNameEntry(pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+    }
   }
 };
 
@@ -2034,11 +2036,17 @@ function saveHighScores(difficulty, scores) {
 
 function isHighScore(difficulty, biome, kills) {
   if (difficulty === 'custom') return false; // no leaderboard for custom
-  // Ensure we always compare against a properly sorted top-5 list.
-  const scores = getHighScores(difficulty)
-    .slice() // copy so we don't mutate anything
-    .sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time)
-    .slice(0, HS_MAX_ENTRIES);
+  // Use the full stored list (not just a pre-sliced top 5) to ensure we compare
+  // against the actual best scores.
+  let scores;
+  try {
+    const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
+    scores = (all[difficulty] || []).slice();
+  } catch (e) {
+    scores = [];
+  }
+  scores.sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time);
+  scores = scores.slice(0, HS_MAX_ENTRIES);
   if (scores.length < HS_MAX_ENTRIES) return true;
   const worst = scores[scores.length - 1];
   return biome > worst.biome || (biome === worst.biome && kills > worst.kills);
