@@ -69,9 +69,10 @@
 
 /* Thumbprint replacement for the action button */
 .action-thumbprint {
-  width: 44px;
-  height: 44px;
-  transform: rotate(25deg);
+  width: 64px;
+  height: 64px;
+  transform: rotate(-28deg);
+  transform-origin: 60% 60%;
   color: rgba(255,255,255,0.18); /* matches previous "HOLD" transparency */
   pointer-events: none;
   user-select: none;
@@ -851,16 +852,19 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button">
-    <svg class="action-thumbprint" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M32 8c-8 0-14 6-14 14v6" />
-        <path d="M32 18c-5 0-9 4-9 9v6" />
-        <path d="M32 26c-3 0-5 2-5 5v6" />
-        <path d="M20 44c2-6 10-10 12-10s10 4 12 10" />
-        <path d="M32 8c8 0 14 6 14 14v6" />
-        <path d="M32 18c5 0 9 4 9 9v6" />
-        <path d="M32 26c3 0 5 2 5 5v6" />
-        <path d="M27 52c2-6 7-9 5-18" />
+    <svg class="action-thumbprint" viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M40 10c-11 0-20 9-20 20v8" />
+        <path d="M40 22c-7 0-12 5-12 12v8" />
+        <path d="M40 34c-4 0-7 3-7 7v8" />
+        <path d="M28 56c3-9 15-15 18-15s15 6 18 15" />
+        <path d="M40 10c11 0 20 9 20 20v8" />
+        <path d="M40 22c7 0 12 5 12 12v8" />
+        <path d="M40 34c4 0 7 3 7 7v8" />
+        <path d="M34 66c3-9 10-13 8-26" />
+        <path d="M46 8c-1 0-2 1-3 2" />
+        <path d="M24 48c1-3 6-6 8-7" />
+        <path d="M54 52c-2-3-6-6-9-6" />
       </g>
     </svg>
   </div>
