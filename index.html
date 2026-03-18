@@ -2036,6 +2036,8 @@ function saveHighScores(difficulty, scores) {
 
 function isHighScore(difficulty, biome, kills) {
   if (difficulty === 'custom') return false; // no leaderboard for custom
+  if (!kills || kills <= 0) return false; // don't prompt for no kills
+
   // Use the full stored list (not just a pre-sliced top 5) to ensure we compare
   // against the actual best scores.
   let scores;
