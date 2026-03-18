@@ -69,10 +69,10 @@
 
 /* Thumbprint replacement for the action button */
 .action-thumbprint {
-  width: 64px;
-  height: 64px;
-  transform: rotate(-28deg);
-  transform-origin: 60% 60%;
+  width: 80px;
+  height: 96px;
+  transform: rotate(-35deg);
+  transform-origin: 65% 65%;
   color: rgba(255,255,255,0.18); /* matches previous "HOLD" transparency */
   pointer-events: none;
   user-select: none;
@@ -852,19 +852,26 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button">
-    <svg class="action-thumbprint" viewBox="0 0 80 80" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M40 10c-11 0-20 9-20 20v8" />
-        <path d="M40 22c-7 0-12 5-12 12v8" />
-        <path d="M40 34c-4 0-7 3-7 7v8" />
-        <path d="M28 56c3-9 15-15 18-15s15 6 18 15" />
-        <path d="M40 10c11 0 20 9 20 20v8" />
-        <path d="M40 22c7 0 12 5 12 12v8" />
-        <path d="M40 34c4 0 7 3 7 7v8" />
-        <path d="M34 66c3-9 10-13 8-26" />
-        <path d="M46 8c-1 0-2 1-3 2" />
-        <path d="M24 48c1-3 6-6 8-7" />
-        <path d="M54 52c-2-3-6-6-9-6" />
+    <svg class="action-thumbprint" viewBox="0 0 100 120" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Outer ridge -->
+        <path d="M50 6c-15 0-28 13-28 28v10c0 6 3 10 3 10" />
+        <path d="M50 6c15 0 28 13 28 28v10c0 6-3 10-3 10" />
+        <!-- concentric rings, irregular to mimic real print -->
+        <path d="M50 26c-10 0-18 8-18 18v6c0 4 2 8 2 8" />
+        <path d="M50 26c10 0 18 8 18 18v6c0 4-2 8-2 8" />
+        <path d="M50 38c-6 0-11 5-11 11v6c0 3 1 6 1 6" />
+        <path d="M50 38c6 0 11 5 11 11v6c0 3-1 6-1 6" />
+        <!-- inner whorl & core -->
+        <path d="M50 54c-4 0-7 3-7 7v6c0 2 1 4 1 4" />
+        <path d="M50 54c4 0 7 3 7 7v6c0 2-1 4-1 4" />
+        <path d="M43 86c4-10 18-16 14-40" />
+        <!-- small ridges and spur lines for realism -->
+        <path d="M28 74c2-6 10-10 12-11" />
+        <path d="M72 74c-2-6-10-10-12-11" />
+        <path d="M34 60c-1-3 2-8 6-9" />
+        <path d="M66 60c1-3-2-8-6-9" />
+        <path d="M40 94c6-2 12-1 18 0" opacity="0.92" />
       </g>
     </svg>
   </div>
