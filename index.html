@@ -875,7 +875,7 @@
   
   <div class="btn-row" id="main-btns">
     <button class="btn-std btn-menu" id="menu-btn">MENU</button>
-    <button class="btn-std" id="highscore-btn">HIGH SCORES</button>
+    <button class="btn-std" id="highscore-btn">LEADERBOARDS</button>
     <button class="btn-std" id="play-btn">PLAY</button>
   </div>
 
@@ -900,10 +900,7 @@
 
   <!-- High Scores: Difficulty Selection -->
   <div class="btn-row hidden" id="highscore-diff-btns">
-    <div class="difficulty-title">HIGH SCORES</div>
-    <div style="width:100%; text-align:center; font-family:'Press Start 2P'; font-size:8px; color:#7f8c8d; margin-bottom:12px; line-height:1.6;">
-      GLOBAL LEADERBOARDS
-    </div>
+    <div class="difficulty-title" style="color:#00e6ff;">GLOBAL LEADERBOARDS</div>
     <button class="btn-std btn-easy" onclick="showHighScoresFor('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="showHighScoresFor('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="showHighScoresFor('impossible')">IMPOSSIBLE</button>
@@ -2068,7 +2065,7 @@ function isNameClean(name) {
 function showNameEntry(kills, biome, time, revives) {
   pendingScore = { difficulty: currentDifficulty, kills, biome, time, revives };
   document.getElementById('name-entry-score-text').textContent =
-    'BIOME ' + biome + ' \u2022 ' + kills + ' KILLS \u2022 ' + formatTime(time);
+    'BIOME ' + biome + ' \u2022 ' + kills + ' ENEMY COUNT \u2022 ' + formatTime(time);
   nameEntryInput.value = '';
   nameEntryInput.style.borderColor = 'rgba(0,230,255,0.3)';
   // Ensure overlay is visible even if inline styles or service-worker cache previously hid it
