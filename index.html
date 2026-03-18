@@ -798,12 +798,12 @@
   }
   .pause-text {
     font-family: 'Press Start 2P', monospace;
-    font-size: 22px;
+    font-size: 15px;
     color: #00e6ff;
-    font-weight: bold;
     text-align: center;
-    text-shadow: 0 0 16px #00e6ff, 2px 2px 8px #000;
-    padding: 32px 20px;
+    text-shadow: 2px 2px 8px #3498db, 0 0 12px #00e6ff;
+    padding: 20px;
+    line-height: 1.6;
     line-height: 1.8;
     letter-spacing: 2px;
     border-radius: 12px;
@@ -1691,7 +1691,16 @@ function handleCanvasTap(e) {
   if (!startScreen.classList.contains('hidden')) return;
 
   const pos = getCanvasPos(e);
-  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  // Dynamically get minimap position and size for accuracy
+  const minimap = document.getElementById('minimap');
+  let mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  if (minimap) {
+    const rect = minimap.getBoundingClientRect();
+    mmX = (rect.left - canvas.getBoundingClientRect().left) * (canvas.width / canvas.getBoundingClientRect().width);
+    mmY = (rect.top - canvas.getBoundingClientRect().top) * (canvas.height / canvas.getBoundingClientRect().height);
+    mmW = rect.width * (canvas.width / canvas.getBoundingClientRect().width);
+    mmH = rect.height * (canvas.height / canvas.getBoundingClientRect().height);
+  }
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
   // Always pause if minimap is tapped
@@ -2541,30 +2550,36 @@ joy.addEventListener("touchend", () => {
 });
 
 function handleTouch(e) {
-  if (!gameActive) return;
-  e.preventDefault();
-  let t = e.touches[0];
-  for (let i = 0; i < e.touches.length; i++) if (joy.contains(e.touches[i].target)) t = e.touches[i];
-    
-  let r = joy.getBoundingClientRect();
-  let dx = t.clientX - (r.left + r.width / 2);
-  let dy = t.clientY - (r.top + r.height / 2);
-  let d = Math.min(r.width / 2, Math.hypot(dx, dy));
-  let ang = Math.atan2(dy, dx);
-    
-  touchX = Math.cos(ang) * (d / (r.width / 2));
-  touchY = Math.sin(ang) * (d / (r.width / 2));
-  knob.style.transform = "translate(" + (touchX * 40) + "px," + (touchY * 40) + "px)";
-}
-
-actBtn.addEventListener("touchstart", e => {
-  e.preventDefault();
-  if (!gameActive) return; 
-  startAction();
-}, {passive: false});
-
-actBtn.addEventListener("touchend", stopAction);
-actBtn.addEventListener("touchcancel", stopAction);
+  if (!muteBtn) return;
+  if (!canvas) return;
+  // Anchor mute button beside minimap, aligned with stats box
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = rect.width / canvas.width;
+  const scaleY = rect.height / canvas.height;
+  // Stats box is at (boxX, boxY) in canvas coords
+  const boxX = 20;
+  const boxY = 10;
+  const boxW = 360;
+  // Minimap is at (mmX, mmY)
+  const mmX = 650;
+  const mmY = 15;
+  const btnSize = 34;
+  const padding = 4;
+  // Calculate minimap's top-left in screen coordinates
+  const minimapLeft = rect.left + mmX * scaleX;
+  const minimapTop = rect.top + mmY * scaleY;
+  // Place mute button immediately left and top-aligned with minimap
+  let left = minimapLeft - btnSize - padding;
+  let top = minimapTop;
+  // Clamp left/top to stats box area
+  const statsBoxLeft = rect.left + boxX * scaleX;
+  const statsBoxTop = rect.top + boxY * scaleY;
+  // Ensure mute button is never above stats box top
+  if (top < statsBoxTop) top = statsBoxTop;
+  // Ensure mute button is never left of stats box
+  if (left < statsBoxLeft) left = statsBoxLeft;
+  muteBtn.style.left = `${left}px`;
+  muteBtn.style.top = `${top}px`;
 
 function doAction() {
   player.swing = 5; 
