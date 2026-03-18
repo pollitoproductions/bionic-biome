@@ -852,26 +852,20 @@
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button">
-    <svg class="action-thumbprint" viewBox="0 0 100 120" aria-hidden="true" focusable="false">
+    <svg class="action-thumbprint" viewBox="0 0 120 160" aria-hidden="true" focusable="false">
       <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <!-- Outer ridge -->
-        <path d="M50 6c-15 0-28 13-28 28v10c0 6 3 10 3 10" />
-        <path d="M50 6c15 0 28 13 28 28v10c0 6-3 10-3 10" />
-        <!-- concentric rings, irregular to mimic real print -->
-        <path d="M50 26c-10 0-18 8-18 18v6c0 4 2 8 2 8" />
-        <path d="M50 26c10 0 18 8 18 18v6c0 4-2 8-2 8" />
-        <path d="M50 38c-6 0-11 5-11 11v6c0 3 1 6 1 6" />
-        <path d="M50 38c6 0 11 5 11 11v6c0 3-1 6-1 6" />
-        <!-- inner whorl & core -->
-        <path d="M50 54c-4 0-7 3-7 7v6c0 2 1 4 1 4" />
-        <path d="M50 54c4 0 7 3 7 7v6c0 2-1 4-1 4" />
-        <path d="M43 86c4-10 18-16 14-40" />
-        <!-- small ridges and spur lines for realism -->
-        <path d="M28 74c2-6 10-10 12-11" />
-        <path d="M72 74c-2-6-10-10-12-11" />
-        <path d="M34 60c-1-3 2-8 6-9" />
-        <path d="M66 60c1-3-2-8-6-9" />
-        <path d="M40 94c6-2 12-1 18 0" opacity="0.92" />
+        <!-- Smooth concentric ovals to simulate a fingerprint -->
+        <path d="M60 12 A40 58 0 1 1 59.9 12" />
+        <path d="M60 26 A32 48 0 1 1 59.9 26" />
+        <path d="M60 42 A26 38 0 1 1 59.9 42" />
+        <path d="M60 58 A20 30 0 1 1 59.9 58" />
+        <path d="M60 74 A14 22 0 1 1 59.9 74" />
+        <path d="M60 88 A9 14 0 1 1 59.9 88" />
+        <!-- Inner short whorl to simulate the fingerprint core -->
+        <path d="M60 96 C64 94, 66 98, 62 102 C58 106, 54 104, 56 100" />
+        <!-- Slight offsets and small arcs to avoid perfectly symmetric look -->
+        <path d="M48 32 C46 34, 46 38, 48 40" opacity="0.95" />
+        <path d="M72 48 C74 50, 74 54, 72 56" opacity="0.95" />
       </g>
     </svg>
   </div>
