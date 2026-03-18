@@ -855,24 +855,23 @@
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
   <div class="btn-action" id="act" aria-label="attack button">
     <svg class="action-thumbprint" viewBox="0 0 120 160" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="butt" stroke-linejoin="bevel">
-        <!-- Smooth concentric ovals to simulate a fingerprint -->
-        <path d="M60 12 A40 58 0 1 1 59.9 12" />
-        <path d="M60 26 A32 48 0 1 1 59.9 26" />
-        <path d="M60 42 A26 38 0 1 1 59.9 42" />
-        <path d="M60 58 A20 30 0 1 1 59.9 58" />
-        <path d="M60 74 A14 22 0 1 1 59.9 74" />
-        <path d="M60 88 A9 14 0 1 1 59.9 88" />
-        <!-- Inner parallel oval ridges (clean, no stray endcaps) -->
-        <path d="M62 100 A8 12 0 1 1 61.9 100" stroke-width="3" opacity="0.98" />
-        <path d="M60 92 A10 14 0 1 1 59.9 92" stroke-width="2.8" opacity="0.94" />
-        <path d="M58 86 A12 16 0 1 1 57.9 86" stroke-width="2.6" opacity="0.92" />
-        <path d="M56 78 A14 20 0 1 1 55.9 78" stroke-width="2.4" opacity="0.9" />
-        <path d="M54 70 A16 24 0 1 1 53.9 70" stroke-width="2.2" opacity="0.88" />
-        <path d="M52 62 A18 28 0 1 1 51.9 62" stroke-width="2" opacity="0.86" />
-        <!-- slight wobble lines to avoid perfect symmetry but keep parallel appearance -->
-        <path d="M58 74 C60 72, 62 72, 63 74" stroke-width="1.8" opacity="0.7" />
-        <path d="M62 80 C64 78, 66 78, 67 80" stroke-width="1.8" opacity="0.7" />
+      <g fill="none" stroke="currentColor" stroke-linecap="butt" stroke-linejoin="bevel">
+        <!-- Concentric ellipses for smooth, non-overlapping fingerprint ridges -->
+        <ellipse cx="60" cy="70" rx="40" ry="58" stroke-width="3" opacity="0.98" />
+        <ellipse cx="60" cy="70" rx="32" ry="48" stroke-width="2.8" opacity="0.96" />
+        <ellipse cx="60" cy="70" rx="26" ry="38" stroke-width="2.6" opacity="0.94" />
+        <ellipse cx="60" cy="70" rx="20" ry="30" stroke-width="2.4" opacity="0.92" />
+        <ellipse cx="60" cy="70" rx="14" ry="22" stroke-width="2.2" opacity="0.9" />
+        <ellipse cx="60" cy="70" rx="9" ry="14" stroke-width="2" opacity="0.88" />
+
+        <!-- Inner parallel ridges (tighter, still non-overlapping) -->
+        <ellipse cx="60" cy="76" rx="7" ry="10" stroke-width="2.6" opacity="0.96" />
+        <ellipse cx="60" cy="74" rx="9" ry="12" stroke-width="2.4" opacity="0.94" />
+        <ellipse cx="60" cy="72" rx="11" ry="14" stroke-width="2.2" opacity="0.92" />
+
+        <!-- soft parallel wobble strokes (minimal) -->
+        <path d="M56 74 C58 72, 62 72, 64 74" stroke-width="1.6" opacity="0.7" />
+        <path d="M58 80 C60 78, 64 78, 66 80" stroke-width="1.6" opacity="0.7" />
       </g>
     </svg>
   </div>
