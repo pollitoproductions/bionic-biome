@@ -88,7 +88,7 @@
 
 /* Mini-map toggle buttons (mute / vibration) */
 .mini-toggle-btn {
-  position: fixed;
+  position: absolute;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -101,9 +101,9 @@
   justify-content: center;
   font-size: 18px;
   color: #ccc;
-  pointer-events: none;
+  pointer-events: auto;
   user-select: none;
-  z-index: 10;
+  z-index: 160;
 }
 .mini-toggle-btn:hover {
   background: rgba(255,255,255,0.08);
@@ -1800,18 +1800,12 @@ function updateMiniButtonPositions() {
 
   const mmX = 650;
   const mmY = 15;
-  const mmW = MAP_SIZE; // minimap width in canvas coords
   const btnSize = 34;
-  const padding = 6;
+  const padding = 4;
 
-  // Place mute button exactly to the left of the minimap, level with its top
-  let left = rect.left + mmX * scaleX - btnSize - padding;
+  const left = rect.left + mmX * scaleX - btnSize - padding;
   const top = rect.top + mmY * scaleY;
 
-  // Clamp so the button never goes off the visible canvas area on the left
-  if (left < rect.left + padding) left = rect.left + padding;
-
-  muteBtn.style.position = 'fixed';
   muteBtn.style.left = `${left}px`;
   muteBtn.style.top = `${top}px`;
 }
