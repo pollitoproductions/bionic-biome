@@ -1677,6 +1677,9 @@ function handleCanvasTap(e) {
   const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
+  // Debug: log tap info to help triage minimap pause issues
+  console.log('handleCanvasTap', { x: pos.x, y: pos.y, onMinimap, gameActive, gameRunning, gameOver });
+
   if (gameActive) {
     if (onMinimap) {
       pauseGame();
