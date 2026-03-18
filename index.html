@@ -88,7 +88,7 @@
 
 /* Mini-map toggle buttons (mute / vibration) */
 .mini-toggle-btn {
-  position: absolute;
+  position: fixed;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -101,16 +101,18 @@
   justify-content: center;
   font-size: 18px;
   color: #ccc;
-  pointer-events: auto;
+  pointer-events: none;
   user-select: none;
-  z-index: 160;
+  z-index: 10;
 }
 .mini-toggle-btn:hover {
   background: rgba(255,255,255,0.08);
+  pointer-events: auto;
 }
 .mini-toggle-btn.active {
   background: rgba(200,200,200,0.18);
   color: #fff;
+  pointer-events: auto;
 }
 .mini-toggle-btn svg .slash {
   opacity: 0;
