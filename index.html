@@ -1796,8 +1796,7 @@ function updateMiniButtonPositions() {
   const btnSize = 34;
   const padding = 4;
 
-  // Place mute button to the right of the minimap so it doesn't overlap stats
-  const left = rect.left + (mmX + mmW) * scaleX + padding;
+  const left = rect.left + mmX * scaleX - btnSize - padding;
   const top = rect.top + mmY * scaleY;
 
   muteBtn.style.left = `${left}px`;
