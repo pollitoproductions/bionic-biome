@@ -1796,9 +1796,8 @@ function updateMiniButtonPositions() {
   const btnSize = 34;
   const padding = 4;
 
-  // Position the mini-buttons at the minimap's top-left corner
-  const left = rect.left + mmX * scaleX + padding;
-  const top = rect.top + mmY * scaleY + padding;
+  const left = rect.left + mmX * scaleX - btnSize - padding;
+  const top = rect.top + mmY * scaleY;
 
   muteBtn.style.left = `${left}px`;
   muteBtn.style.top = `${top}px`;
