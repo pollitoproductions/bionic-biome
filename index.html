@@ -927,7 +927,7 @@
 
     <!-- Tip about pausing on map -->
     <div style="width:100%; text-align:center; margin-top:12px; font-family:'Press Start 2P'; font-size:11px; color:#00e6ff; max-width:360px;">
-      TAP MAP (TOP RIGHT) TO PAUSE
+      TAP OR CLICK THE MAP (TOP RIGHT) TO PAUSE
     </div>
   </div>
 
@@ -1694,6 +1694,7 @@ function handleCanvasTap(e) {
   }
 }
 
+
 /* === EVENT LISTENERS (unchanged behavior, with pause/resume integration) === */
 const initAudioInteraction = () => {
   Music.init();
@@ -1703,6 +1704,20 @@ const initAudioInteraction = () => {
 };
 window.addEventListener('click', initAudioInteraction);
 window.addEventListener('touchstart', initAudioInteraction);
+
+// --- Ensure all tap types on minimap pause the game ---
+const canvas = document.getElementById('c');
+if (canvas) {
+  // Touch tap
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) handleCanvasTap(e);
+  }, {passive: false});
+  // Mouse click
+  canvas.addEventListener('mousedown', function(e) {
+    // Only left click
+    if (e.button === 0) handleCanvasTap(e);
+  });
+}
 
 playBtn.addEventListener('click', () => {
   // Normal play button behavior
