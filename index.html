@@ -24,6 +24,11 @@
     object-fit: contain; background: #000;
     image-rendering: pixelated; 
   }
+  /* Disable iOS tap highlight and focus outline for canvas and controls */
+  canvas, .btn-action, .mini-toggle-btn, .joy-container, .btn-std {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
   #ui-layer {
     position: fixed; left: 0; top: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 100;
@@ -1793,11 +1798,18 @@ function updateMiniButtonPositions() {
 
   const mmX = 650;
   const mmY = 15;
+  const mmW = MAP_SIZE; // minimap width in canvas coords
   const btnSize = 34;
-  const padding = 4;
+  const padding = 6;
 
-  const left = rect.left + mmX * scaleX - btnSize - padding;
+  // Position the mute button to the right of the minimap (keeps it out of the left-side stats area)
+  let left = rect.left + (mmX + mmW) * scaleX + padding;
   const top = rect.top + mmY * scaleY;
+
+  // Clamp so the button never goes off the visible canvas area
+  const maxLeft = rect.left + rect.width - btnSize - padding;
+  if (left > maxLeft) left = maxLeft;
+  if (left < rect.left + padding) left = rect.left + padding;
 
   muteBtn.style.left = `${left}px`;
   muteBtn.style.top = `${top}px`;
@@ -1905,11 +1917,18 @@ function updateMiniMenuButtonPosition() {
   // Minimap is drawn at (650, 15) in canvas coords, with size MAP_SIZE.
   const mmX = 650;
   const mmY = 15;
+  const mmW = MAP_SIZE;
   const btnSize = 44;
   const padding = 6;
 
-  const left = rect.left + mmX * scaleX - btnSize - padding;
+  // Position mini-menu button to the right of the minimap
+  let left = rect.left + (mmX + mmW) * scaleX + padding;
   const top = rect.top + mmY * scaleY;
+
+  // Clamp to canvas bounds
+  const maxLeft = rect.left + rect.width - btnSize - padding;
+  if (left > maxLeft) left = maxLeft;
+  if (left < rect.left + padding) left = rect.left + padding;
 
   miniMenuBtn.style.left = `${left}px`;
   miniMenuBtn.style.top = `${top}px`;
@@ -3090,16 +3109,34 @@ function draw() {
 ctx.save();
 ctx.translate(400, 300);
 
-// Outer glow pulse (reduced shadow for iOS)
+// Outer glow pulse (use gradient fallback on iOS to avoid Safari shadow artifact)
 const time = Date.now() / 1000;
 const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-ctx.shadowBlur = isIOS ? 6 : 18;
-ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-ctx.beginPath();
-ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
-ctx.fill();
+if (isIOS) {
+  // soft radial gradient glow behind the orb (no shadowBlur)
+  const glowRad = pulseSize + 12;
+  const g = ctx.createRadialGradient(0, 0, PLAYER_RAD * 0.2, 0, 0, glowRad);
+  if (player.hitTimer > 0) {
+    g.addColorStop(0, 'rgba(255,255,255,0.14)');
+    g.addColorStop(0.6, 'rgba(220,230,255,0.06)');
+  } else {
+    g.addColorStop(0, 'rgba(0,200,255,0.12)');
+    g.addColorStop(0.6, 'rgba(0,150,220,0.04)');
+  }
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(0, 0, glowRad, 0, Math.PI * 2);
+  ctx.fill();
+} else {
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+  ctx.beginPath();
+  ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+  ctx.fill();
+}
 
 // Main orb base with gradient (no shadowBlur for edge)
 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
@@ -3125,21 +3162,50 @@ for (let i = 0; i < 3; i++) {
   ctx.rotate(rotation);
   
   // Create swirl path
-  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  ctx.shadowBlur = isIOS ? 6 : 15;
-  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
-  
-  ctx.beginPath();
-  for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
-    const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
-    const x = Math.cos(a * 2) * r;
-    const y = Math.sin(a * 2) * r;
-    if (a === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
+    ctx.lineCap = 'round';
+    if (isIOS) {
+      // Emulate glow without shadow to avoid iOS corona: draw a soft thicker pass then a sharper pass
+      const softColor = player.hitTimer > 0 ? 'rgba(255,255,255,0.42)' : 'rgba(0,180,255,0.48)';
+      ctx.lineWidth = 4.5;
+      ctx.strokeStyle = softColor;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+        const x = Math.cos(a * 2) * r;
+        const y = Math.sin(a * 2) * r;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+        const x = Math.cos(a * 2) * r;
+        const y = Math.sin(a * 2) * r;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+        const x = Math.cos(a * 2) * r;
+        const y = Math.sin(a * 2) * r;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
   ctx.restore();
 }
 
@@ -3525,10 +3591,25 @@ ctx.restore();
       ctx.translate(dx, dy);
 
       // outer glow/pulse matching player
-      ctx.shadowBlur = isIOS ? 8 : 18;
-      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-      ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-      ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
+      if (isIOS) {
+        const glowRad = pulseSize + 8;
+        const g = ctx.createRadialGradient(0, 0, baseRadius * 0.2, 0, 0, glowRad);
+        if (player.hitTimer > 0) {
+          g.addColorStop(0, 'rgba(255,255,255,0.12)');
+          g.addColorStop(0.6, 'rgba(220,230,255,0.06)');
+        } else {
+          g.addColorStop(0, 'rgba(0,180,255,0.10)');
+          g.addColorStop(0.6, 'rgba(0,140,200,0.03)');
+        }
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(0, 0, glowRad, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+        ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+        ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
+      }
 
       // main orb gradient identical to player
       const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius);
