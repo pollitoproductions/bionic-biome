@@ -74,6 +74,12 @@
   user-select: none;
 }
 
+.action-icon {
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+}
+
 /* Mini-map toggle buttons (mute / vibration) */
 .mini-toggle-btn {
   position: absolute;
@@ -846,7 +852,15 @@
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
-  <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
+  <div class="btn-action" id="act" aria-label="attack button">
+    <svg class="action-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M32 58c-14 0-26-12-26-26S18 6 32 6s26 12 26 26-12 26-26 26z" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+      <path d="M32 50c-10 0-18-8-18-18s8-18 18-18 18 8 18 18-8 18-18 18z" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+      <path d="M32 42c-6 0-10-4-10-10s4-10 10-10 10 4 10 10-4 10-10 10z" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+      <path d="M32 38c-3 0-6-3-6-6s3-6 6-6 6 3 6 6-3 6-6 6z" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+      <path d="M32 30c-1.5 0-3-1-3-3s1.5-3 3-3 3 1 3 3-1.5 3-3 3z" fill="rgba(255,255,255,0.18)"/>
+    </svg>
+  </div>
   <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9V15H7L12 20V4L7 9H3Z" />
