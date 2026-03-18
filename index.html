@@ -1664,8 +1664,10 @@ function getCanvasPos(e) {
     clientX = e.clientX;
     clientY = e.clientY;
   }
-  const x = (clientX - rect.left) * (canvas.width / rect.width);
-  const y = (clientY - rect.top) * (canvas.height / rect.height);
+  // Convert client coords to canvas CSS-coordinate space (account for DPR)
+  // canvas.width/rect.width == DPR, so dividing by DPR yields CSS pixels.
+  const x = (clientX - rect.left) * (canvas.width / rect.width) / DPR;
+  const y = (clientY - rect.top) * (canvas.height / rect.height) / DPR;
   return { x, y };
 }
 
@@ -1676,9 +1678,6 @@ function handleCanvasTap(e) {
   const pos = getCanvasPos(e);
   const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
-
-  // Debug: log tap info to help triage minimap pause issues
-  console.log('handleCanvasTap', { x: pos.x, y: pos.y, onMinimap, gameActive, gameRunning, gameOver });
 
   if (gameActive) {
     if (onMinimap) {
