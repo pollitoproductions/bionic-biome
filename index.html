@@ -64,14 +64,18 @@
 .btn-action:active { transform: translateY(3px); }
 
 .action-hold-label {
-  position: relative;
-  z-index: 1;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: rgba(255,255,255,0.18);
-  letter-spacing: 2px;
+  display: none;
+}
+
+/* Thumbprint replacement for the action button */
+.action-thumbprint {
+  width: 44px;
+  height: 44px;
+  transform: rotate(25deg);
+  color: rgba(255,255,255,0.18); /* matches previous "HOLD" transparency */
   pointer-events: none;
   user-select: none;
+  z-index: 1;
 }
 
 /* Mini-map toggle buttons (mute / vibration) */
@@ -846,7 +850,20 @@
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
-  <div class="btn-action" id="act" aria-label="attack button"><span class="action-hold-label">HOLD</span></div>
+  <div class="btn-action" id="act" aria-label="attack button">
+    <svg class="action-thumbprint" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 8c-8 0-14 6-14 14v6" />
+        <path d="M32 18c-5 0-9 4-9 9v6" />
+        <path d="M32 26c-3 0-5 2-5 5v6" />
+        <path d="M20 44c2-6 10-10 12-10s10 4 12 10" />
+        <path d="M32 8c8 0 14 6 14 14v6" />
+        <path d="M32 18c5 0 9 4 9 9v6" />
+        <path d="M32 26c3 0 5 2 5 5v6" />
+        <path d="M27 52c2-6 7-9 5-18" />
+      </g>
+    </svg>
+  </div>
   <div class="mini-toggle-btn mute-btn" id="mute-btn" aria-label="toggle sound">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9V15H7L12 20V4L7 9H3Z" />
@@ -900,10 +917,7 @@
 
   <!-- High Scores: Difficulty Selection -->
   <div class="btn-row hidden" id="highscore-diff-btns">
-    <div class="difficulty-title">LEADERBOARDS</div>
-    <div style="width:100%; text-align:center; font-family:'Press Start 2P'; font-size:8px; color:#7f8c8d; margin-bottom:12px; line-height:1.6;">
-      GLOBAL LEADERBOARDS
-    </div>
+      <div class="difficulty-title">Global Leaderboards</div>
     <button class="btn-std btn-easy" onclick="showHighScoresFor('easy')">CASUAL</button>
     <button class="btn-std btn-moderate" onclick="showHighScoresFor('moderate')">MODERATE</button>
     <button class="btn-std btn-hard" onclick="showHighScoresFor('impossible')">IMPOSSIBLE</button>
@@ -1210,6 +1224,9 @@ const Music = {
     // Low, heavy base roots for a darksynth feel (C2, D2, E2, F2, A1)
     const roots = [65.41, 73.42, 82.41, 87.31, 55.00, 65.41, 73.42, 82.41, 87.31, 55.00]; 
     let safeLevel = Math.max(1, Math.min(10, level));
+    // Swap Biome 1 and Biome 8 music: when requested level 1 play 8 and vice-versa
+    if (safeLevel === 1) safeLevel = 8;
+    else if (safeLevel === 8) safeLevel = 1;
     let base = roots[safeLevel - 1]; 
     
     let intervals = [];
