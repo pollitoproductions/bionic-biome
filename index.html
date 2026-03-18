@@ -34,18 +34,6 @@
     pointer-events: none; z-index: 100;
     user-select: none; -webkit-user-select: none;
   }
-  /* Ensure all overlays and menu screens are touchable */
-  .screen-overlay, .btn-row, .btn-std, .menu-box, .menu-tab, .menu-content, .btn-close, .mini-toggle-btn, .joy-container, .btn-action {
-    pointer-events: auto !important;
-  }
-  /* Pause overlay must be touchable */
-  #pause-overlay {
-    pointer-events: auto !important;
-  }
-  /* Name entry overlay must be touchable */
-  #name-entry-overlay {
-    pointer-events: auto !important;
-  }
   /* Virtual Joystick */
   .joy-container {
     position: absolute; left: 5%; bottom: 8%; width: 140px; height: 140px;
@@ -1733,8 +1721,6 @@ if (canvas) {
 
 playBtn.addEventListener('click', () => {
   // Normal play button behavior
-  // Hide pause overlay if visible
-  document.getElementById('pause-overlay').classList.add('hidden');
   mainBtns.classList.add('hidden');
   diffBtns.classList.remove('hidden');
   titleText.style.display = 'none';
