@@ -1019,7 +1019,7 @@
 <div id="name-entry-overlay" class="hidden" style="display:none !important">
   <div class="name-entry-box">
     <div class="name-entry-title">NEW HIGH SCORE!</div>
-    <div class="name-entry-subtitle" id="name-entry-score-text">SCORE: 0 KILLS</div>
+    <div class="name-entry-subtitle" id="name-entry-score-text">SCORE: 0 ENEMY COUNT</div>
     <input type="text" class="name-entry-input" id="name-entry-input" maxlength="10" placeholder="YOUR NAME" autocomplete="off" spellcheck="false">
     <div class="name-entry-btns">
       <button class="btn-std" id="name-entry-save" onclick="saveHighScore()">SAVE</button>
@@ -1215,9 +1215,9 @@ const Music = {
 
     // Driving, rhythmic Cyberpunk/Darksynth Basslines
     switch(safeLevel) {
-      case 1: // Driving Octaves (Classic synthwave pulse)
-        intervals = [0, 0, 12, 0, 0, 0, 12, 0, 0, 3, 0, 5, 0, 0, 12, 0];
-        speedDelay = 140; 
+      case 1: // High Energy Jumps (formerly biome 8)
+        intervals = [0, 12, 0, 12, 0, 12, 0, 12, 3, 15, 3, 15, 5, 17, 5, 17];
+        speedDelay = 125; 
         break;
       case 2: // Arpeggiated Flow
         intervals = [0, 3, 0, 7, 0, 10, 0, 12, 0, null, 0, null, 12, 10, 7, 3];
@@ -1243,9 +1243,9 @@ const Music = {
         intervals = [0, 0, 0, 0, 12, 0, 0, 0, 10, 0, 0, 0, 3, 0, 5, 0];
         speedDelay = 120; 
         break;
-      case 8: // High Energy Jumps
-        intervals = [0, 12, 0, 12, 0, 12, 0, 12, 3, 15, 3, 15, 5, 17, 5, 17];
-        speedDelay = 125; 
+      case 8: // Driving Octaves (formerly biome 1)
+        intervals = [0, 0, 12, 0, 0, 0, 12, 0, 0, 3, 0, 5, 0, 0, 12, 0];
+        speedDelay = 140; 
         break;
       case 9: // Building Tension
         intervals = [0, null, 0, null, 0, null, 0, null, 12, 12, 10, 10, 7, 7, 5, 5];
@@ -2180,7 +2180,7 @@ window.showHighScoresFor = (difficulty) => {
     }
 
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
     for (let i = 0; i < Math.min(scores.length, 50); i++) {
       const s = scores[i];
@@ -2204,7 +2204,7 @@ window.showHighScoresFor = (difficulty) => {
       return;
     }
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>KILLS</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
       '</tr></thead><tbody>';
     for (let i = 0; i < local.length; i++) {
       const s = local[i];
@@ -2290,7 +2290,7 @@ function showGameOver() {
     // Defer showing the name entry until the player explicitly chooses MAIN MENU (i.e., commits to not reviving)
     pendingScore = { difficulty: currentDifficulty, kills: enemiesKilled, biome: biomeLevel, time: runTime, revives: continuesUsed };
     document.getElementById('name-entry-score-text').textContent =
-      'BIOME ' + biomeLevel + '  ' + enemiesKilled + ' KILLS  ' + formatTime(runTime);
+      'BIOME ' + biomeLevel + '  ' + enemiesKilled + ' ENEMY COUNT  ' + formatTime(runTime);
     deferNameEntryUntilMenu = true;
   }
   
