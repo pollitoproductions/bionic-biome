@@ -5,7 +5,7 @@
   <!-- Group of 10 nested ovals. Translucent gray strokes to match UI style. 
        Ovals are non-touching, spaced wider at the top and compressed toward the bottom.
        Rotated -35 degrees to point toward top-center. Center of rotation = 100,100. -->
-  <g transform="translate(6 6) rotate(-35 100 100)" stroke="rgba(255,255,255,0.20)" stroke-width="3" fill="none" stroke-linecap="round">
+  <g transform="translate(6 6) rotate(-35 100 100)" stroke="rgba(255,255,255,0.60)" stroke-width="3" fill="none" stroke-linecap="round">
     <!-- Slight southeast translation and increased downward bunching toward the narrow end -->
     <ellipse cx="104" cy="92" rx="46" ry="74" />
     <ellipse cx="105" cy="96" rx="40" ry="68" />
