@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Bionic Biome</string>
-    <!-- Replace with the URL where your site is deployed (include https://) -->
-    <string name="start_url">https://pollitoproductions.github.io/bionic-biome/</string>
-    <!-- Ad unit IDs -->
-    <string name="rewarded_ad_unit_id">ca-app-pub-7858482153655813/2032085476</string>
-</resources>
