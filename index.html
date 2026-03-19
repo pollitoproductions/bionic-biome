@@ -1023,6 +1023,17 @@
   <div class="pause-text">TAP ANYWHERE TO RESUME</div>
 </div>
 
+<div id="revive-info-overlay" class="screen-overlay hidden">
+  <h1>REVIVE ACTIVE</h1>
+  <div class="author-sub" style="margin-bottom: 14px; color: #a5f0ff;">
+    Your revive is active! Survive for <strong>05:00</strong> to keep it.
+  </div>
+  <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
+    Next revive unlocks in <span id="revive-countdown">05:00</span>.
+  </div>
+  <button class="btn-std btn-revive" id="revive-confirm-btn">CONTINUE</button>
+</div>
+
 <!-- Name Entry Modal -->
 <div id="name-entry-overlay" class="hidden" style="display:none !important">
   <div class="name-entry-box">
@@ -1152,6 +1163,12 @@ let player, world;
 let shots = [];
 let drops = [];
 let explored = [];
+
+// Revive / ad cooldown (once every 5 minutes)
+let lastReviveTime = 0;
+const REVIVE_COOLDOWN_MS = 5 * 60 * 1000;
+let reviveCountdownInterval = null;
+let reviveButtonInterval = null;
 
 /* Flow-field timing: previously used a frame counter flowTimer++ and ran updateFlowField when >15.
    15 frames at 60FPS is 0.25s (I use 0.2667 earlier — keep similar). Use a seconds accumulator now.
@@ -1517,6 +1534,57 @@ function formatTime(ms) {
   let m = Math.floor(s / 60);
   s = s % 60;
   return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
+}
+
+function isReviveAvailable() {
+  return Date.now() - lastReviveTime >= REVIVE_COOLDOWN_MS;
+}
+
+function updateReviveButtonState() {
+  const btn = document.getElementById('revive-ad-btn');
+  if (!btn) return;
+
+  if (isReviveAvailable()) {
+    btn.classList.remove('disabled');
+    btn.textContent = '\u25B6 Reward Ad for 40HP Revive';
+    btn.title = '';
+  } else {
+    const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
+    btn.classList.add('disabled');
+    btn.textContent = 'REVIVE COOLING...';
+    btn.title = 'Next revive available in ' + formatTime(remaining);
+  }
+}
+
+function updateReviveCountdown() {
+  const el = document.getElementById('revive-countdown');
+  if (!el) return;
+  const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
+  el.textContent = remaining > 0 ? formatTime(remaining) : 'READY!';
+
+  if (remaining <= 0 && reviveCountdownInterval) {
+    clearInterval(reviveCountdownInterval);
+    reviveCountdownInterval = null;
+  }
+}
+
+function showReviveInfoOverlay() {
+  const overlay = document.getElementById('revive-info-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  updateReviveCountdown();
+  if (!reviveCountdownInterval) {
+    reviveCountdownInterval = setInterval(updateReviveCountdown, 1000);
+  }
+}
+
+function hideReviveInfoOverlay() {
+  const overlay = document.getElementById('revive-info-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  if (reviveCountdownInterval) {
+    clearInterval(reviveCountdownInterval);
+    reviveCountdownInterval = null;
+  }
 }
 
 /* DOM elements (unchanged) */
@@ -2315,6 +2383,15 @@ continueBtn.addEventListener('click', () => {
   }, 450);
 });
 
+const reviveConfirmBtn = document.getElementById('revive-confirm-btn');
+if (reviveConfirmBtn) {
+  reviveConfirmBtn.addEventListener('click', () => {
+    hideReviveInfoOverlay();
+    // Show the pause overlay so the player can tap to resume normally.
+    pauseGame(true);
+  });
+}
+
 /* === GAME START / OVER / WORLD GENERATION (unchanged semantics except mark gameRunning) === */
 function showGameOver() {
   gameActive = false;
@@ -2357,6 +2434,12 @@ function showGameOver() {
   customSubmenu.classList.add('hidden');
   
   startScreen.classList.remove('hidden');
+
+  // Update revive button based on cooldown
+  updateReviveButtonState();
+  if (!reviveButtonInterval) {
+    reviveButtonInterval = setInterval(updateReviveButtonState, 1000);
+  }
 }
 
 function showVictoryScreen() {
@@ -2377,6 +2460,12 @@ function showVictoryScreen() {
 }
 
 function startGame() {
+  // Stop updating the revive button while in a run (it will be updated again upon game over)
+  if (reviveButtonInterval) {
+    clearInterval(reviveButtonInterval);
+    reviveButtonInterval = null;
+  }
+
   soundEnabled = true;
   muteBtn.classList.remove('active');
   startScreen.classList.add('hidden');
@@ -3765,17 +3854,29 @@ window.revivePlayer = function () {
   continuesUsed++;
   player.hp  = 40;
   gameOver   = false;
-  gameActive = true;
   gameRunning = true;
+  // Record the revive timestamp so the next revive is locked for 5 minutes
+  lastReviveTime = Date.now();
+
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-over-btns').classList.add('hidden');
   console.log('Player Revived! Revives used: ' + continuesUsed);
-  // Immediately pause so the player lands on the pause screen
-  if (typeof pauseGame === 'function') pauseGame(true);
+
+  // Pause the game (without showing the pause overlay) so time does not advance while the player reads the message.
+  gameActive = true;
+  if (typeof pauseGame === 'function') pauseGame(false);
+
+  // Show the revive reminder screen before returning to the pause screen.
+  showReviveInfoOverlay();
 };
 
 /* Request the Android wrapper to show a rewarded ad */
 function requestReviveAd() {
+  if (!isReviveAvailable()) {
+    updateReviveButtonState();
+    return;
+  }
+
   var btn = document.getElementById('revive-ad-btn');
   if (btn) {
     btn.classList.add('disabled');
@@ -3796,11 +3897,8 @@ function requestReviveAd() {
 var _originalShowGameOver = showGameOver;
 showGameOver = function () {
   _originalShowGameOver.apply(this, arguments);
-  var btn = document.getElementById('revive-ad-btn');
-  if (btn) {
-    btn.classList.remove('disabled');
-    btn.textContent = '\u25B6 Reward Ad for 40HP Revive';
-  }
+  // Ensure the revive button reflects the current cooldown state
+  updateReviveButtonState();
 };
 </script>
 </body>
