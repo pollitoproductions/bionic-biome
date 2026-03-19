@@ -2016,17 +2016,18 @@ let deferNameEntryUntilMenu = false; // when true, show name entry after player 
 // Firebase Realtime Database URL (anonymous/simple board)
 const DATABASE_URL = 'https://bionic-biome-scoreboard-default-rtdb.firebaseio.com';
 
-// Send a score object to Firebase at /scores/{playerName}.json using fetch().
-// playerName should be a simple identifier (no slashes). scoreData is any JSON-serializable object.
+// Send a score object to Firebase at /scores.json using fetch().
+// This keeps multiple runs per player (instead of overwriting by name).
 function sendScoreToFirebase(playerName, scoreData) {
   if (!playerName) return;
+  // Keep a safe name for display / debugging, but do not use it as the DB key.
   const safeName = encodeURIComponent(playerName);
-  const url = `${DATABASE_URL}/scores/${safeName}.json`;
+  const url = `${DATABASE_URL}/scores.json`;
   try {
     fetch(url, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(scoreData)
+      body: JSON.stringify({ ...scoreData, safeName })
     }).then(res => {
       if (!res.ok) console.warn('Failed to send score to Firebase', res.statusText);
     }).catch(err => console.warn('Error sending score to Firebase', err));
@@ -2047,21 +2048,32 @@ function makeSafeKey(name) {
 function getHighScores(difficulty) {
   try {
     const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
-    return (all[difficulty] || []).slice(0, HS_MAX_ENTRIES);
+    const scores = (all[difficulty] || []).slice();
+    scores.sort(_compareHighScores);
+    return scores.slice(0, HS_MAX_ENTRIES);
   } catch(e) { return []; }
 }
 
 function saveHighScores(difficulty, scores) {
   try {
     const all = JSON.parse(localStorage.getItem(HS_STORAGE_KEY) || '{}');
-    all[difficulty] = scores.slice(0, HS_MAX_ENTRIES);
+    const sorted = (scores || []).slice();
+    sorted.sort(_compareHighScores);
+    all[difficulty] = sorted.slice(0, HS_MAX_ENTRIES);
     localStorage.setItem(HS_STORAGE_KEY, JSON.stringify(all));
   } catch(e) { console.warn('Could not save high scores', e); }
 }
 
 function _compareHighScores(a, b) {
   // Primary: kills (enemy count), secondary: biome, tertiary: faster time
-  return (b.kills - a.kills) || (b.biome - a.biome) || (a.time - b.time);
+  // Safely handle missing properties by treating them as 0.
+  const ak = (a && typeof a.kills === 'number') ? a.kills : 0;
+  const bk = (b && typeof b.kills === 'number') ? b.kills : 0;
+  const abiome = (a && typeof a.biome === 'number') ? a.biome : 0;
+  const bbiome = (b && typeof b.biome === 'number') ? b.biome : 0;
+  const atime = (a && typeof a.time === 'number') ? a.time : 0;
+  const btime = (b && typeof b.time === 'number') ? b.time : 0;
+  return (bk - ak) || (bbiome - abiome) || (atime - btime);
 }
 
 function isHighScore(difficulty, biome, kills) {
@@ -2088,14 +2100,7 @@ function addHighScore(difficulty, name, kills, biome, time, revives) {
   const scores = getHighScores(difficulty);
   scores.push({ name: name.toUpperCase(), kills, biome, time, revives });
   scores.sort(_compareHighScores);
-  saveHighScores(difficulty, scores.slice(0, HS_MAX_ENTRIES));
-}
-
-function addHighScore(difficulty, name, kills, biome, time, revives) {
-  const scores = getHighScores(difficulty);
-  scores.push({ name: name.toUpperCase(), kills, biome, time, revives });
-  scores.sort((a, b) => b.biome - a.biome || b.kills - a.kills || a.time - b.time);
-  saveHighScores(difficulty, scores.slice(0, HS_MAX_ENTRIES));
+  saveHighScores(difficulty, scores);
 }
 
 // Profanity filter — blocks common offensive words/slurs at name entry
@@ -2286,13 +2291,9 @@ function fetchRemoteScores(difficulty) {
   }).then(obj => {
     if (!obj) return [];
     const arr = Object.keys(obj).map(k => obj[k]).filter(Boolean);
-    // Filter by difficulty and sort: biome desc, kills desc, time asc
+    // Filter by difficulty and sort using the same comparator as the local leaderboard.
     const filtered = arr.filter(a => (a.difficulty || '') === difficulty);
-    filtered.sort((a, b) => {
-      if ((b.biome || 0) !== (a.biome || 0)) return (b.biome || 0) - (a.biome || 0);
-      if ((b.kills || 0) !== (a.kills || 0)) return (b.kills || 0) - (a.kills || 0);
-      return (a.time || 0) - (b.time || 0);
-    });
+    filtered.sort(_compareHighScores);
     return filtered;
   });
 }
