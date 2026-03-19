@@ -28,6 +28,7 @@ jobs:
           unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           mv /tmp/cmdline-tools/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          mkdir -p android
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
