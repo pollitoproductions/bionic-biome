@@ -1551,7 +1551,7 @@ function updateReviveButtonState() {
   } else {
     const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
     btn.classList.add('disabled');
-    btn.textContent = 'REVIVE COOLING...';
+    btn.textContent = `\u25B6 Revive in ${formatTime(remaining)}`;
     btn.title = 'Next revive available in ' + formatTime(remaining);
   }
 }
