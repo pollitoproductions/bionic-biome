@@ -20,12 +20,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK (platform 35)
-        uses: r0adkll/setup-android@v2
-        with:
-          api-level: 35
-          build-tools: '35.0.0'
-          cmake: false
+      - name: Install Android SDK (command-line tools + platform 35)
+        run: |
+          ANDROID_SDK_ROOT="$HOME/android-sdk"
+          mkdir -p "$ANDROID_SDK_ROOT"
+          curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          mv /tmp/cmdline-tools/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Download Gradle 8.1.1
         run: |
