@@ -3751,14 +3751,18 @@ ctx.restore();
   ctx.strokeRect(boxX, boxY, boxW, boxH);
 
   ctx.fillStyle = "#ffffff";
+  // Left: Enemies (moved where HP used to be)
   ctx.textAlign = "left";
-  ctx.font = "bold 18px monospace";
-  ctx.fillText("HP: " + Math.ceil(player.hp), boxX + 12, boxY + 36);
+  ctx.font = "14px monospace"; // same size as other small stats to avoid overlap
+  ctx.fillText("Enemies: " + enemiesKilled, boxX + 12, boxY + 36);
 
-  // Enemies counter (live). Centered on top row between HP and TIME.
-  ctx.textAlign = "center";
-  ctx.font = "14px monospace"; // same size/font as "Bow Lvl" to avoid overlap
-  ctx.fillText("Enemies: " + enemiesKilled, boxX + (boxW / 2), boxY + 36);
+  // Right area: TIME at far right, HP just to the left of TIME
+  const timeX = boxX + boxW - 12;
+  const hpX = timeX - 120; // position HP just left of the TIME text
+
+  ctx.textAlign = "right";
+  ctx.font = "bold 18px monospace"; // keep HP emphasis
+  ctx.fillText("HP: " + Math.ceil(player.hp), hpX, boxY + 36);
 
   // Left column stats (Sword / Bow)
   ctx.textAlign = "left";
