@@ -889,15 +889,14 @@
   
   <div class="author-sub">Pollito Productions &copy; 2026<br>All Rights Reserved.</div>
 
-  <div class="stats-box" id="stats-box" style="display:none;">
     <div class="stat-row"><span class="stat-label">BIOME REACHED:</span><span class="stat-val" id="st-biome">1</span></div>
     <div class="stat-row"><span class="stat-label">ENEMY COUNT:</span><span class="stat-val" id="st-kills">0</span></div>
-    <div class="stat-row"><span class="stat-label">TIME LASTED:</span><span class="stat-val" id="st-time">00:00</span></div>
+      <div class="stat-row"><span class="stat-label">TIME LASTED:</span><span class="stat-val" id="st-time">00:00</span></div>
     <div class="stat-row"><span class="stat-label">HP COLLECTED:</span><span class="stat-val" id="st-hearts">0</span></div>
     <div class="stat-row"><span class="stat-label">SWORD DMG:</span><span class="stat-val" id="st-sword">1</span></div>
     <div class="stat-row"><span class="stat-label">BOW DMG:</span><span class="stat-val" id="st-bow">1</span></div>
     <div class="stat-row"><span class="stat-label">DIFFICULTY:</span><span class="stat-val" id="st-diff">CASUAL</span></div>
-    <div class="stat-row"><span class="stat-label">REVIVES USED:</span><span class="stat-val" id="st-continues">0</span></div>
+  <div class="stats-box" id="stats-box" style="display:none;">
   </div>
   
   <div class="btn-row" id="main-btns">
@@ -2183,9 +2182,9 @@ function isHighScore(difficulty, biome, kills) {
   return kills > worst.kills || (kills === worst.kills && biome > worst.biome);
 }
 
-function addHighScore(difficulty, name, kills, biome, time, revives) {
+function addHighScore(difficulty, name, kills, biome, time) {
   const scores = getHighScores(difficulty);
-  scores.push({ name: name.toUpperCase(), kills, biome, time, revives });
+  scores.push({ name: name.toUpperCase(), kills, biome, time });
   scores.sort(_compareHighScores);
   saveHighScores(difficulty, scores);
 }
@@ -2233,9 +2232,9 @@ window.saveHighScore = () => {
     nameEntryInput.focus();
     return;
   }
-  addHighScore(pendingScore.difficulty, name, pendingScore.kills, pendingScore.biome, pendingScore.time, pendingScore.revives);
+  addHighScore(pendingScore.difficulty, name, pendingScore.kills, pendingScore.biome, pendingScore.time);
 
-  // Send the entered (filtered) name and score to Firebase
+  // Send the entered (filtered) name and score to Firebase (no longer include revives)
   try {
     const scorePayload = {
       name: name,
@@ -2243,7 +2242,6 @@ window.saveHighScore = () => {
       kills: pendingScore.kills,
       biome: pendingScore.biome,
       time: pendingScore.time,
-      revives: pendingScore.revives,
       ts: Date.now()
     };
     // Use a sanitized key for the DB path, but keep the display name in the payload
@@ -2327,7 +2325,7 @@ window.showHighScoresFor = (difficulty) => {
     scores = scores.slice(0, HS_MAX_ENTRIES);
 
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th>' +
       '</tr></thead><tbody>';
     for (let i = 0; i < scores.length; i++) {
       const s = scores[i];
@@ -2337,7 +2335,6 @@ window.showHighScoresFor = (difficulty) => {
         '<td>' + (s.biome || '') + '</td>' +
         '<td>' + (s.kills || 0) + '</td>' +
         '<td>' + (s.time ? formatTime(s.time) : '00:00') + '</td>' +
-        '<td>' + (s.revives || 0) + '</td>' +
         '</tr>';
     }
     html += '</tbody></table>';
@@ -2351,7 +2348,7 @@ window.showHighScoresFor = (difficulty) => {
       return;
     }
     let html = '<table class="hs-table"><thead><tr>' +
-      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th><th>REVIVE</th>' +
+      '<th class="hs-rank">#</th><th>NAME</th><th>BIOME</th><th>ENEMY COUNT</th><th>TIME</th>' +
       '</tr></thead><tbody>';
     for (let i = 0; i < Math.min(local.length, HS_MAX_ENTRIES); i++) {
       const s = local[i];
@@ -2361,7 +2358,6 @@ window.showHighScoresFor = (difficulty) => {
         '<td>' + s.biome + '</td>' +
         '<td>' + s.kills + '</td>' +
         '<td>' + formatTime(s.time) + '</td>' +
-        '<td>' + (s.revives || 0) + '</td>' +
         '</tr>';
     }
     html += '</tbody></table>';
@@ -2425,7 +2421,7 @@ function showGameOver() {
   elSword.innerText = player.swordLvl;
   elBow.innerText = player.bowLvl;
   elDiff.innerText = (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase();
-  document.getElementById('st-continues').innerText = continuesUsed;
+  // Note: 'REVIVES USED' stat removed from stats box per UX request
 
   titleText.innerText = "RUN OVER"; 
   titleText.style.display = 'block';
