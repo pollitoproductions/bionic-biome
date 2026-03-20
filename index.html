@@ -894,8 +894,8 @@
     <div class="stat-row"><span class="stat-label">ENEMY COUNT:</span><span class="stat-val" id="st-kills">0</span></div>
     <div class="stat-row"><span class="stat-label">TIME LASTED:</span><span class="stat-val" id="st-time">00:00</span></div>
     <div class="stat-row"><span class="stat-label">HP COLLECTED:</span><span class="stat-val" id="st-hearts">0</span></div>
-    <div class="stat-row"><span class="stat-label">SWORD LEVEL:</span><span class="stat-val" id="st-sword">1</span></div>
-    <div class="stat-row"><span class="stat-label">BOW LEVEL:</span><span class="stat-val" id="st-bow">1</span></div>
+    <div class="stat-row"><span class="stat-label">SWORD DMG:</span><span class="stat-val" id="st-sword">1</span></div>
+    <div class="stat-row"><span class="stat-label">BOW DMG:</span><span class="stat-val" id="st-bow">1</span></div>
     <div class="stat-row"><span class="stat-label">DIFFICULTY:</span><span class="stat-val" id="st-diff">CASUAL</span></div>
     <div class="stat-row"><span class="stat-label">REVIVES USED:</span><span class="stat-val" id="st-continues">0</span></div>
   </div>
@@ -3751,9 +3751,9 @@ ctx.restore();
   ctx.strokeRect(boxX, boxY, boxW, boxH);
 
   ctx.fillStyle = "#ffffff";
-  // Left: Enemies (moved where HP used to be)
+  // Left: Enemies (moved where HP used to be) - match HP/TIME font
   ctx.textAlign = "left";
-  ctx.font = "14px monospace"; // same size as other small stats to avoid overlap
+  ctx.font = "bold 18px monospace"; // match HP/TIME size per request
   ctx.fillText("Enemies: " + enemiesKilled, boxX + 12, boxY + 36);
 
   // Right area: TIME at far right, HP just to the left of TIME
@@ -3767,8 +3767,8 @@ ctx.restore();
   // Left column stats (Sword / Bow)
   ctx.textAlign = "left";
   ctx.font = "14px monospace";
-  ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 62);
-  ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 88);
+  ctx.fillText("Sword Dmg: " + player.swordLvl, boxX + 12, boxY + 62);
+  ctx.fillText("Bow Dmg: " + player.bowLvl, boxX + 12, boxY + 88);
 
   ctx.textAlign = "right";
   ctx.font = "bold 16px monospace";
