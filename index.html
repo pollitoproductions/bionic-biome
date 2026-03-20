@@ -3741,7 +3741,7 @@ ctx.restore();
   // STATS BOX + MINIMAP (unchanged)
   const boxX = 20;
   const boxY = 10;
-  const boxW = 440; // widened slightly to prevent text overlap when counts grow
+  const boxW = 392; // reduced: 40% of the previous widening to prevent overlap
   const boxH = 110;
 
   ctx.fillStyle = "rgba(0,0,0,0.72)";
@@ -3758,7 +3758,7 @@ ctx.restore();
 
   // Right area: TIME at far right, HP just to the left of TIME
   const timeX = boxX + boxW - 12;
-  const hpX = timeX - 140; // move HP further left to avoid overlap when numbers are large
+  const hpX = timeX - 128; // smaller left shift aligned with reduced HUD width
 
   ctx.textAlign = "right";
   ctx.font = "bold 18px monospace"; // keep HP emphasis
