@@ -1834,9 +1834,9 @@ window.backToHome = () => {
   mainBtns.classList.remove('hidden');
   titleText.style.display = 'block';
   document.querySelector('.author-sub').style.display = 'block';
-  if (statsBox.style.display !== 'none') {
-    statsBox.style.display = 'block';
-  }
+  // Always hide the small stats box on the main menu to avoid showing
+  // end-of-run stats unless explicitly in a game-over flow.
+  statsBox.style.display = 'none';
 };
 
 window.backToDifficulty = () => {
