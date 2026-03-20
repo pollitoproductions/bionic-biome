@@ -1972,6 +1972,8 @@ closeMenuBtn.addEventListener('click', () => {
   Music.stop();
   menuScreen.classList.add('hidden');
   startScreen.classList.remove('hidden');
+  // Ensure stats box isn't shown when returning from the menu to the main screen
+  statsBox.style.display = 'none';
   // Don't play title music when returning to home
 
   // Resume the game only if it was active before the menu was opened (resumeGame checks that)
