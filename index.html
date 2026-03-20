@@ -3748,18 +3748,21 @@ ctx.restore();
   ctx.lineWidth = 2;
   ctx.strokeRect(boxX, boxY, boxW, boxH);
   ctx.fillStyle = "rgba(255,255,255,0.9)"; // slightly translucent text
-  // Left: Enemies (moved where HP used to be) - match HP/TIME font
+  // Left: HP then ENEMIES to its right. Reserve width for MAX_HP to avoid overlap
   ctx.textAlign = "left";
   ctx.font = "bold 14px monospace"; // unified HUD font (increased to 14px)
-  ctx.fillText("ENEMIES: " + enemiesKilled, boxX + 12, boxY + 36);
+  const hpText = "HP: " + Math.ceil(player.hp);
+  // Reserve width using the MAX_HP constant so future large HP values won't overlap the ENEMIES label
+  const hpReserveText = "HP: " + MAX_HP;
+  const hpReserveWidth = ctx.measureText(hpReserveText).width;
+  ctx.fillText(hpText, boxX + 12, boxY + 36);
 
-  // Right area: TIME at far right, HP just to the left of TIME
+  // Place ENEMIES just to the right of the reserved HP width with some padding
+  const enemiesX = boxX + 12 + hpReserveWidth + 18; // 18px padding
+  ctx.fillText("ENEMIES: " + enemiesKilled, enemiesX, boxY + 36);
+
+  // Right area: TIME at far right (unchanged)
   const timeX = boxX + boxW - 12;
-  const hpX = timeX - 128; // smaller left shift aligned with reduced HUD width
-
-  ctx.textAlign = "right";
-  ctx.font = "bold 14px monospace"; // unified HUD font (increased to 14px)
-  ctx.fillText("HP: " + Math.ceil(player.hp), hpX, boxY + 36);
 
   // Left column stats (Sword / Bow)
   ctx.textAlign = "left";
