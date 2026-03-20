@@ -3758,7 +3758,9 @@ ctx.restore();
   ctx.fillText(hpText, boxX + 12, boxY + 36);
 
   // Place ENEMIES just to the right of the reserved HP width with some padding
-  const enemiesX = boxX + 12 + hpReserveWidth + 18; // 18px padding
+  // Shift slightly left by two spaces to reduce chance of overlap with TIME
+  const spaceWidth = ctx.measureText(" ").width;
+  const enemiesX = boxX + 12 + hpReserveWidth + 18 - (2 * spaceWidth); // two-space left shift
   ctx.fillText("ENEMIES: " + enemiesKilled, enemiesX, boxY + 36);
 
   // Right area: TIME at far right (unchanged)
