@@ -3744,16 +3744,15 @@ ctx.restore();
   const boxW = 392; // reduced: 40% of the previous widening to prevent overlap
   const boxH = 110;
 
-  ctx.fillStyle = "rgba(0,0,0,0.72)";
+  ctx.fillStyle = "rgba(0,0,0,0.48)"; // slightly more translucent
   ctx.fillRect(boxX, boxY, boxW, boxH);
-  ctx.strokeStyle = "#ffffff";
+  ctx.strokeStyle = "rgba(255,255,255,0.6)";
   ctx.lineWidth = 2;
   ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "rgba(255,255,255,0.9)"; // slightly translucent text
   // Left: Enemies (moved where HP used to be) - match HP/TIME font
   ctx.textAlign = "left";
-  ctx.font = "bold 18px monospace"; // unified HUD font
+  ctx.font = "bold 12px monospace"; // unified HUD font (1.5x smaller)
   ctx.fillText("ENEMIES: " + enemiesKilled, boxX + 12, boxY + 36);
 
   // Right area: TIME at far right, HP just to the left of TIME
@@ -3761,25 +3760,25 @@ ctx.restore();
   const hpX = timeX - 128; // smaller left shift aligned with reduced HUD width
 
   ctx.textAlign = "right";
-  ctx.font = "bold 18px monospace"; // unified HUD font
+  ctx.font = "bold 12px monospace"; // unified HUD font (1.5x smaller)
   ctx.fillText("HP: " + Math.ceil(player.hp), hpX, boxY + 36);
 
   // Left column stats (Sword / Bow)
   ctx.textAlign = "left";
-  ctx.font = "bold 18px monospace"; // match HUD font/size and capitalization
+  ctx.font = "bold 12px monospace"; // unified HUD font (1.5x smaller)
   ctx.fillText("SWORD DMG: " + player.swordLvl, boxX + 12, boxY + 62);
   ctx.fillText("BOW DMG: " + player.bowLvl, boxX + 12, boxY + 88);
 
   ctx.textAlign = "right";
-  ctx.font = "bold 18px monospace"; // match HUD font/size
+  ctx.font = "bold 12px monospace"; // match HUD font/size (1.5x smaller)
   // Show elapsed time, but freeze during pause
   const displayTime = pauseTimestamp > 0 ? (pauseTimestamp - startTime) : (Date.now() - startTime);
   ctx.fillText("TIME: " + formatTime(displayTime), boxX + boxW - 12, boxY + 36);
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
   ctx.fillText("DIFFICULTY: " + (DIFFICULTY_SETTINGS[currentDifficulty]?.name || currentDifficulty).toUpperCase(), boxX + boxW - 12, boxY + 62);
 
   ctx.textAlign = "right";
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
   ctx.fillText(("BIOME " + biomeLevel + ": " + b.name).toUpperCase(), boxX + boxW - 6, boxY + 92);
   ctx.globalAlpha = 1.0;
 
