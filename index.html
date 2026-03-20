@@ -3755,6 +3755,13 @@ ctx.restore();
   ctx.font = "bold 18px monospace";
   ctx.fillText("HP: " + Math.ceil(player.hp), boxX + 12, boxY + 36);
 
+  // Enemies counter (live). Centered on top row between HP and TIME.
+  ctx.textAlign = "center";
+  ctx.font = "14px monospace"; // same size/font as "Bow Lvl" to avoid overlap
+  ctx.fillText("Enemies: " + enemiesKilled, boxX + (boxW / 2), boxY + 36);
+
+  // Left column stats (Sword / Bow)
+  ctx.textAlign = "left";
   ctx.font = "14px monospace";
   ctx.fillText("Sword Lvl: " + player.swordLvl, boxX + 12, boxY + 62);
   ctx.fillText("Bow Lvl: " + player.bowLvl, boxX + 12, boxY + 88);
