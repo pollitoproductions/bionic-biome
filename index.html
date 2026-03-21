@@ -1601,19 +1601,10 @@ function updateReviveButtonState() {
 }
 
 function updateReviveCountdown() {
-  const el = document.getElementById('revive-countdown');
-  if (!el) return;
-  const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
-  el.textContent = remaining > 0 ? formatTime(remaining) : 'READY!';
-
+  // Update only the remaining revives display (no cooldown timer)
   const remEl = document.getElementById('revive-remaining');
   if (remEl && typeof continuesUsed !== 'undefined') {
     remEl.textContent = Math.max(0, MAX_REVIVES - continuesUsed);
-  }
-
-  if (remaining <= 0 && reviveCountdownInterval) {
-    clearInterval(reviveCountdownInterval);
-    reviveCountdownInterval = null;
   }
 }
 
@@ -1621,10 +1612,8 @@ function showReviveInfoOverlay() {
   const overlay = document.getElementById('revive-info-overlay');
   if (!overlay) return;
   overlay.classList.remove('hidden');
+  // Update remaining revives display once
   updateReviveCountdown();
-  if (!reviveCountdownInterval) {
-    reviveCountdownInterval = setInterval(updateReviveCountdown, 1000);
-  }
 }
 
 function hideReviveInfoOverlay() {
