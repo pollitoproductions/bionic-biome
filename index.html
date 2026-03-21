@@ -3951,6 +3951,8 @@ function requestReviveAd() {
     btn.textContent = 'LOADING AD...';
   }
   if (window.Android && window.Android.onGameOver) {
+    // Trigger the Android rewarded ad. Cooldown will be recorded when
+    // the ad completes and `revivePlayer()` is called.
     window.Android.onGameOver();
   } else {
     console.warn('Android ad interface not available');
