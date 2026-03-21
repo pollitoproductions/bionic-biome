@@ -1082,6 +1082,42 @@
 </div>
 
 <script>
+// Intercept ad-related console messages and convert them to a compact UI message.
+(function() {
+  const origWarn = console.warn.bind(console);
+  const origError = console.error.bind(console);
+  const adPattern = /admob|ad(s)?|reward(ed)?|frequency cap|frequency-cap|frequency_cap|not ready/i;
+
+  function showAdNotReadyUI() {
+    const btn = document.getElementById && document.getElementById('revive-ad-btn');
+    if (btn) {
+      btn.classList.add('disabled');
+      btn.innerHTML = `<span class="video-icon">&#9654;</span> AD NOT READY`;
+      btn.title = 'AD NOT READY';
+    }
+  }
+
+  console.warn = function(...args) {
+    try {
+      if (args && args.length && typeof args[0] === 'string' && adPattern.test(args[0])) {
+        showAdNotReadyUI();
+        return; // swallow ad-related warning
+      }
+    } catch (e) {}
+    origWarn(...args);
+  };
+
+  console.error = function(...args) {
+    try {
+      if (args && args.length && typeof args[0] === 'string' && adPattern.test(args[0])) {
+        showAdNotReadyUI();
+        return; // swallow ad-related error
+      }
+    } catch (e) {}
+    origError(...args);
+  };
+})();
+
 /**
  * BIONIC BIOME v1.13
  *
