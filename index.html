@@ -1616,8 +1616,8 @@ function updateReviveButtonState() {
   // If player already used the maximum revives, disable the button.
   if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
     btn.classList.add('disabled');
-    btn.innerHTML = `<span class="video-icon">\u25B6</span> AD NOT READY`;
-    btn.title = 'AD NOT READY';
+    btn.innerHTML = `<span class="video-icon">\u25B6</span> No Continues Left`;
+    btn.title = 'No Continues Left';
     return;
   }
 
@@ -3934,8 +3934,8 @@ window.revivePlayer = function () {
     var btn = document.getElementById('revive-ad-btn');
     if (btn) {
       btn.classList.add('disabled');
-      btn.innerHTML = `<span class="video-icon">\u25B6</span> AD NOT READY`;
-      btn.title = 'AD NOT READY';
+      btn.innerHTML = `<span class="video-icon">\u25B6</span> No Continues Left`;
+      btn.title = 'No Continues Left';
     }
     return;
   }
