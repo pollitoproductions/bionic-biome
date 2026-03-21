@@ -1190,10 +1190,6 @@ let explored = [];
 let lastReviveTime = 0;
 const MAX_REVIVES = 3;
 const REVIVE_COOLDOWN_MS = 3 * 60 * 1000;
-// Small buffer to avoid immediate frequency-cap errors when button is pressed
-// right as the cooldown expires. UI will wait this extra time before allowing requests.
-// Increased to 5s (previously 2s) per request to add an additional 3s buffer for ads.
-const REVIVE_READY_DELAY_MS = 5000;
 let reviveCountdownInterval = null;
 let reviveButtonInterval = null;
 
@@ -1564,7 +1560,7 @@ function formatTime(ms) {
 }
 
 function isReviveAvailable() {
-  return Date.now() - lastReviveTime >= (REVIVE_COOLDOWN_MS + REVIVE_READY_DELAY_MS);
+  return Date.now() - lastReviveTime >= REVIVE_COOLDOWN_MS;
 }
 
 function updateReviveButtonState() {
@@ -1584,7 +1580,7 @@ function updateReviveButtonState() {
     btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
     btn.title = '';
   } else {
-    const remaining = Math.max(0, REVIVE_COOLDOWN_MS + REVIVE_READY_DELAY_MS - (Date.now() - lastReviveTime));
+    const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
     btn.classList.add('disabled');
     btn.textContent = `\u25B6 Revive in ${formatTime(remaining)}`;
     btn.title = 'Next revive available in ' + formatTime(remaining);
@@ -1594,7 +1590,7 @@ function updateReviveButtonState() {
 function updateReviveCountdown() {
   const el = document.getElementById('revive-countdown');
   if (!el) return;
-  const remaining = Math.max(0, REVIVE_COOLDOWN_MS + REVIVE_READY_DELAY_MS - (Date.now() - lastReviveTime));
+  const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
   el.textContent = remaining > 0 ? formatTime(remaining) : 'READY!';
 
   const remEl = document.getElementById('revive-remaining');
