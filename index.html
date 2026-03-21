@@ -907,7 +907,7 @@
   </div>
 
   <div class="btn-row hidden" id="game-over-btns">
-    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; Reward Ad for 40HP Revive</button>
+    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; Reward Ad for 50HP Revive</button>
     <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
@@ -1580,7 +1580,7 @@ function updateReviveButtonState() {
 
   if (isReviveAvailable()) {
     btn.classList.remove('disabled');
-    btn.textContent = '\u25B6 Reward Ad for 40HP Revive';
+    btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
     btn.title = '';
   } else {
     const remaining = Math.max(0, REVIVE_COOLDOWN_MS + REVIVE_READY_DELAY_MS - (Date.now() - lastReviveTime));
@@ -3913,7 +3913,7 @@ window.revivePlayer = function () {
   }
 
   continuesUsed++;
-  player.hp  = 40;
+  player.hp  = 50;
   gameOver   = false;
   gameRunning = true;
   // Record the revive timestamp so the next revive is locked for the configured cooldown
@@ -3955,7 +3955,7 @@ function requestReviveAd() {
     console.warn('Android ad interface not available');
     if (btn) {
       btn.classList.remove('disabled');
-      btn.textContent = '\u25B6 Reward Ad for 40HP Revive';
+      btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
     }
   }
 }
