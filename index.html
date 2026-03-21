@@ -3834,8 +3834,8 @@ ctx.restore();
         if (world.grid[y][x] === 1) {
           ctx.fillStyle = b.wall;
         } else {
-          // Slightly brighten explored floor tiles for better visibility on the minimap
-          ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.18, 0.06);
+          // Brighten explored floor tiles more for improved visibility on the minimap
+          ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12);
         }
         ctx.fillRect(mmX + x * mmS, mmY + y * mmS, mmS, mmS);
       }
