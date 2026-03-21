@@ -223,6 +223,20 @@
     transform: translateY(4px);
     box-shadow: none;
   }
+  .video-icon {
+    display: inline-block;
+    background: #000;
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-right: 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+    font-family: 'Press Start 2P', monospace;
+  }
   .btn-revive.disabled {
     opacity: 0.4;
     pointer-events: none;
@@ -907,7 +921,7 @@
   </div>
 
     <div class="btn-row hidden" id="game-over-btns">
-    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()">&#9654; 3 Revives Remaining</button>
+    <button class="btn-std btn-revive" id="revive-ad-btn" onclick="requestReviveAd()"><span class="video-icon">&#9654;</span> 3 Revives Remaining</button>
     <button class="btn-std" id="main-menu-btn" onclick="resetToMainMenu()">MAIN MENU</button>
   </div>
 
@@ -1577,12 +1591,12 @@ function updateReviveButtonState() {
 
   if (isReviveAvailable()) {
     btn.classList.remove('disabled');
-    btn.textContent = `\u25B6 ${Math.max(0, MAX_REVIVES - continuesUsed)} Revives Remaining`;
+    btn.innerHTML = `<span class="video-icon">&#9654;</span> ${Math.max(0, MAX_REVIVES - continuesUsed)} Revives Remaining`;
     btn.title = '';
   } else {
     const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
     btn.classList.add('disabled');
-    btn.textContent = `\u25B6 Revive in ${formatTime(remaining)}`;
+    btn.innerHTML = `<span class="video-icon">&#9654;</span> Revive in ${formatTime(remaining)}`;
     btn.title = 'Next revive available in ' + formatTime(remaining);
   }
 }
