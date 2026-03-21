@@ -1198,11 +1198,8 @@ let shots = [];
 let drops = [];
 let explored = [];
 
-// Revive / ad cooldown (once every 3 minutes); maximum revives per run: 3
-let lastReviveTime = 0;
+// Revive / ad settings: maximum revives per run (AdMob will enforce frequency)
 const MAX_REVIVES = 3;
-const REVIVE_COOLDOWN_MS = (3 * 60 + 30) * 1000;
-let reviveCountdownInterval = null;
 let reviveButtonInterval = null;
 
 /* Flow-field timing: previously used a frame counter flowTimer++ and ran updateFlowField when >15.
@@ -1588,16 +1585,10 @@ function updateReviveButtonState() {
     return;
   }
 
-  if (isReviveAvailable()) {
-    btn.classList.remove('disabled');
-    btn.innerHTML = `<span class="video-icon">&#9654;</span> ${Math.max(0, MAX_REVIVES - continuesUsed)} Revives Remaining`;
-    btn.title = '';
-  } else {
-    const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
-    btn.classList.add('disabled');
-    btn.innerHTML = `<span class="video-icon">&#9654;</span> Revive in ${formatTime(remaining)}`;
-    btn.title = 'Next revive available in ' + formatTime(remaining);
-  }
+  // Show dynamic remaining revives when available
+  btn.classList.remove('disabled');
+  btn.innerHTML = `<span class="video-icon">&#9654;</span> ${Math.max(0, MAX_REVIVES - continuesUsed)} Revives Remaining`;
+  btn.title = '';
 }
 
 function updateReviveCountdown() {
@@ -1619,10 +1610,6 @@ function showReviveInfoOverlay() {
 function hideReviveInfoOverlay() {
   const overlay = document.getElementById('revive-info-overlay');
   if (overlay) overlay.classList.add('hidden');
-  if (reviveCountdownInterval) {
-    clearInterval(reviveCountdownInterval);
-    reviveCountdownInterval = null;
-  }
 }
 
 /* DOM elements (unchanged) */
