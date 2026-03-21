@@ -1192,7 +1192,8 @@ const MAX_REVIVES = 3;
 const REVIVE_COOLDOWN_MS = 3 * 60 * 1000;
 // Small buffer to avoid immediate frequency-cap errors when button is pressed
 // right as the cooldown expires. UI will wait this extra time before allowing requests.
-const REVIVE_READY_DELAY_MS = 2000;
+// Increased to 5s (previously 2s) per request to add an additional 3s buffer for ads.
+const REVIVE_READY_DELAY_MS = 5000;
 let reviveCountdownInterval = null;
 let reviveButtonInterval = null;
 
