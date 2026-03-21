@@ -1061,9 +1061,7 @@
   <div class="author-sub" style="margin-bottom: 14px; color: #a5f0ff;">
     Your revive is active!
   </div>
-  <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
-    Next revive unlocks in <span id="revive-countdown">03:30</span>.
-  </div>
+  <!-- Revive timer removed per request -->
   <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
     Revives Remaing: <span id="revive-remaining">3</span>
   </div>
@@ -1574,7 +1572,8 @@ function formatTime(ms) {
 }
 
 function isReviveAvailable() {
-  return Date.now() - lastReviveTime >= REVIVE_COOLDOWN_MS;
+  // Timer removed: allow immediate revives until MAX_REVIVES is reached.
+  return (typeof continuesUsed === 'undefined') || (continuesUsed < MAX_REVIVES);
 }
 
 function updateReviveButtonState() {
@@ -3927,8 +3926,7 @@ window.revivePlayer = function () {
   player.hp  = 50;
   gameOver   = false;
   gameRunning = true;
-  // Record the revive timestamp so the next revive is locked for the configured cooldown
-  lastReviveTime = Date.now();
+  // No cooldown: allow immediate consecutive revives (AdMob will enforce limits)
 
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-over-btns').classList.add('hidden');
