@@ -3831,7 +3831,12 @@ ctx.restore();
   for (let y = 0; y < MAP_SIZE; y++) {
     for (let x = 0; x < MAP_SIZE; x++) {
       if (explored[y][x]) {
-        ctx.fillStyle = world.grid[y][x] === 1 ? b.wall : "#2a2a2a";
+        if (world.grid[y][x] === 1) {
+          ctx.fillStyle = b.wall;
+        } else {
+          // Slightly brighten explored floor tiles for better visibility on the minimap
+          ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.18, 0.06);
+        }
         ctx.fillRect(mmX + x * mmS, mmY + y * mmS, mmS, mmS);
       }
     }
