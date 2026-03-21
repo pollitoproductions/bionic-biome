@@ -1583,7 +1583,7 @@ function updateReviveButtonState() {
   // If player already used the maximum revives, disable the button.
   if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
     btn.classList.add('disabled');
-    btn.textContent = 'NO REVIVES LEFT';
+    btn.innerHTML = `<span class="video-icon">\u25B6</span> No Revives Left`;
     btn.title = 'You have used all revives this run';
     return;
   }
@@ -3966,7 +3966,8 @@ function requestReviveAd() {
     console.warn('Android ad interface not available');
     if (btn) {
       btn.classList.remove('disabled');
-      btn.textContent = '\u25B6 Reward Ad for 50HP Revive';
+      btn.innerHTML = `<span class="video-icon">\u25B6</span> Ad not ready`;
+      btn.title = 'Ad not ready';
     }
   }
 }
