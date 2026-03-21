@@ -1048,7 +1048,10 @@
     Your revive is active!
   </div>
   <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
-    Next revive unlocks in <span id="revive-countdown">05:00</span>.
+    Next revive unlocks in <span id="revive-countdown">03:00</span>.
+  </div>
+  <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
+    Revives left: <span id="revive-remaining">3</span>
   </div>
   <button class="btn-std btn-revive" id="revive-confirm-btn">CONTINUE</button>
 </div>
@@ -1183,9 +1186,10 @@ let shots = [];
 let drops = [];
 let explored = [];
 
-// Revive / ad cooldown (once every 5 minutes)
+// Revive / ad cooldown (once every 3 minutes); maximum revives per run: 3
 let lastReviveTime = 0;
-const REVIVE_COOLDOWN_MS = 5 * 60 * 1000;
+const MAX_REVIVES = 3;
+const REVIVE_COOLDOWN_MS = 3 * 60 * 1000;
 let reviveCountdownInterval = null;
 let reviveButtonInterval = null;
 
@@ -1563,6 +1567,14 @@ function updateReviveButtonState() {
   const btn = document.getElementById('revive-ad-btn');
   if (!btn) return;
 
+  // If player already used the maximum revives, disable the button.
+  if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
+    btn.classList.add('disabled');
+    btn.textContent = 'NO REVIVES LEFT';
+    btn.title = 'You have used all revives this run';
+    return;
+  }
+
   if (isReviveAvailable()) {
     btn.classList.remove('disabled');
     btn.textContent = '\u25B6 Reward Ad for 40HP Revive';
@@ -1580,6 +1592,11 @@ function updateReviveCountdown() {
   if (!el) return;
   const remaining = Math.max(0, REVIVE_COOLDOWN_MS - (Date.now() - lastReviveTime));
   el.textContent = remaining > 0 ? formatTime(remaining) : 'READY!';
+
+  const remEl = document.getElementById('revive-remaining');
+  if (remEl && typeof continuesUsed !== 'undefined') {
+    remEl.textContent = Math.max(0, MAX_REVIVES - continuesUsed);
+  }
 
   if (remaining <= 0 && reviveCountdownInterval) {
     clearInterval(reviveCountdownInterval);
@@ -3881,11 +3898,17 @@ canvas.addEventListener('touchstart', (e) => {
 
 /* ===== Revive Player (Ad Reward) ===== */
 window.revivePlayer = function () {
+  // Prevent reviving if the player exhausted all allowed revives
+  if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
+    console.warn('Revive denied: no revives left');
+    return;
+  }
+
   continuesUsed++;
   player.hp  = 40;
   gameOver   = false;
   gameRunning = true;
-  // Record the revive timestamp so the next revive is locked for 5 minutes
+  // Record the revive timestamp so the next revive is locked for the configured cooldown
   lastReviveTime = Date.now();
 
   document.getElementById('start-screen').classList.add('hidden');
@@ -3902,6 +3925,12 @@ window.revivePlayer = function () {
 
 /* Request the Android wrapper to show a rewarded ad */
 function requestReviveAd() {
+  // Disallow if max revives reached
+  if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
+    updateReviveButtonState();
+    return;
+  }
+
   if (!isReviveAvailable()) {
     updateReviveButtonState();
     return;
