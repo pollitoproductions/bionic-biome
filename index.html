@@ -857,11 +857,35 @@
     .stats-box { padding: 10px; }
   }
 
+  /* Portrait-mode tip shown above the canvas on narrow/tall devices */
+  .portrait-tip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.9));
+    color: #00e6ff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-align: center;
+    z-index: 120;
+    pointer-events: none;
+    padding: 10px 14px;
+    box-sizing: border-box;
+  }
+
 </style>
 </head>
 <body>
 
 <canvas id="c" width="800" height="600"></canvas>
+
+  <div id="portrait-tip" class="portrait-tip hidden" aria-hidden="true">BEST EXPERIENCE: TURN YOUR PHONE TO LANDSCAPE</div>
 
 <div id="ui-layer">
   <div class="joy-container" id="joy"><div class="knob" id="knob"></div></div>
@@ -1117,6 +1141,28 @@
     origError(...args);
   };
 })();
+
+// Portrait-tip visibility helper
+function updatePortraitTip() {
+  try {
+    const tip = document.getElementById('portrait-tip');
+    if (!tip) return;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    if (isPortrait) {
+      tip.classList.remove('hidden');
+      tip.setAttribute('aria-hidden', 'false');
+    } else {
+      tip.classList.add('hidden');
+      tip.setAttribute('aria-hidden', 'true');
+    }
+  } catch (e) {}
+}
+
+window.addEventListener('resize', updatePortraitTip);
+window.addEventListener('orientationchange', updatePortraitTip);
+document.addEventListener('visibilitychange', updatePortraitTip);
+document.addEventListener('DOMContentLoaded', updatePortraitTip);
+setTimeout(updatePortraitTip, 250);
 
 /**
  * BIONIC BIOME v1.13
