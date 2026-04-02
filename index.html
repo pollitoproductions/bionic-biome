@@ -3259,6 +3259,34 @@ function enterDungeon() {
 const ctx = document.getElementById("c").getContext("2d");
 const canvas = document.getElementById("c");
 
+// Low-performance mode detection and adjustments
+const _deviceMemory = navigator.deviceMemory || 0;
+const _hc = navigator.hardwareConcurrency || 0;
+const LOW_PERF_MODE = (_deviceMemory > 0 && _deviceMemory <= 1.5) || (_hc > 0 && _hc <= 2) || /TCL/i.test(navigator.userAgent);
+let RENDER_SKIP = LOW_PERF_MODE ? 2 : 1; // draw every N frames when in low-perf mode
+
+function adjustCanvasForPerf() {
+  try {
+    if (LOW_PERF_MODE) {
+      // Use a smaller canvas resolution on low-end devices to reduce fragment shading cost
+      canvas.width = Math.min(800, Math.max(640, Math.floor(window.innerWidth * 0.8)));
+      canvas.height = Math.min(600, Math.max(480, Math.floor(window.innerHeight * 0.65)));
+      canvas.style.width = canvas.width + 'px';
+      canvas.style.height = canvas.height + 'px';
+      console.info('Bionic Biome: Low-performance mode enabled — throttling rendering and lowering canvas resolution.');
+    } else {
+      // Keep defaults for higher-end devices
+      canvas.width = 800;
+      canvas.height = 600;
+      canvas.style.width = '';
+      canvas.style.height = '';
+    }
+  } catch (e) {}
+}
+
+window.addEventListener('resize', adjustCanvasForPerf);
+adjustCanvasForPerf();
+
 function draw() {
   // If there is no world yet, clear and return
   if (!world || !player) {
@@ -4113,11 +4141,16 @@ function draw() {
 
 /* === MAIN LOOP: compute dt and pass to update === */
 let lastTime = performance.now();
+let _frameCounter = 0;
 (function loop(now) {
   const dt = Math.min(0.1, (now - lastTime) / 1000); // clamp to avoid huge jumps (max 100ms)
   lastTime = now;
   update(dt);
-  draw();
+
+  // Throttle rendering on low-end devices: update logic runs every frame, draw() runs once per RENDER_SKIP frames
+  _frameCounter++;
+  if ((_frameCounter % RENDER_SKIP) === 0) draw();
+
   requestAnimationFrame(loop);
 })(lastTime);
 
