@@ -2831,11 +2831,10 @@ function update(dt) {
     if (!isWall(player.x, ny)) player.y = Math.max(16, Math.min(WORLD - 16, ny));
   }
 
-  // Mark explored
+  // Mark explored: 25x25 square centered on player
   let tx = Math.floor(player.x / TILE), ty = Math.floor(player.y / TILE);
-  // Increase discovery radius so explored area feels larger on the tilted view
-  for (let y = ty - 6; y <= ty + 6; y++) {
-    for (let x = tx - 6; x <= tx + 6; x++) {
+  for (let y = ty - 12; y <= ty + 12; y++) {
+    for (let x = tx - 12; x <= tx + 12; x++) {
       if (x >= 0 && y >= 0 && x < MAP_SIZE && y < MAP_SIZE) explored[y][x] = true;
     }
   }
