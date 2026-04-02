@@ -4052,15 +4052,17 @@ function draw() {
   ctx.fillText(("BIOME " + biomeLevel + ": " + b.name).toUpperCase(), boxX + boxW - 6, boxY + 92);
   ctx.globalAlpha = 1.0;
 
-  const mmS = 1.0;
-  const mmX = 650;
+  // Minimap sizing: choose a fixed pixel width and compute a scale per-tile so tiles render crisply
+  const mmPixelW = 180; // minimap pixel width
+  const mmS = mmPixelW / MAP_SIZE; // pixels per map tile on minimap
+  const mmX = Math.max(10, canvas.width - mmPixelW - 10); // align to right edge with padding
   const mmY = 15;
-  const mmW = MAP_SIZE * mmS;
-  const mmH = MAP_SIZE * mmS;
+  const mmW = mmPixelW;
+  const mmH = Math.ceil(MAP_SIZE * mmS);
 
   // Minimap: draw only explored tiles (no solid background/outline box to avoid grey border remnants)
   const isPaused = !gameActive && gameRunning;
-  ctx.globalAlpha = isPaused ? 1.0 : 0.8; 
+  ctx.globalAlpha = isPaused ? 1.0 : 0.8;
   ctx.shadowBlur = 0;
 
   // Draw isometric tiles on minimap (only explored tiles are visible)
@@ -4077,10 +4079,10 @@ function draw() {
       if (world.grid[y][x] === 1) ctx.fillStyle = b.wall;
       else ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12);
       ctx.beginPath();
-      ctx.moveTo(cxTile, cyTile - halfH);
-      ctx.lineTo(cxTile + halfW, cyTile);
-      ctx.lineTo(cxTile, cyTile + halfH);
-      ctx.lineTo(cxTile - halfW, cyTile);
+      ctx.moveTo(cxTile, cyTile - mmHalfH);
+      ctx.lineTo(cxTile + mmHalfW, cyTile);
+      ctx.lineTo(cxTile, cyTile + mmHalfH);
+      ctx.lineTo(cxTile - mmHalfW, cyTile);
       ctx.closePath(); ctx.fill();
     }
   }
