@@ -4176,21 +4176,23 @@ window.addEventListener('focus', () => {
 });
 
 /* Canvas click/touch: pause on upper-right corner, resume anywhere */
-// Use touchstart for immediate response (before touchend delay)
+// Use touchstart for immediate response (fires instantly on finger down, no hold required)
 canvas.addEventListener('touchstart', (e) => {
-  // Only preventDefault if the tap is in the pause area (upper-right corner)
-  if (gameRunning && !gameOver && !startScreen.classList.contains('hidden')) {
-    const pos = getCanvasPos(e);
-    const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40));
-    const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40));
-    const cornerX = canvas.width - cornerWidth;
-    const cornerY = 0;
-    const inPauseArea = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
-    if (inPauseArea) {
-      try { e.preventDefault(); } catch (err) {}
-    }
+  const pos = getCanvasPos(e);
+  const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40));
+  const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40));
+  const cornerX = canvas.width - cornerWidth;
+  const cornerY = 0;
+  const inPauseArea = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
+  
+  // Immediately pause if tap is in the upper-right corner
+  if (gameRunning && !gameOver && gameActive && inPauseArea) {
+    try { e.preventDefault(); } catch (err) {}
+    pauseGame(true);
+  } else {
+    // Any other tap resumes if paused
+    handleCanvasTap(e);
   }
-  handleCanvasTap(e);
 }, {passive: false});
 
 // Keep click listener as a final fallback (mouse/legacy)
