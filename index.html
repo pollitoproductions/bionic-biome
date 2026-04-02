@@ -1828,18 +1828,16 @@ function handleCanvasTap(e) {
   if (!startScreen.classList.contains('hidden')) return;
 
   const pos = getCanvasPos(e);
-  // Compute minimap bounds the same way draw() does so hit-tests stay in sync
-  // Pause when touching the upper-right corner of the visible canvas.
-  // Use a generous area so users can quickly tap without precise aim.
-  const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40)); // at least 120px or 40% width
-  const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40)); // at least 120px or 40% height
+  // Pause when touching the upper-right corner of the screen
+  const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40));
+  const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40));
   const cornerX = canvas.width - cornerWidth;
   const cornerY = 0;
-  const onMinimap = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
+  const inPauseArea = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
 
   if (gameActive) {
-    if (onMinimap) {
-      pauseGame();
+    if (inPauseArea) {
+      pauseGame(true);
     }
   } else {
     // When paused, any tap resumes
@@ -4177,16 +4175,21 @@ window.addEventListener('focus', () => {
   // User will tap anywhere to resume
 });
 
-/* Canvas click/touch: pause on minimap, resume anywhere */
-// Use pointer events for immediate cross-device response, and preventDefault on touchstart
-canvas.addEventListener('pointerdown', (e) => {
-  try { e.preventDefault(); } catch (err) {}
-  handleCanvasTap(e);
-}, {passive: false});
-
-// Fallback for older touch-only browsers: ensure touchstart prevents the delayed click
+/* Canvas click/touch: pause on upper-right corner, resume anywhere */
+// Use touchstart for immediate response (before touchend delay)
 canvas.addEventListener('touchstart', (e) => {
-  try { e.preventDefault(); } catch (err) {}
+  // Only preventDefault if the tap is in the pause area (upper-right corner)
+  if (gameRunning && !gameOver && !startScreen.classList.contains('hidden')) {
+    const pos = getCanvasPos(e);
+    const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40));
+    const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40));
+    const cornerX = canvas.width - cornerWidth;
+    const cornerY = 0;
+    const inPauseArea = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
+    if (inPauseArea) {
+      try { e.preventDefault(); } catch (err) {}
+    }
+  }
   handleCanvasTap(e);
 }, {passive: false});
 
