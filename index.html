@@ -1829,16 +1829,13 @@ function handleCanvasTap(e) {
 
   const pos = getCanvasPos(e);
   // Compute minimap bounds the same way draw() does so hit-tests stay in sync
-  const mmPixelW = 180; // matches draw() minimap pixel width
-  const mmS = mmPixelW / MAP_SIZE;
-  const mmW = mmPixelW;
-  const mmH = Math.ceil(MAP_SIZE * mmS);
-  const mmX = Math.max(10, canvas.width - mmW - 10);
-  const mmY = 15;
-  // Allow a small padding around the minimap so light/nearby taps still count as "on the map".
-  // Players often tap just outside the exact minimap bounds; this makes pause feel more responsive.
-  const mmPadding = 28; // pixels of leeway around the minimap
-  const onMinimap = pos.x >= (mmX - mmPadding) && pos.x <= (mmX + mmW + mmPadding) && pos.y >= (mmY - mmPadding) && pos.y <= (mmY + mmH + mmPadding);
+  // Pause when touching the upper-right corner of the visible canvas.
+  // Use a generous area so users can quickly tap without precise aim.
+  const cornerWidth = Math.max(120, Math.floor(canvas.width * 0.40)); // at least 120px or 40% width
+  const cornerHeight = Math.max(120, Math.floor(canvas.height * 0.40)); // at least 120px or 40% height
+  const cornerX = canvas.width - cornerWidth;
+  const cornerY = 0;
+  const onMinimap = pos.x >= cornerX && pos.x <= canvas.width && pos.y >= cornerY && pos.y <= cornerHeight;
 
   if (gameActive) {
     if (onMinimap) {
