@@ -2811,9 +2811,15 @@ function doAction() {
 function update(dt) {
   if (!gameActive || gameOver) return;
 
-  // Player movement: touch/keys produce unit direction vector; movement uses per-second speed * dt
-  let mx = (keys.ArrowLeft || keys.KeyA ? -1 : keys.ArrowRight || keys.KeyD ? 1 : 0) + touchX;
-  let my = (keys.ArrowUp || keys.KeyW ? -1 : keys.ArrowDown || keys.KeyS ? 1 : 0) + touchY;
+  // Screen-space input (keyboard + joystick on player's perspective)
+  let screenX = (keys.ArrowLeft || keys.KeyA ? -1 : keys.ArrowRight || keys.KeyD ? 1 : 0) + touchX;
+  let screenY = (keys.ArrowUp || keys.KeyW ? -1 : keys.ArrowDown || keys.KeyS ? 1 : 0) + touchY;
+  
+  // Transform screen-space to world-space for isometric view
+  // Since isoX = (tx - ty) * scale and isoY = (tx + ty) * scale,
+  // the inverse for directions is: mx = screenX + screenY, my = screenY - screenX
+  let mx = screenX + screenY;
+  let my = screenY - screenX;
     
   let m = Math.hypot(mx, my);
   if (m > 0.1) {
