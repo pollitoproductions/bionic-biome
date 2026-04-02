@@ -4181,14 +4181,22 @@ window.addEventListener('focus', () => {
 });
 
 /* Canvas click/touch: pause on minimap, resume anywhere */
+// Use pointer events for immediate cross-device response, and preventDefault on touchstart
+canvas.addEventListener('pointerdown', (e) => {
+  try { e.preventDefault(); } catch (err) {}
+  handleCanvasTap(e);
+}, {passive: false});
+
+// Fallback for older touch-only browsers: ensure touchstart prevents the delayed click
+canvas.addEventListener('touchstart', (e) => {
+  try { e.preventDefault(); } catch (err) {}
+  handleCanvasTap(e);
+}, {passive: false});
+
+// Keep click listener as a final fallback (mouse/legacy)
 canvas.addEventListener('click', (e) => {
   handleCanvasTap(e);
 });
-
-canvas.addEventListener('touchstart', (e) => {
-  // Don't always preventDefault here — allow UI-layer elements to receive touches.
-  handleCanvasTap(e);
-}, {passive: false});
 
 /* ===== Revive Player (Ad Reward) ===== */
 window.revivePlayer = function () {
