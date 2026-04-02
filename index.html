@@ -1835,7 +1835,10 @@ function handleCanvasTap(e) {
   const mmH = Math.ceil(MAP_SIZE * mmS);
   const mmX = Math.max(10, canvas.width - mmW - 10);
   const mmY = 15;
-  const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
+  // Allow a small padding around the minimap so light/nearby taps still count as "on the map".
+  // Players often tap just outside the exact minimap bounds; this makes pause feel more responsive.
+  const mmPadding = 28; // pixels of leeway around the minimap
+  const onMinimap = pos.x >= (mmX - mmPadding) && pos.x <= (mmX + mmW + mmPadding) && pos.y >= (mmY - mmPadding) && pos.y <= (mmY + mmH + mmPadding);
 
   if (gameActive) {
     if (onMinimap) {
