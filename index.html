@@ -1828,7 +1828,13 @@ function handleCanvasTap(e) {
   if (!startScreen.classList.contains('hidden')) return;
 
   const pos = getCanvasPos(e);
-  const mmX = 650, mmY = 15, mmW = MAP_SIZE, mmH = MAP_SIZE;
+  // Compute minimap bounds the same way draw() does so hit-tests stay in sync
+  const mmPixelW = 180; // matches draw() minimap pixel width
+  const mmS = mmPixelW / MAP_SIZE;
+  const mmW = mmPixelW;
+  const mmH = Math.ceil(MAP_SIZE * mmS);
+  const mmX = Math.max(10, canvas.width - mmW - 10);
+  const mmY = 15;
   const onMinimap = pos.x >= mmX && pos.x <= mmX + mmW && pos.y >= mmY && pos.y <= mmY + mmH;
 
   if (gameActive) {
@@ -1852,6 +1858,7 @@ window.addEventListener('click', initAudioInteraction);
 window.addEventListener('touchstart', initAudioInteraction);
 
 playBtn.addEventListener('click', () => {
+  console.log('PLAY button clicked');
   // Normal play button behavior
   mainBtns.classList.add('hidden');
   diffBtns.classList.remove('hidden');
@@ -1964,7 +1971,12 @@ function updateMiniButtonPositions() {
   const scaleX = rect.width / canvas.width;
   const scaleY = rect.height / canvas.height;
 
-  const mmX = 650;
+  // Compute minimap bounds to align button positions with the drawn minimap
+  const mmPixelW = 180;
+  const mmS = mmPixelW / MAP_SIZE;
+  const mmW = mmPixelW;
+  const mmH = Math.ceil(MAP_SIZE * mmS);
+  const mmX = Math.max(10, canvas.width - mmW - 10);
   const mmY = 15;
   const btnSize = 34;
   const padding = 4;
@@ -2075,8 +2087,12 @@ function updateMiniMenuButtonPosition() {
   const scaleX = rect.width / canvas.width;
   const scaleY = rect.height / canvas.height;
 
-  // Minimap is drawn at (650, 15) in canvas coords, with size MAP_SIZE.
-  const mmX = 650;
+  // Compute minimap position the same way draw() does so button aligns correctly
+  const mmPixelW = 180;
+  const mmS = mmPixelW / MAP_SIZE;
+  const mmW = mmPixelW;
+  const mmH = Math.ceil(MAP_SIZE * mmS);
+  const mmX = Math.max(10, canvas.width - mmW - 10);
   const mmY = 15;
   const btnSize = 44;
   const padding = 6;
@@ -2145,7 +2161,7 @@ toggleSound.addEventListener('click', () => {
 toggleVibration.addEventListener('click', () => {
   vibrationEnabled = !vibrationEnabled;
   toggleVibration.classList.toggle('active');
-  vibBtn.classList.toggle('active', !vibrationEnabled);
+  toggleVibration.classList.toggle('active', vibrationEnabled);
   if (vibrationEnabled) {
     vibrate(50); // Test vibration
   }
@@ -2595,7 +2611,7 @@ function generateWorld(reset) {
   for (let y = 0; y < MAP_SIZE; y++) {
     world.grid[y] = [];
     for (let x = 0; x < MAP_SIZE; x++) {
-      let isBorder = (x === 0 || y === 0 || x === MAP_SIZE - 1 || y === MAP_SIZE - 1);
+      let isBorder = (x < 2 || y < 2 || x >= MAP_SIZE - 2 || y >= MAP_SIZE - 2);
       let isWallTile = isBorder || (Math.random() < wallChance);
       world.grid[y][x] = isWallTile ? 1 : 0;
     }
@@ -2627,7 +2643,26 @@ function generateWorld(reset) {
 
   let ep = findSafePos();
   while (Math.hypot(ep.x - player.x, ep.y - player.y) < 1500) ep = findSafePos();
-  world.entrance = ep;
+  const entranceTileX = Math.floor(ep.x / TILE);
+  const entranceTileY = Math.floor(ep.y / TILE);
+
+  // Reserve and ensure a 2x2 dungeon entrance footprint is passable
+  for (let oy = 0; oy < 2; oy++) {
+    for (let ox = 0; ox < 2; ox++) {
+      const tx = entranceTileX + ox;
+      const ty = entranceTileY + oy;
+      if (tx >= 0 && ty >= 0 && tx < MAP_SIZE && ty < MAP_SIZE) {
+        world.grid[ty][tx] = 0;
+      }
+    }
+  }
+
+  world.entrance = {
+    tileX: entranceTileX,
+    tileY: entranceTileY,
+    x: (entranceTileX + 1) * TILE,
+    y: (entranceTileY + 1) * TILE
+  };
 
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];  
   const dmgMult = settings.enemyDamageMult || 1;
@@ -2794,8 +2829,9 @@ function update(dt) {
 
   // Mark explored
   let tx = Math.floor(player.x / TILE), ty = Math.floor(player.y / TILE);
-  for (let y = ty - 4; y <= ty + 4; y++) {
-    for (let x = tx - 4; x <= tx + 4; x++) {
+  // Increase discovery radius so explored area feels larger on the tilted view
+  for (let y = ty - 6; y <= ty + 6; y++) {
+    for (let x = tx - 6; x <= tx + 6; x++) {
       if (x >= 0 && y >= 0 && x < MAP_SIZE && y < MAP_SIZE) explored[y][x] = true;
     }
   }
@@ -3065,7 +3101,15 @@ function update(dt) {
     }
   }
 
-  if (!inDungeon && Math.hypot(player.x - world.entrance.x, world.entrance.y - player.y) < 40) enterDungeon();
+  const entranceTileX = world.entrance.tileX ?? Math.floor(world.entrance.x / TILE);
+  const entranceTileY = world.entrance.tileY ?? Math.floor(world.entrance.y / TILE);
+  const playerTileX = Math.floor(player.x / TILE);
+  const playerTileY = Math.floor(player.y / TILE);
+  const playerAtEntrance = !inDungeon &&
+    playerTileX >= entranceTileX && playerTileX <= entranceTileX + 1 &&
+    playerTileY >= entranceTileY && playerTileY <= entranceTileY + 1;
+
+  if (playerAtEntrance) enterDungeon();
 
   drops = drops.filter(d => {
     if (Math.hypot(player.x - d.x, player.y - d.y) < (PLAYER_RAD + 20)) {
@@ -3146,7 +3190,7 @@ function enterDungeon() {
   for (let y = 0; y < MAP_SIZE; y++) {
     world.grid[y] = [];
     for (let x = 0; x < MAP_SIZE; x++) {
-      let isBorder = (x === 0 || y === 0 || x === MAP_SIZE - 1 || y === MAP_SIZE - 1);
+      let isBorder = (x < 2 || y < 2 || x >= MAP_SIZE - 2 || y >= MAP_SIZE - 2);
       let isWallTile = isBorder || (Math.random() < wallChance);
       world.grid[y][x] = isWallTile ? 1 : 0;
     }
@@ -3223,256 +3267,362 @@ function draw() {
   }
 
   const b = biomes[(biomeLevel - 1) % biomes.length];
-  let cx = player.x - 400, cy = player.y - 300;
-
-  // Choose brighter base colors for the overworld (before entering dungeon)
-  const overworldBrighten = 0.10; // increase lightness for overworld
+  const centerX = Math.round(canvas.width / 2);
+  const centerY = Math.round(canvas.height / 2);
+  let cx = player.x - centerX, cy = player.y - centerY;
+  const overworldBrighten = 0.10;
   const overworldSaturate = 0.00;
   const grassColor = !inDungeon ? adjustColor(b.grass || '#000', overworldBrighten, overworldSaturate) : (b.grass || '#000');
   const wallColor = !inDungeon ? adjustColor(b.wall || '#000', overworldBrighten * 0.6, overworldSaturate) : (b.wall || '#000');
-
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  function worldToIso(wx, wy) {
+    const tx = wx / TILE, ty = wy / TILE;
+    const isoScaleX = TILE / 2;
+    const isoScaleY = TILE / 3;
+    const isoX = (tx - ty) * isoScaleX;
+    const isoY = (tx + ty) * isoScaleY;
+    const pTx = player.x / TILE, pTy = player.y / TILE;
+    const pIsoX = (pTx - pTy) * isoScaleX;
+    const pIsoY = (pTx + pTy) * isoScaleY;
+    const camX = Math.round(canvas.width / 2);
+    const camY = Math.round(canvas.height / 2);
+    return { x: camX + isoX - pIsoX, y: camY + isoY - pIsoY };
+  }
   let startX = Math.max(0, Math.floor(cx / TILE));
   let endX = Math.min(MAP_SIZE, startX + 27);
   let startY = Math.max(0, Math.floor(cy / TILE));
   let endY = Math.min(MAP_SIZE, startY + 20);
 
+  // Precompute visible entities by tile for correct depth sorting
+  const entityMap = {};
+  function tileKey(x, y) { return x + "," + y; }
+  // Player
+  const playerTileX = Math.floor(player.x / TILE), playerTileY = Math.floor(player.y / TILE);
+  entityMap[tileKey(playerTileX, playerTileY)] = entityMap[tileKey(playerTileX, playerTileY)] || [];
+  entityMap[tileKey(playerTileX, playerTileY)].push({ type: 'player', obj: player });
+  // Enemies
+  world.enemies.forEach(e => {
+    const ex = Math.floor(e.x / TILE), ey = Math.floor(e.y / TILE);
+    entityMap[tileKey(ex, ey)] = entityMap[tileKey(ex, ey)] || [];
+    entityMap[tileKey(ex, ey)].push({ type: 'enemy', obj: e });
+  });
+  // Drops
+  drops.forEach(d => {
+    const dx = Math.floor(d.x / TILE), dy = Math.floor(d.y / TILE);
+    entityMap[tileKey(dx, dy)] = entityMap[tileKey(dx, dy)] || [];
+    entityMap[tileKey(dx, dy)].push({ type: 'drop', obj: d });
+  });
+  // Shots
+  shots.forEach(s => {
+    const sx = Math.floor(s.x / TILE), sy = Math.floor(s.y / TILE);
+    entityMap[tileKey(sx, sy)] = entityMap[tileKey(sx, sy)] || [];
+    entityMap[tileKey(sx, sy)].push({ type: 'shot', obj: s });
+  });
+  // Boss (if in dungeon)
+  if (inDungeon && world.boss) {
+    const bx = Math.floor(world.boss.x / TILE), by = Math.floor(world.boss.y / TILE);
+    entityMap[tileKey(bx, by)] = entityMap[tileKey(bx, by)] || [];
+    entityMap[tileKey(bx, by)].push({ type: 'boss', obj: world.boss });
+  }
+
+  const halfW = TILE / 2, halfH = TILE / 3;
+  // Build draw queue sorted by isometric depth x+y
+  const tileQueue = [];
   for (let y = startY; y < endY; y++) {
     for (let x = startX; x < endX; x++) {
-      let drawX = x * TILE - cx;
-      let drawY = y * TILE - cy;
+      tileQueue.push({x, y, depth: x + y});
+    }
+  }
+  tileQueue.sort((a, b) => a.depth - b.depth || a.x - b.x);
 
-      if (world.grid[y][x] === 1) {
-        ctx.fillStyle = wallColor; 
-        ctx.fillRect(drawX, drawY, TILE, TILE);
-        
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
-        ctx.fillRect(drawX, drawY, TILE, 4);
-        ctx.fillRect(drawX, drawY, 4, TILE);
-        ctx.fillStyle = "rgba(0,0,0,0.3)";
-        ctx.fillRect(drawX + TILE - 4, drawY, 4, TILE);
-        ctx.fillRect(drawX, drawY + TILE - 4, TILE, 4);
-        
-        ctx.strokeStyle = b.wallEdge; 
-        ctx.strokeRect(drawX, drawY, TILE, TILE);
+  for (const tile of tileQueue) {
+    const x = tile.x, y = tile.y;
+    const center = worldToIso((x + 0.5) * TILE, (y + 0.5) * TILE);
+    const drawX = center.x, drawY = center.y;
+    const pTop = { x: drawX, y: drawY - halfH };
+    const pRight = { x: drawX + halfW, y: drawY };
+    const pBottom = { x: drawX, y: drawY + halfH };
+    const pLeft = { x: drawX - halfW, y: drawY };
+    const p1 = pBottom;
+    const p2 = pLeft;
+    const p3 = pTop;
+    const p4 = pRight;
+    const exploredTile = explored[y] && explored[y][x];
 
-      } else if (!inDungeon) {
-        ctx.fillStyle = grassColor; 
-        ctx.fillRect(drawX, drawY, TILE, TILE);
-        
+    // Floor
+    if (world.grid[y][x] !== 1) {
+      ctx.fillStyle = exploredTile ? grassColor : "rgba(10,10,12,0.9)";
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.closePath(); ctx.fill();
+      if (exploredTile) {
         let noise = ((x * 13 + y * 23) % 10) / 10;
         if (noise > 0.6) {
-           ctx.fillStyle = "rgba(0,0,0,0.1)";
-           ctx.fillRect(drawX + 8, drawY + 8, 4, 4);
+          ctx.fillStyle = "rgba(0,0,0,0.1)";
+          ctx.fillRect(drawX + 8, drawY + 8, 4, 4);
         }
         if (noise < 0.3) {
-           ctx.fillStyle = "rgba(255,255,255,0.1)";
-           ctx.fillRect(drawX + 20, drawY + 18, 2, 2);
-           ctx.fillRect(drawX + 4, drawY + 22, 2, 2);
+          ctx.fillStyle = "rgba(255,255,255,0.1)";
+          ctx.fillRect(drawX + 20, drawY + 18, 2, 2);
+          ctx.fillRect(drawX + 4, drawY + 22, 2, 2);
         }
-
       } else {
-        ctx.fillStyle = "#111"; 
+        ctx.fillStyle = "#111";
         ctx.fillRect(drawX, drawY, TILE, TILE);
-        
         if ((x + y) % 2 === 0) {
-            ctx.fillStyle = "rgba(255,255,255,0.03)";
-            ctx.fillRect(drawX + 2, drawY + 2, TILE - 4, TILE - 4);
+          ctx.fillStyle = "rgba(255,255,255,0.03)";
+          ctx.fillRect(drawX + 2, drawY + 2, TILE - 4, TILE - 4);
         }
         if ((x * y) % 11 === 0) {
-             ctx.fillStyle = "#0a0a0a";
-             ctx.fillRect(drawX + 8, drawY + 8, TILE-16, TILE-16);
+          ctx.fillStyle = "#0a0a0a";
+          ctx.fillRect(drawX + 8, drawY + 8, TILE - 16, TILE - 16);
         }
       }
     }
   }
 
-  if (!inDungeon) {
-    ctx.fillStyle = "#000"; ctx.beginPath();
-    ctx.arc(world.entrance.x - cx, world.entrance.y - cy, 35, 0, Math.PI*2);
-    ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+  // If not in dungeon, draw stair entrance before entities (keeps player on top of the stair edge)
+  if (!inDungeon) drawEntrance();
+
+  // Build a depth-sorted draw list for walls+entities (floor is already drawn)
+  const drawQueue = [];
+
+  // Enqueue entities with their approximate tile depth.
+  for (const key in entityMap) {
+    const [tx, ty] = key.split(",").map(Number);
+    if (isNaN(tx) || isNaN(ty)) continue;
+    const ents = entityMap[key];
+    const depthBase = tx + ty;
+    ents.forEach(ent => {
+      drawQueue.push({
+        depth: depthBase + 0.25,
+        fn: () => {
+          const entPos = ent.type === 'player'
+            ? worldToIso(player.x, player.y)
+            : worldToIso(ent.obj.x, ent.obj.y);
+          if (ent.type === 'player') drawPlayer(entPos);
+          else if (ent.type === 'enemy') drawEnemy(ent.obj, entPos);
+          else if (ent.type === 'drop') drawDrop(ent.obj, entPos);
+          else if (ent.type === 'shot') drawShot(ent.obj, entPos);
+          else if (ent.type === 'boss') drawBoss(ent.obj, entPos);
+        }
+      });
+    });
   }
 
- // PLAYER - Animated energy orb with swirling blue energy
-ctx.save();
-ctx.translate(400, 300);
+  // Enqueue walls with a slightly higher depth so walls can still obscure players when appropriate.
+  tileQueue.forEach(tile => {
+    const x = tile.x, y = tile.y;
+    if (world.grid[y][x] !== 1) return;
 
-// Outer glow pulse (reduced shadow for iOS)
-const time = Date.now() / 1000;
-const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-ctx.shadowBlur = isIOS ? 8 : 18;
-ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
-ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
-ctx.beginPath();
-ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
-ctx.fill();
+    drawQueue.push({
+      depth: tile.depth + 0.5,
+      fn: () => {
+        const center = worldToIso((x + 0.5) * TILE, (y + 0.5) * TILE);
+        const drawX = center.x, drawY = center.y;
+        const pTop = { x: drawX, y: drawY - halfH };
+        const pRight = { x: drawX + halfW, y: drawY };
+        const pBottom = { x: drawX, y: drawY + halfH };
+        const pLeft = { x: drawX - halfW, y: drawY };
+        const p1 = pBottom;
+        const p2 = pLeft;
+        const p3 = pTop;
+        const p4 = pRight;
+        const exploredTile = explored[y] && explored[y][x];
 
-// Main orb base with gradient (no shadowBlur for edge)
-const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
-if (player.hitTimer > 0) {
-  gradient.addColorStop(0, "rgba(255,255,255,0.95)");
-  gradient.addColorStop(0.5, "rgba(200,220,255,0.9)");
-  gradient.addColorStop(1, "rgba(180,200,255,0.8)");
-} else {
-  gradient.addColorStop(0, "rgba(100,200,255,0.9)");
-  gradient.addColorStop(0.5, "rgba(50,150,255,0.85)");
-  gradient.addColorStop(1, "rgba(20,100,200,0.75)");
-}
-ctx.shadowBlur = 0;
-ctx.fillStyle = gradient;
-ctx.beginPath();
-ctx.arc(0, 0, PLAYER_RAD, 0, Math.PI * 2);
-ctx.fill();
+        const H = TILE * 0.6;
+        const OVERLAP = 0.75;
+        const p1t = { x: p1.x, y: p1.y - H - OVERLAP };
+        const p2t = { x: p2.x, y: p2.y - H - OVERLAP };
+        const p3t = { x: p3.x, y: p3.y - H - OVERLAP };
+        const p4t = { x: p4.x, y: p4.y - H - OVERLAP };
 
-// Swirling energy streams (3 rotating streams)
-for (let i = 0; i < 3; i++) {
-  const rotation = (time * 2 + i * (Math.PI * 2 / 3)) % (Math.PI * 2);
-  ctx.save();
-  ctx.rotate(rotation);
-  
-  // Create swirl path
-  ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
-  
-  ctx.beginPath();
-  for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
-    const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
-    const x = Math.cos(a * 2) * r;
-    const y = Math.sin(a * 2) * r;
-    if (a === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
+        ctx.fillStyle = exploredTile ? adjustColor(wallColor, 0.14, 0.05) : adjustColor(wallColor, -0.18, -0.2);
+        ctx.beginPath(); ctx.moveTo(p1t.x, p1t.y); ctx.lineTo(p2t.x, p2t.y); ctx.lineTo(p3t.x, p3t.y); ctx.lineTo(p4t.x, p4t.y); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = exploredTile ? adjustColor(wallColor, -0.10, -0.05) : "#0b0b0b";
+        ctx.beginPath(); ctx.moveTo(p4t.x, p4t.y); ctx.lineTo(p1t.x, p1t.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p4.x, p4.y); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = exploredTile ? adjustColor(wallColor, -0.22, -0.08) : "#050505";
+        ctx.beginPath(); ctx.moveTo(p1t.x, p1t.y); ctx.lineTo(p2t.x, p2t.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p1.x, p1.y); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = b.wallEdge; ctx.lineWidth = 1; ctx.stroke();
+      }
+    });
+  });
 
-// Inner energy particles
-const particleCount = 8;
-for (let i = 0; i < particleCount; i++) {
-  const angle = (time * 1.5 + i * (Math.PI * 2 / particleCount)) % (Math.PI * 2);
-  const radius = 6 + Math.sin(time * 4 + i) * 4;
-  const x = Math.cos(angle) * radius;
-  const y = Math.sin(angle) * radius;
-  
-  ctx.shadowBlur = 10;
-  ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
-  ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
-  ctx.beginPath();
-  ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-  ctx.fill();
-}
+  // Sort by depth and draw
+  drawQueue.sort((a,b) => a.depth - b.depth);
+  drawQueue.forEach(item => item.fn());
+  // ...existing code for minimap, stats, etc. remains unchanged...
 
-// Outer ring — segmented rotating energy arcs
-ctx.shadowBlur = 15;
-ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
-ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
-ctx.lineWidth = 2;
-const ringSegments = 6;
-const ringGap = 0.18; // gap between segments in radians
-const ringRotation = time * 1.5;
-for (let i = 0; i < ringSegments; i++) {
-  const segStart = ringRotation + i * (Math.PI * 2 / ringSegments) + ringGap / 2;
-  const segEnd = segStart + (Math.PI * 2 / ringSegments) - ringGap;
-  const segAlpha = 0.55 + 0.35 * Math.sin(time * 3 + i * 1.2);
-  ctx.globalAlpha = segAlpha;
-  ctx.beginPath();
-  ctx.arc(0, 0, PLAYER_RAD, segStart, segEnd);
-  ctx.stroke();
-}
-ctx.globalAlpha = 1.0;
 
-ctx.restore();
-
-  if (player.swing > 0) {
+  // Helper functions for entity drawing
+  function drawPlayer(pos) {
+    const time = Date.now() / 1000;
     ctx.save();
-    // Calculate swing progress for animation (5 to 0)
-    const swingProgress = player.swing / 5;
-    const swingAngle = swingProgress * 2.8; // Wider arc that narrows as it progresses
-    
-    // Get weapon glow color for this biome
-    const glowColor = b.wpnGlow || "#00e6ff";
-    const glowRGB = glowColor === "#00e6ff" ? "0,230,255" : "0,180,255";
-    
-    // Draw outer glow/outline for visibility
-    ctx.shadowBlur = 35;
-    ctx.shadowColor = glowColor;
-    ctx.strokeStyle = glowColor;
-    ctx.lineWidth = 24;
-    ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.4 * swingProgress;
-    ctx.beginPath();
-    ctx.arc(400, 300, PLAYER_RAD + 25, 
-            player.dir - swingAngle, 
-            player.dir + swingAngle);
-    ctx.stroke();
-    ctx.globalAlpha = 1.0;
-    
-    // Draw multiple trailing arcs for swoosh effect
+    ctx.translate(pos.x, pos.y);
+
+    // Outer glow pulse (reduced shadow for iOS)
+    const pulseSize = Math.sin(time * 3) * 2 + PLAYER_RAD + 4;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    ctx.shadowBlur = isIOS ? 8 : 18;
+    ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
+    ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
+    ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
+
+    // Main orb base with gradient (no shadowBlur for edge)
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PLAYER_RAD);
+    if (player.hitTimer > 0) {
+      gradient.addColorStop(0, "rgba(255,255,255,0.95)");
+      gradient.addColorStop(0.5, "rgba(200,220,255,0.9)");
+      gradient.addColorStop(1, "rgba(180,200,255,0.8)");
+    } else {
+      gradient.addColorStop(0, "rgba(100,200,255,0.9)");
+      gradient.addColorStop(0.5, "rgba(50,150,255,0.85)");
+      gradient.addColorStop(1, "rgba(20,100,200,0.75)");
+    }
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = gradient;
+    ctx.beginPath(); ctx.arc(0, 0, PLAYER_RAD, 0, Math.PI * 2); ctx.fill();
+
+    // Swirling energy streams
     for (let i = 0; i < 3; i++) {
-      const offset = i * 0.3;
-      const alpha = (0.6 - i * 0.15) * swingProgress;
-      const blur = 20 + i * 5;
-      
-      ctx.shadowBlur = blur;
-      ctx.shadowColor = `rgba(${glowRGB},${alpha})`;
-      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-      ctx.lineWidth = 18 - i * 4;
+      const rotation = (time * 2 + i * (Math.PI * 2 / 3)) % (Math.PI * 2);
+      ctx.save();
+      ctx.rotate(rotation);
+      ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,230,255,0.6)";
+      ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
-      
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,200,255,0.9)";
       ctx.beginPath();
-      ctx.arc(400, 300, PLAYER_RAD + 25 + i * 5, 
-              player.dir - swingAngle + offset, 
-              player.dir + swingAngle - offset);
+      for (let a = 0; a < Math.PI * 1.5; a += 0.1) {
+        const r = (PLAYER_RAD - 8) * (1 - a / (Math.PI * 1.5));
+        const x = Math.cos(a * 2) * r;
+        const y = Math.sin(a * 2) * r;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Inner energy particles
+    for (let i = 0; i < 8; i++) {
+      const angle = (time * 1.5 + i * (Math.PI * 2 / 8)) % (Math.PI * 2);
+      const radius = 6 + Math.sin(time * 4 + i) * 4;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,1)" : "rgba(100,220,255,1)";
+      ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.95)" : "rgba(150,230,255,0.9)";
+      ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Outer ring
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(0,220,255,0.8)";
+    ctx.strokeStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.9)" : "rgba(150,230,255,0.85)";
+    ctx.lineWidth = 2;
+    const ringSegments = 6;
+    const ringGap = 0.18;
+    const ringRotation = time * 1.5;
+    for (let i = 0; i < ringSegments; i++) {
+      const segStart = ringRotation + i * (Math.PI * 2 / ringSegments) + ringGap / 2;
+      const segEnd = segStart + (Math.PI * 2 / ringSegments) - ringGap;
+      const segAlpha = 0.55 + 0.35 * Math.sin(time * 3 + i * 1.2);
+      ctx.globalAlpha = segAlpha;
+      ctx.beginPath();
+      ctx.arc(0, 0, PLAYER_RAD, segStart, segEnd);
       ctx.stroke();
     }
-    
-    // Add sharp edge effect at the tip
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = "rgba(255,255,255,0.9)";
-    ctx.strokeStyle = "rgba(255,255,255,0.95)";
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    
-    const tipRadius = PLAYER_RAD + 30;
-    const tipStart = player.dir + swingAngle * 0.8;
-    const tipEnd = player.dir + swingAngle;
-    
-    ctx.beginPath();
-    ctx.arc(400, 300, tipRadius, tipStart, tipEnd);
-    ctx.stroke();
-    
+    ctx.globalAlpha = 1.0;
     ctx.restore();
+
+    if (player.swing > 0) {
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+      const swingProgress = player.swing / 5;
+      const swingAngle = swingProgress * 2.8;
+      const glowColor = b.wpnGlow || "#00e6ff";
+      const glowRGB = glowColor === "#00e6ff" ? "0,230,255" : "0,180,255";
+      const baseRadius = PLAYER_RAD + 25;
+      const verticalSquash = 0.58; // simulate ground plane angle
+
+      // convert player world direction into isometric screen direction
+      const worldDx = Math.cos(player.dir);
+      const worldDy = Math.sin(player.dir);
+      const screenDir = Math.atan2((worldDx + worldDy) * 0.5, worldDx - worldDy);
+
+      ctx.shadowBlur = 35;
+      ctx.shadowColor = glowColor;
+      ctx.strokeStyle = glowColor;
+      ctx.lineWidth = 20;
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = 0.48 * swingProgress;
+
+      // main planar swing curve
+      ctx.beginPath();
+      for (let t = 0; t <= 1; t += 0.05) {
+        const ang = screenDir - swingAngle + t * (2 * swingAngle);
+        const x = Math.cos(ang) * baseRadius;
+        const y = Math.sin(ang) * baseRadius * verticalSquash;
+        if (t === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.globalAlpha = 1.0;
+
+      for (let i = 0; i < 3; i++) {
+        const alpha = (0.32 - i * 0.08) * swingProgress;
+        const size = baseRadius + i * 4;
+        const blur = 16 + i * 8;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = `rgba(${glowRGB},${alpha})`;
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.lineWidth = 16 - i * 3;
+
+        ctx.beginPath();
+        for (let t = 0; t <= 1; t += 0.06) {
+          const ang = screenDir - swingAngle + t * (2 * swingAngle);
+          const x = Math.cos(ang) * size;
+          const y = Math.sin(ang) * size * verticalSquash;
+          if (t === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // sword tip flash
+      const tipAngle = screenDir + swingAngle;
+      const tipX = Math.cos(tipAngle) * (baseRadius + 12);
+      const tipY = Math.sin(tipAngle) * (baseRadius + 12) * verticalSquash;
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.beginPath();
+      ctx.arc(tipX, tipY, 4 * swingProgress, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
   }
 
-  // --- DYNAMIC ENEMY RENDERING ---
-  const eTime = Date.now() / 1000;
-  const eColor = hexToRgb(b.enemy);
-  world.enemies.forEach((e, ei) => {
-    const ex = e.x - cx, ey = e.y - cy;
+  function drawEnemy(e, pos) {
+    const eTime = Date.now() / 1000;
+    const eColor = hexToRgb(b.enemy);
     const ERAD = 14;
     ctx.save();
-    ctx.translate(ex, ey);
+    ctx.translate(pos.x, pos.y);
 
     if (e.hitTimer > 0) {
-      // Hit flash — bright white burst
       ctx.shadowBlur = 18;
       ctx.shadowColor = "rgba(255,255,255,0.95)";
       ctx.fillStyle = "#fff";
       ctx.beginPath(); ctx.arc(0, 0, ERAD + 2, 0, Math.PI * 2); ctx.fill();
     } else {
-      // Outer glow pulse (slower & subtler than player)
-      const ePulse = Math.sin(eTime * 2 + ei * 1.7) * 1.5 + ERAD + 3;
+      const ePulse = Math.sin(eTime * 2 + (e.x + e.y) * 0.007) * 1.5 + ERAD + 3;
       ctx.shadowBlur = 14;
       ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.6)`;
       ctx.fillStyle = `rgba(${eColor.r},${eColor.g},${eColor.b},0.12)`;
       ctx.beginPath(); ctx.arc(0, 0, ePulse, 0, Math.PI * 2); ctx.fill();
 
-      // Radial gradient body
       const eGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, ERAD);
       eGrad.addColorStop(0, `rgba(${Math.min(eColor.r+80,255)},${Math.min(eColor.g+80,255)},${Math.min(eColor.b+80,255)},0.95)`);
       eGrad.addColorStop(0.55, `rgba(${eColor.r},${eColor.g},${eColor.b},0.9)`);
@@ -3482,9 +3632,8 @@ ctx.restore();
       ctx.fillStyle = eGrad;
       ctx.beginPath(); ctx.arc(0, 0, ERAD, 0, Math.PI * 2); ctx.fill();
 
-      // 2 swirling energy arcs (less than player's 3, different spiral)
       for (let i = 0; i < 2; i++) {
-        const rot = (eTime * 1.6 + ei * 2.3 + i * Math.PI) % (Math.PI * 2);
+        const rot = (eTime * 1.6 + i * 2.3 + (e.x + e.y) * 0.01) % (Math.PI * 2);
         ctx.save();
         ctx.rotate(rot);
         ctx.strokeStyle = `rgba(${Math.min(eColor.r+60,255)},${Math.min(eColor.g+60,255)},${Math.min(eColor.b+60,255)},0.5)`;
@@ -3497,15 +3646,15 @@ ctx.restore();
           const r = (ERAD - 4) * (1 - a / Math.PI);
           const x = Math.cos(a * 2.5) * r;
           const y = Math.sin(a * 2.5) * r;
-          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          if (a === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
         ctx.stroke();
         ctx.restore();
       }
 
-      // 4 inner particles
       for (let i = 0; i < 4; i++) {
-        const pAngle = (eTime * 1.2 + ei * 0.8 + i * (Math.PI * 2 / 4)) % (Math.PI * 2);
+        const pAngle = (eTime * 1.2 + i * (Math.PI * 2 / 4)) % (Math.PI * 2);
         const pR = 4 + Math.sin(eTime * 3 + i * 1.5) * 2.5;
         const px = Math.cos(pAngle) * pR;
         const py = Math.sin(pAngle) * pR;
@@ -3515,14 +3664,12 @@ ctx.restore();
         ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
       }
 
-      // Outer ring
       ctx.shadowBlur = 8;
       ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.6)`;
       ctx.strokeStyle = `rgba(${eColor.r},${eColor.g},${eColor.b},0.7)`;
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(0, 0, ERAD, 0, Math.PI * 2); ctx.stroke();
 
-      // Glowing "eyes" — two small bright dots
       for (let side = -1; side <= 1; side += 2) {
         ctx.shadowBlur = 5;
         ctx.shadowColor = `rgba(${Math.min(eColor.r+120,255)},${Math.min(eColor.g+120,255)},${Math.min(eColor.b+120,255)},1)`;
@@ -3531,30 +3678,28 @@ ctx.restore();
       }
     }
     ctx.restore();
-  });
+  }
 
-  // --- DYNAMIC BOSS RENDERING ---
-  if (inDungeon && world.boss) {
-    const bx = world.boss.x - cx, by = world.boss.y - cy;
-    const BRAD = 50;
+  function drawBoss(boss, pos) {
+    const eTime = Date.now() / 1000;
     const bossColor = hexToRgb(b.enemy);
-    ctx.save();
-    ctx.translate(bx, by);
+    const BRAD = 50;
 
-    if (world.boss.hitTimer > 0) {
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+
+    if (boss.hitTimer > 0) {
       ctx.shadowBlur = 40;
       ctx.shadowColor = "rgba(255,255,255,0.95)";
       ctx.fillStyle = "#fff";
       ctx.beginPath(); ctx.arc(0, 0, BRAD + 4, 0, Math.PI * 2); ctx.fill();
     } else {
-      // Outer glow pulse
       const bPulse = Math.sin(eTime * 2.5) * 4 + BRAD + 6;
       ctx.shadowBlur = 28;
       ctx.shadowColor = `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.7)`;
       ctx.fillStyle = `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.1)`;
       ctx.beginPath(); ctx.arc(0, 0, bPulse, 0, Math.PI * 2); ctx.fill();
 
-      // Radial gradient body
       const bGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, BRAD);
       bGrad.addColorStop(0, `rgba(${Math.min(bossColor.r+60,255)},${Math.min(bossColor.g+60,255)},${Math.min(bossColor.b+60,255)},0.95)`);
       bGrad.addColorStop(0.5, `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.9)`);
@@ -3564,7 +3709,6 @@ ctx.restore();
       ctx.fillStyle = bGrad;
       ctx.beginPath(); ctx.arc(0, 0, BRAD, 0, Math.PI * 2); ctx.fill();
 
-      // 4 swirling energy arcs (more than enemies, bigger spirals)
       for (let i = 0; i < 4; i++) {
         const rot = (eTime * 1.2 + i * (Math.PI / 2)) % (Math.PI * 2);
         ctx.save();
@@ -3579,25 +3723,13 @@ ctx.restore();
           const r = (BRAD - 12) * (1 - a / (Math.PI * 1.3));
           const x = Math.cos(a * 2) * r;
           const y = Math.sin(a * 2) * r;
-          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = 'round';
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.8)`;
-        ctx.beginPath();
-        for (let a = 0; a < Math.PI * 1.3; a += 0.12) {
-          const r = (BRAD - 12) * (1 - a / (Math.PI * 1.3));
-          const x = Math.cos(a * 2) * r;
-          const y = Math.sin(a * 2) * r;
-          if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          if (a === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
         ctx.stroke();
         ctx.restore();
       }
 
-      // 6 inner particles
       for (let i = 0; i < 6; i++) {
         const pAngle = (eTime * 1.0 + i * (Math.PI * 2 / 6)) % (Math.PI * 2);
         const pR = 14 + Math.sin(eTime * 2.5 + i * 1.2) * 10;
@@ -3609,14 +3741,12 @@ ctx.restore();
         ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
       }
 
-      // Outer ring with glow
       ctx.shadowBlur = 16;
       ctx.shadowColor = `rgba(${bossColor.r},${bossColor.g},${bossColor.b},0.8)`;
       ctx.strokeStyle = `rgba(${Math.min(bossColor.r+40,255)},${Math.min(bossColor.g+40,255)},${Math.min(bossColor.b+40,255)},0.85)`;
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(0, 0, BRAD, 0, Math.PI * 2); ctx.stroke();
 
-      // 3 spark highlights orbiting near the edge
       for (let i = 0; i < 3; i++) {
         const sAngle = (eTime * 3.5 + i * (Math.PI * 2 / 3)) % (Math.PI * 2);
         const sx = Math.cos(sAngle) * (BRAD - 4);
@@ -3629,26 +3759,28 @@ ctx.restore();
     }
     ctx.restore();
 
-    // Boss HP bar
-    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(bx - 52, by - 82, 104, 14);
-    ctx.fillStyle = "#333"; ctx.fillRect(bx - 50, by - 80, 100, 10);
-    ctx.fillStyle = "#ff0000"; ctx.fillRect(bx - 50, by - 80, (world.boss.hp / world.boss.max) * 100, 10);
+    const hpRatio = boss.max > 0 ? Math.max(0, Math.min(1, boss.hp / boss.max)) : 0;
+    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(pos.x - 52, pos.y - 82, 104, 14);
+    ctx.fillStyle = "#333"; ctx.fillRect(pos.x - 50, pos.y - 80, 100, 10);
+    ctx.fillStyle = "#ff0000"; ctx.fillRect(pos.x - 50, pos.y - 80, 100 * hpRatio, 10);
+    ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 1;
+    ctx.strokeRect(pos.x - 52, pos.y - 82, 104, 14);
   }
 
-  // DRAW SHOTS (positions updated in update(dt))
-  shots.forEach(s => {
-    // Use biome-specific weapon colors
+  function drawShot(s, pos) {
     const trailColor = b.wpnTrail || "#f1c40f";
     const shaftColor = b.wpnShaft || "#bdc3c7";
     const headColor = b.wpnHead || "#dfeef6";
     const glowColor = b.wpnGlow || "#00e6ff";
-    
-    let ang = Math.atan2(s.dy, s.dx);
+
+    // convert world travel vector into screen-space direction (isometric projection)
+    const previewDistance = 1;
+    const futurePoint = worldToIso(s.x + (s.dx / ARROW_SPEED_PPS) * previewDistance, s.y + (s.dy / ARROW_SPEED_PPS) * previewDistance);
+    const ang = Math.atan2(futurePoint.y - pos.y, futurePoint.x - pos.x);
     ctx.save();
-    ctx.translate(s.x - cx, s.y - cy);
+    ctx.translate(pos.x, pos.y);
     ctx.rotate(ang);
 
-    // Draw glow outline first for visibility
     ctx.shadowBlur = 25;
     ctx.shadowColor = glowColor;
     ctx.strokeStyle = glowColor;
@@ -3661,7 +3793,6 @@ ctx.restore();
     ctx.stroke();
     ctx.globalAlpha = 1.0;
 
-    // Draw trail
     ctx.shadowBlur = 15;
     ctx.shadowColor = trailColor;
     ctx.strokeStyle = trailColor;
@@ -3672,18 +3803,15 @@ ctx.restore();
     ctx.lineTo(-12, 0);
     ctx.stroke();
 
-    // Draw shaft with outline
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#000";
     ctx.fillRect(-19, -2, 28, 4);
     ctx.fillStyle = shaftColor;
     ctx.fillRect(-18, -1.5, 28, 3);
 
-    // Diamond arrowhead with glow and outline
     ctx.shadowBlur = 25;
     ctx.shadowColor = glowColor;
-    
-    // Dark outline
+
     ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.moveTo(10, 0);
@@ -3692,8 +3820,7 @@ ctx.restore();
     ctx.lineTo(15, 6);
     ctx.closePath();
     ctx.fill();
-    
-    // Main diamond head
+
     ctx.fillStyle = headColor;
     ctx.beginPath();
     ctx.moveTo(10, 0);
@@ -3702,43 +3829,35 @@ ctx.restore();
     ctx.lineTo(14, 5);
     ctx.closePath();
     ctx.fill();
-    
-    // Bright outline
+
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Highlight dot
     ctx.shadowBlur = 10;
     ctx.shadowColor = "#ffffff";
     ctx.fillStyle = "rgba(255,255,255,0.9)";
     ctx.beginPath();
-    ctx.arc(14, 0, 1.5, 0, Math.PI*2);
+    ctx.arc(14, 0, 1.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
-  });
+  }
 
-  // DROPS (unchanged visuals)
-  drops.forEach(d => {
-    let dx = d.x - cx, dy = d.y - cy;
-    if (d.type === "hp") {
-      // replicate player orb appearance exactly (blue gradient, pulse, hit flash)
-      const time = Date.now() / 1000;
+  function drawDrop(d, pos) {
+    const time = Date.now() / 1000;
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+
+    if (d.type === 'hp') {
       const baseRadius = 10;
       const pulseSize = Math.sin(time * 3) * 2 + baseRadius;
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-      ctx.save();
-      ctx.translate(dx, dy);
-
-      // outer glow/pulse matching player
       ctx.shadowBlur = isIOS ? 8 : 18;
       ctx.shadowColor = player.hitTimer > 0 ? "rgba(255,255,255,0.7)" : "rgba(0,200,255,0.5)";
       ctx.fillStyle = player.hitTimer > 0 ? "rgba(255,255,255,0.12)" : "rgba(0,180,255,0.10)";
       ctx.beginPath(); ctx.arc(0, 0, pulseSize, 0, Math.PI * 2); ctx.fill();
 
-      // main orb gradient identical to player
       const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius);
       if (player.hitTimer > 0) {
         gradient.addColorStop(0, "rgba(255,255,255,0.95)");
@@ -3753,47 +3872,40 @@ ctx.restore();
       ctx.fillStyle = gradient;
       ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, Math.PI * 2); ctx.fill();
 
-      // tiny brightness pulse overlay
-      const brightAlpha = 0.05 * (Math.sin(time * 6) + 1); // 0 to 0.1
+      const brightAlpha = 0.05 * (Math.sin(time * 6) + 1);
       ctx.fillStyle = `rgba(255,255,255,${brightAlpha})`;
       ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
 
-    } else if (d.type === "Sword") {
-      ctx.save();
+    } else if (d.type === 'Sword') {
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
-      ctx.translate(dx, dy);
+      ctx.translate(0, 0);
       ctx.rotate(Math.PI / 4);
       ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.lineJoin = "round";
-      ctx.beginPath(); 
-      ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.lineTo(-3, -15);
-      ctx.rect(-3, -15, 6, 24);
+      ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.lineTo(-3, -15);
+      ctx.closePath();
       ctx.stroke();
-      ctx.fillStyle = "#dfeef6"; ctx.fillRect(-3, -15, 6, 24); 
-      ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.fill();
+      ctx.fillStyle = "#dfeef6";
+      ctx.fillRect(-3, -15, 6, 24);
+      ctx.beginPath(); ctx.moveTo(-3, -15); ctx.lineTo(3, -15); ctx.lineTo(0, -22); ctx.closePath();
+      ctx.fill();
       ctx.fillStyle = "#f39c12"; ctx.fillRect(-8, 5, 16, 4);
       ctx.fillStyle = "#8e44ad"; ctx.fillRect(-2, 9, 4, 8);
-      ctx.restore();
 
-    } else if (d.type === "Bow") {
-      ctx.save();
-      ctx.translate(dx, dy);
+    } else if (d.type === 'Bow') {
+      ctx.translate(0, 0);
       ctx.rotate(-Math.PI / 4);
-
-      // Draw metallic bow limbs with chrome/silver gradient effect
       ctx.shadowBlur = 25; ctx.shadowColor = "rgba(180,200,220,0.9)";
-      ctx.strokeStyle = "#c0d0e0"; // Bright metallic silver
-      ctx.lineWidth = 5; ctx.lineCap = "round"; 
+      ctx.strokeStyle = "#c0d0e0";
+      ctx.lineWidth = 5; ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(0, -5); 
+      ctx.moveTo(0, -5);
       ctx.quadraticCurveTo(-15, -10, -10, -20);
       ctx.moveTo(0, 5);
       ctx.quadraticCurveTo(-15, 10, -10, 20);
       ctx.stroke();
-      
-      // Add highlight edges for metallic sheen
+
       ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255,255,255,0.8)";
-      ctx.strokeStyle = "#e8f0f8"; // Very bright highlight
+      ctx.strokeStyle = "#e8f0f8";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, -5);
@@ -3802,28 +3914,95 @@ ctx.restore();
       ctx.quadraticCurveTo(-14, 9, -9, 19);
       ctx.stroke();
 
-      // Draw bow string with glow
       ctx.beginPath();
       ctx.shadowBlur = 20; ctx.shadowColor = "rgba(0,180,255,0.75)";
       ctx.strokeStyle = "#00b4ff"; ctx.lineWidth = 3;
       ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
 
-      // Draw metallic grip over string
       ctx.shadowBlur = 10; ctx.shadowColor = "rgba(150,150,150,0.6)";
-      ctx.strokeStyle = "#909090"; // Dark metallic gray
-      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#909090"; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
-      
-      // Add grip highlight
+
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#b8b8b8"; // Lighter metallic highlight
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#b8b8b8"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(-1, -5); ctx.lineTo(-1, 5); ctx.stroke();
-
-      ctx.restore();
     }
-  });
 
+    ctx.restore();
+  }
+
+  function drawEntrance() {
+    const entranceTileX = world.entrance.tileX ?? Math.floor(world.entrance.x / TILE);
+    const entranceTileY = world.entrance.tileY ?? Math.floor(world.entrance.y / TILE);
+    const entr = worldToIso(world.entrance.x, world.entrance.y);
+    const gateW = halfW * 3.2;
+    const gateH = halfH * 3.0;
+
+    // 2x2 entrance pad (isometric tiles)
+    for (let oy = 0; oy < 2; oy++) {
+      for (let ox = 0; ox < 2; ox++) {
+        const wx = (entranceTileX + ox + 0.5) * TILE;
+        const wy = (entranceTileY + oy + 0.5) * TILE;
+        const tilePos = worldToIso(wx, wy);
+        ctx.fillStyle = adjustColor(wallColor, -0.12, -0.08);
+        ctx.beginPath();
+        ctx.moveTo(tilePos.x, tilePos.y - halfH);
+        ctx.lineTo(tilePos.x + halfW, tilePos.y);
+        ctx.lineTo(tilePos.x, tilePos.y + halfH);
+        ctx.lineTo(tilePos.x - halfW, tilePos.y);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Entrance frame and deep stair effect
+    ctx.fillStyle = adjustColor(wallColor, -0.10, -0.04);
+    ctx.beginPath();
+    ctx.moveTo(entr.x, entr.y - gateH);
+    ctx.lineTo(entr.x + gateW, entr.y);
+    ctx.lineTo(entr.x, entr.y + gateH);
+    ctx.lineTo(entr.x - gateW, entr.y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = adjustColor(wallColor, -0.60, -0.35);
+    ctx.beginPath();
+    ctx.moveTo(entr.x, entr.y - gateH * 0.58);
+    ctx.lineTo(entr.x + gateW * 0.58, entr.y);
+    ctx.lineTo(entr.x, entr.y + gateH * 0.58);
+    ctx.lineTo(entr.x - gateW * 0.58, entr.y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(230,230,255,0.9)";
+    ctx.lineWidth = 2;
+    const stairSteps = 6;
+    for (let i = 0; i < stairSteps; i++) {
+      const t = (i + 1) / (stairSteps + 1);
+      const y = entr.y - gateH * 0.58 + t * gateH * 1.16;
+      const stepWidth = gateW * 0.74 * (1 - Math.abs((t - 0.5) * 1.8));
+      ctx.beginPath();
+      ctx.moveTo(entr.x - stepWidth / 2, y);
+      ctx.lineTo(entr.x + stepWidth / 2, y);
+      ctx.stroke();
+    }
+
+    // Light glow on the stairs
+    ctx.strokeStyle = "rgba(180,210,255,0.65)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < stairSteps; i++) {
+      const t = (i + 1) / (stairSteps + 1);
+      const y = entr.y - gateH * 0.58 + t * gateH * 1.16;
+      const stepWidth = gateW * 0.74 * (1 - Math.abs((t - 0.5) * 1.8));
+      ctx.beginPath();
+      ctx.moveTo(entr.x - stepWidth / 2 + 2, y);
+      ctx.lineTo(entr.x + stepWidth / 2 - 2, y);
+      ctx.stroke();
+    }
+  }
+
+  // Dynamic game actors are rendered per-tile with depth order above.
+  // The old flat global draw path has been replaced by tile-local draw calls.
   // STATS BOX + MINIMAP (unchanged)
   const boxX = 20;
   const boxY = 10;
@@ -3879,54 +4058,55 @@ ctx.restore();
   const mmW = MAP_SIZE * mmS;
   const mmH = MAP_SIZE * mmS;
 
-  // Make minimap stand out when paused
+  // Minimap: draw only explored tiles (no solid background/outline box to avoid grey border remnants)
   const isPaused = !gameActive && gameRunning;
   ctx.globalAlpha = isPaused ? 1.0 : 0.8; 
-  ctx.fillStyle = "#000";
-  ctx.fillRect(mmX, mmY, mmW, mmH);
-  
-  // Brighter, glowing outline when paused
-  if (isPaused) {
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "rgba(255,255,255,0.6)";
-    ctx.strokeStyle = "rgba(200,200,200,0.9)";
-    ctx.lineWidth = 3;
-  } else {
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(128,128,128,0.5)";
-    ctx.lineWidth = 2;
-  }
-  ctx.strokeRect(mmX, mmY, mmW, mmH);
   ctx.shadowBlur = 0;
-  
+
+  // Draw isometric tiles on minimap (only explored tiles are visible)
+  const mmHalfW = mmS / 2;
+  const mmHalfH = mmS / 3; // match worldToIso vertical scale for consistent perspective
+  const baseX = mmX + mmW / 2;
+  const baseY = mmY + 12; // small top padding
+
   for (let y = 0; y < MAP_SIZE; y++) {
     for (let x = 0; x < MAP_SIZE; x++) {
-      if (explored[y][x]) {
-        if (world.grid[y][x] === 1) {
-          ctx.fillStyle = b.wall;
-        } else {
-          // Brighten explored floor tiles more for improved visibility on the minimap
-          ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12);
-        }
-        ctx.fillRect(mmX + x * mmS, mmY + y * mmS, mmS, mmS);
-      }
+      if (!explored[y][x]) continue;
+      const cxTile = baseX + (x - y) * mmHalfW;
+      const cyTile = baseY + (x + y) * mmHalfH;
+      if (world.grid[y][x] === 1) ctx.fillStyle = b.wall;
+      else ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12);
+      ctx.beginPath();
+      ctx.moveTo(cxTile, cyTile - halfH);
+      ctx.lineTo(cxTile + halfW, cyTile);
+      ctx.lineTo(cxTile, cyTile + halfH);
+      ctx.lineTo(cxTile - halfW, cyTile);
+      ctx.closePath(); ctx.fill();
     }
   }
 
   if (!inDungeon) {
-    let ex = Math.floor(world.entrance.x / TILE);
-    let ey = Math.floor(world.entrance.y / TILE);
-    if (explored[ey] && explored[ey][ex]) {
-        ctx.fillStyle = b.enemy;
-        ctx.beginPath();
-        ctx.arc(mmX + ex * mmS, mmY + ey * mmS, 3, 0, Math.PI*2);
-        ctx.fill();
+    const entranceTileX = world.entrance.tileX ?? Math.floor(world.entrance.x / TILE);
+    const entranceTileY = world.entrance.tileY ?? Math.floor(world.entrance.y / TILE);
+    for (let oy = 0; oy < 2; oy++) {
+      for (let ox = 0; ox < 2; ox++) {
+        const ex = entranceTileX + ox;
+        const ey = entranceTileY + oy;
+        if (ey >= 0 && ey < MAP_SIZE && ex >= 0 && ex < MAP_SIZE && explored[ey] && explored[ey][ex]) {
+          const enIsoX = baseX + (ex - ey) * mmHalfW;
+          const enIsoY = baseY + (ex + ey) * mmHalfH;
+          ctx.fillStyle = b.enemy;
+          ctx.beginPath(); ctx.arc(enIsoX, enIsoY, 3.5, 0, Math.PI*2); ctx.fill();
+        }
+      }
     }
   }
 
-  ctx.fillStyle = "#00ffff"; ctx.beginPath();
-  ctx.arc(mmX + (player.x / TILE) * mmS, mmY + (player.y / TILE) * mmS, 2.5, 0, Math.PI*2);
-  ctx.fill(); ctx.globalAlpha = 1.0;
+  // Draw player on minimap (projected)
+  const pTileX = player.x / TILE, pTileY = player.y / TILE;
+  const pIsoX = baseX + (pTileX - pTileY) * mmHalfW;
+  const pIsoY = baseY + (pTileX + pTileY) * mmHalfH;
+  ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(pIsoX, pIsoY, 3.5, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1.0;
 }
 
 /* === MAIN LOOP: compute dt and pass to update === */
@@ -3968,7 +4148,7 @@ canvas.addEventListener('click', (e) => {
 });
 
 canvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
+  // Don't always preventDefault here — allow UI-layer elements to receive touches.
   handleCanvasTap(e);
 }, {passive: false});
 
