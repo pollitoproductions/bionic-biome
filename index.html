@@ -1087,7 +1087,7 @@
   </div>
   <!-- Revive timer removed per request -->
   <div class="author-sub" style="margin-bottom: 20px; color: #a5f0ff;">
-    Revives Remaing: <span id="revive-remaining">3</span>
+    Revives Remaining: <span id="revive-remaining">3</span>
   </div>
   <button class="btn-std btn-revive" id="revive-confirm-btn">CONTINUE</button>
 </div>
@@ -1293,6 +1293,8 @@ let flowAccSeconds = 0; // accumulate seconds to trigger flow updates
 /* --- SOUND / MUSIC --- */
 const Music = {
   ctx: null, osc: null, subOsc: null, gain: null, timer: null, isPlaying: false, currentTrackId: null,
+  // SFX node pool – reuse GainNode per sfx-slot instead of creating new nodes every call
+  _sfxBusy: false,
   
   init() { 
     if (!this.ctx) { 
@@ -1303,43 +1305,35 @@ const Music = {
   },
   
   playSFX(type) { 
-    if(!soundEnabled || !this.ctx) return; 
-    const t = this.ctx.currentTime; 
+    if (!soundEnabled || !this.ctx) return;
+    // Throttle: skip SFX if one just fired (avoids pileup on slow devices)
+    if (this._sfxBusy) return;
+    this._sfxBusy = true;
+    const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator(); 
     const gain = this.ctx.createGain(); 
-    const mod = this.ctx.createOscillator(); 
-    const modGain = this.ctx.createGain(); 
-    
     osc.connect(gain); 
     gain.connect(this.ctx.destination); 
-    mod.connect(modGain); 
-    modGain.connect(osc.frequency); 
     
-    if(type === 'start') { 
+    if (type === 'start') { 
       osc.type = 'square'; 
-      osc.frequency.setValueAtTime(110, t); 
-      osc.frequency.exponentialRampToValueAtTime(880, t + 0.3); 
-      mod.type = 'sawtooth'; 
-      mod.frequency.setValueAtTime(50, t); 
-      mod.frequency.linearRampToValueAtTime(200, t + 0.3); 
-      modGain.gain.setValueAtTime(500, t); 
-      gain.gain.setValueAtTime(0.2, t); 
-      gain.gain.linearRampToValueAtTime(0, t + 0.3); 
-      osc.start(t); mod.start(t); 
-      osc.stop(t + 0.3); mod.stop(t + 0.3);
-    } else if(type === 'gameover') { 
+      osc.frequency.setValueAtTime(220, t); 
+      osc.frequency.exponentialRampToValueAtTime(880, t + 0.25); 
+      gain.gain.setValueAtTime(0.18, t); 
+      gain.gain.linearRampToValueAtTime(0, t + 0.25); 
+      osc.start(t); osc.stop(t + 0.25);
+      osc.onended = () => { this._sfxBusy = false; };
+    } else if (type === 'gameover') { 
       osc.type = 'sawtooth'; 
-      osc.frequency.setValueAtTime(400, t); 
-      osc.frequency.exponentialRampToValueAtTime(40, t + 1.0); 
-      mod.type = 'square'; 
-      mod.frequency.setValueAtTime(60, t); 
-      mod.frequency.linearRampToValueAtTime(10, t + 1.0); 
-      modGain.gain.setValueAtTime(1000, t); 
-      gain.gain.setValueAtTime(0.3, t); 
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 1.0); 
-      osc.start(t); mod.start(t); 
-      osc.stop(t + 1.0); mod.stop(t + 1.0);
-    } 
+      osc.frequency.setValueAtTime(330, t); 
+      osc.frequency.exponentialRampToValueAtTime(55, t + 0.9); 
+      gain.gain.setValueAtTime(0.22, t); 
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9); 
+      osc.start(t); osc.stop(t + 0.9);
+      osc.onended = () => { this._sfxBusy = false; };
+    } else {
+      this._sfxBusy = false;
+    }
   },
   
   generateDarkTrack(level, isDungeon) { 
@@ -1349,74 +1343,36 @@ const Music = {
     let base = roots[safeLevel - 1]; 
     
     let intervals = [];
-    // Faster tempos for a driving, action-packed feel (110ms - 140ms)
     let speedDelay = 130; 
 
-    // Driving, rhythmic Cyberpunk/Darksynth Basslines
     switch(safeLevel) {
-      case 1: // High Energy Jumps (formerly biome 8)
-        intervals = [0, 12, 0, 12, 0, 12, 0, 12, 3, 15, 3, 15, 5, 17, 5, 17];
-        speedDelay = 125; 
-        break;
-      case 2: // Arpeggiated Flow
-        intervals = [0, 3, 0, 7, 0, 10, 0, 12, 0, null, 0, null, 12, 10, 7, 3];
-        speedDelay = 130;
-        break;
-      case 3: // Syncopated Gallop (Lots of gaps for breathing room)
-        intervals = [0, 0, null, 0, 0, null, 0, 12, 0, 0, null, 0, 0, null, 3, 5];
-        speedDelay = 140;
-        break;
-      case 4: // Pedal Point Riff (Constant high drone with shifting bass)
-        intervals = [0, 12, 10, 12, 0, 12, 10, 12, 7, 12, 10, 12, 5, 12, 10, 12];
-        speedDelay = 135;
-        break;
-      case 5: // Punchy Groove
-        intervals = [0, null, 0, 12, null, 0, 0, 3, null, 0, 0, 5, null, 3, 0, null];
-        speedDelay = 130;
-        break;
-      case 6: // Phrygian Danger (Dark, creeping feeling)
-        intervals = [0, 0, 7, 0, 8, 0, 7, 0, 3, 0, 5, 0, 7, 0, 3, 5];
-        speedDelay = 135;
-        break;
-      case 7: // Relentless Machine (Rigid, industrial)
-        intervals = [0, 0, 0, 0, 12, 0, 0, 0, 10, 0, 0, 0, 3, 0, 5, 0];
-        speedDelay = 120; 
-        break;
-      case 8: // Driving Octaves (formerly biome 1)
-        intervals = [0, 0, 12, 0, 0, 0, 12, 0, 0, 3, 0, 5, 0, 0, 12, 0];
-        speedDelay = 140; 
-        break;
-      case 9: // Building Tension
-        intervals = [0, null, 0, null, 0, null, 0, null, 12, 12, 10, 10, 7, 7, 5, 5];
-        speedDelay = 120;
-        break;
-      case 10: // The Climax (Fast, descending run)
-        intervals = [0, 0, 12, 0, 10, 0, 8, 0, 7, 0, 5, 0, 3, 0, 2, 0];
-        speedDelay = 110; 
-        break;
+      case 1: intervals = [0, 12, 0, 12, 0, 12, 0, 12, 3, 15, 3, 15, 5, 17, 5, 17]; speedDelay = 125; break;
+      case 2: intervals = [0, 3, 0, 7, 0, 10, 0, 12, 0, null, 0, null, 12, 10, 7, 3]; speedDelay = 130; break;
+      case 3: intervals = [0, 0, null, 0, 0, null, 0, 12, 0, 0, null, 0, 0, null, 3, 5]; speedDelay = 140; break;
+      case 4: intervals = [0, 12, 10, 12, 0, 12, 10, 12, 7, 12, 10, 12, 5, 12, 10, 12]; speedDelay = 135; break;
+      case 5: intervals = [0, null, 0, 12, null, 0, 0, 3, null, 0, 0, 5, null, 3, 0, null]; speedDelay = 130; break;
+      case 6: intervals = [0, 0, 7, 0, 8, 0, 7, 0, 3, 0, 5, 0, 7, 0, 3, 5]; speedDelay = 135; break;
+      case 7: intervals = [0, 0, 0, 0, 12, 0, 0, 0, 10, 0, 0, 0, 3, 0, 5, 0]; speedDelay = 120; break;
+      case 8: intervals = [0, 0, 12, 0, 0, 0, 12, 0, 0, 3, 0, 5, 0, 0, 12, 0]; speedDelay = 140; break;
+      case 9: intervals = [0, null, 0, null, 0, null, 0, null, 12, 12, 10, 10, 7, 7, 5, 5]; speedDelay = 120; break;
+      case 10: intervals = [0, 0, 12, 0, 10, 0, 8, 0, 7, 0, 5, 0, 3, 0, 2, 0]; speedDelay = 110; break;
     }
 
     let notes = [];
     for (let i = 0; i < intervals.length; i++) { 
-      if (intervals[i] === null) {
-        notes.push(0); 
-      } else {
-        notes.push(base * Math.pow(2, intervals[i] / 12)); 
-      }
+      notes.push(intervals[i] === null ? 0 : base * Math.pow(2, intervals[i] / 12)); 
     } 
     
-    // Dungeons simply play slightly faster to increase urgency (no weird pitch shifting)
     let finalSpeed = isDungeon ? Math.max(80, speedDelay - 15) : speedDelay;
-    
     return { notes, bpm: finalSpeed }; 
   },
   
   play(type, override) { 
-    if(!soundEnabled) return; 
+    if (!soundEnabled) return; 
     let lvl = override || biomeLevel; 
     let id = type; 
-    if(type === 'overworld' || type === 'dungeon') id = type + '_' + lvl; 
-    if(this.currentTrackId === id && this.isPlaying) return; 
+    if (type === 'overworld' || type === 'dungeon') id = type + '_' + lvl; 
+    if (this.currentTrackId === id && this.isPlaying) return; 
     
     this.stop(); 
     this.init(); 
@@ -1424,58 +1380,52 @@ const Music = {
     this.isPlaying = true; 
     let td = null; 
     
-    if(type === 'title') td = {bpm: 180, notes: [261, 523, 392, 329, 261, 523, 493, 392], loop: true}; 
-    else if(type === 'victory') td = {bpm: 120, notes: [261, 392, 523, 659, 783, 1046, 0], loop: false}; 
-    else if(type === 'overworld'){ 
-      td = this.generateDarkTrack(lvl, false); 
-      td.loop = true; 
-    } 
-    else if(type === 'dungeon'){ 
-      td = this.generateDarkTrack(lvl, true); 
-      td.loop = true; 
-    } 
+    if (type === 'title') td = {bpm: 180, notes: [261, 523, 392, 329, 261, 523, 493, 392], loop: true}; 
+    else if (type === 'victory') td = {bpm: 120, notes: [261, 392, 523, 659, 783, 1046, 0], loop: false}; 
+    else if (type === 'overworld') { td = this.generateDarkTrack(lvl, false); td.loop = true; } 
+    else if (type === 'dungeon') { td = this.generateDarkTrack(lvl, true); td.loop = true; } 
     
-    if(!td) return; 
+    if (!td) return; 
     
     this.osc = this.ctx.createOscillator(); 
-    this.subOsc = this.ctx.createOscillator(); // ADDED: Sub-bass for massive depth
     this.gain = this.ctx.createGain(); 
     
-    this.osc.type = 'sawtooth'; // Gritty lead
-    this.subOsc.type = 'square'; // Fat, hollow sub-bass
+    // On TCL/low-perf: skip sub-bass oscillator entirely to halve audio CPU
+    if (!LOW_PERF_MODE) {
+      this.subOsc = this.ctx.createOscillator();
+      this.subOsc.type = 'square';
+      this.subOsc.connect(this.gain);
+      this.subOsc.start();
+    } else {
+      this.subOsc = null;
+    }
     
+    this.osc.type = 'sawtooth';
     this.osc.connect(this.gain); 
-    this.subOsc.connect(this.gain); 
     this.gain.connect(this.ctx.destination); 
     this.gain.gain.setValueAtTime(0, this.ctx.currentTime); 
-    
     this.osc.start(); 
-    this.subOsc.start(); 
     
     let idx = 0; 
     const next = () => { 
-      if(!this.isPlaying) return; 
+      if (!this.isPlaying) return; 
       let f = td.notes[idx]; 
       const t = this.ctx.currentTime; 
       const dur = td.bpm / 1000; 
       
-      if(f > 0){ 
+      if (f > 0) { 
         this.osc.frequency.setValueAtTime(f, t); 
-        this.subOsc.frequency.setValueAtTime(f / 2, t); // Sub-bass plays exactly 1 octave lower
-        
+        if (this.subOsc) this.subOsc.frequency.setValueAtTime(f / 2, t);
         this.gain.gain.cancelScheduledValues(t); 
-        this.gain.gain.setValueAtTime(0.06, t); // Slightly lower volume to account for two oscillators
-        this.gain.gain.exponentialRampToValueAtTime(0.001, t + (dur * 0.95)); // Slightly longer decay
+        this.gain.gain.setValueAtTime(0.06, t); 
+        this.gain.gain.exponentialRampToValueAtTime(0.001, t + (dur * 0.95)); 
       } else { 
         this.gain.gain.setValueAtTime(0, t); 
       } 
       
       idx++; 
-      if(idx >= td.notes.length){ 
-        if(!td.loop){ 
-          this.stop(); 
-          return; 
-        } 
+      if (idx >= td.notes.length) { 
+        if (!td.loop) { this.stop(); return; } 
         idx = 0; 
       } 
       this.timer = setTimeout(next, td.bpm); 
@@ -1486,18 +1436,12 @@ const Music = {
   stop() { 
     this.isPlaying = false; 
     clearTimeout(this.timer); 
-    if(this.osc){ 
-      try{ 
-        this.osc.stop(); 
-        this.osc.disconnect(); 
-      } catch(e){} 
+    if (this.osc) { 
+      try { this.osc.stop(); this.osc.disconnect(); } catch(e) {} 
       this.osc = null; 
     } 
-    if(this.subOsc){ 
-      try{ 
-        this.subOsc.stop(); 
-        this.subOsc.disconnect(); 
-      } catch(e){} 
+    if (this.subOsc) { 
+      try { this.subOsc.stop(); this.subOsc.disconnect(); } catch(e) {} 
       this.subOsc = null; 
     }
     this.currentTrackId = null; 
@@ -2077,35 +2021,7 @@ closeMenuBtn.addEventListener('click', () => {
   resumeGame();
 });
 
-function updateMiniMenuButtonPosition() {
-  if (!miniMenuBtn) return;
-  if (!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = rect.width / canvas.width;
-  const scaleY = rect.height / canvas.height;
-
-  // Compute minimap position the same way draw() does so button aligns correctly
-  const mmPixelW = 180;
-  const mmS = mmPixelW / MAP_SIZE;
-  const mmW = mmPixelW;
-  const mmH = Math.ceil(MAP_SIZE * mmS);
-  const mmX = Math.max(10, canvas.width - mmW - 10);
-  const mmY = 15;
-  const btnSize = 44;
-  const padding = 6;
-
-  const left = rect.left + mmX * scaleX - btnSize - padding;
-  const top = rect.top + mmY * scaleY;
-
-  miniMenuBtn.style.left = `${left}px`;
-  miniMenuBtn.style.top = `${top}px`;
-
-  // Only show when a game is running (not on main menu)
-  miniMenuBtn.style.display = gameRunning ? 'flex' : 'none';
-}
-
-window.addEventListener('resize', updateMiniMenuButtonPosition);
+// (miniMenuBtn removed — was dead code causing ReferenceError)
 
 swBiome.addEventListener('click', () => {
   swBiome.classList.add('selected');
@@ -2502,14 +2418,7 @@ continueBtn.addEventListener('click', () => {
   }, 450);
 });
 
-const reviveConfirmBtn = document.getElementById('revive-confirm-btn');
-if (reviveConfirmBtn) {
-  reviveConfirmBtn.addEventListener('click', () => {
-    hideReviveInfoOverlay();
-    // Show the pause overlay so the player can tap to resume normally.
-    pauseGame(true);
-  });
-}
+// revive-confirm-btn is no longer used — revivePlayer drops straight back into gameplay
 
 /* === GAME START / OVER / WORLD GENERATION (unchanged semantics except mark gameRunning) === */
 function showGameOver() {
@@ -2598,7 +2507,7 @@ function startGame() {
 }
 
 function generateWorld(reset) {
-  world = { grid: [], enemies: [], entrance: {x: 0, y: 0}, boss: null };
+  world = { grid: [], enemies: [], enemyPool: [], entrance: {x: 0, y: 0}, boss: null };
   flowMap = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(9999));
   flowAccSeconds = 0;
   
@@ -2669,28 +2578,25 @@ function generateWorld(reset) {
   let enemyCount = settings.enemyCountBase + (biomeLevel * settings.enemyCountStep);
   let enemyHp = Math.max(1, Math.round(hpMult));
 
+  // Proximity pool: store all enemies as dormant seeds, activate when player gets close.
+  // This avoids simulating hundreds of enemies far away from the player.
+  world.enemyPool = [];
+  world.enemies = []; // active enemies only
+
   for (let i = 0; i < enemyCount; i++) {
-    // pick a position separated from player and other enemies
     let enp;
-    const minDist = 40;
     let attempts = 0;
     do {
       enp = findSafePos();
       attempts++;
-      if (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500) continue;
-    } while ((Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 ||
-              world.enemies.some(e => Math.hypot(enp.x - e.x, enp.y - e.y) < minDist))
-             && attempts < 1000);
+    } while (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 && attempts < 200);
 
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
-      world.enemies.push({ 
-        x: enp.x, 
-        y: enp.y, 
-        hp: enemyHp, 
-        dmg: scaledDmg, 
-        atkDelay: 0, 
-        hitTimer: 0,
-        color: biomes[(biomeLevel - 1) % biomes.length].enemy
+      world.enemyPool.push({
+        x: enp.x,
+        y: enp.y,
+        hp: enemyHp,
+        dmg: scaledDmg
       });
     }
   }
@@ -2841,8 +2747,10 @@ function update(dt) {
   }
 
   // Flow field update every ~16 frames originally => ~0.2667s; accumulate dt
+  // On TCL/low-perf devices double the interval to cut BFS CPU cost
   flowAccSeconds += dt;
-  if (flowAccSeconds > (16 / FPS)) {
+  const _flowInterval = LOW_PERF_MODE ? (32 / FPS) : (16 / FPS);
+  if (flowAccSeconds > _flowInterval) {
     updateFlowField();
     flowAccSeconds = 0;
   }
@@ -2855,6 +2763,26 @@ function update(dt) {
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
   const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep); // px/frame
   const CURRENT_ENEMY_SPEED_PPS = CURRENT_ENEMY_SPEED * FPS; // px/sec
+
+  // Proximity activation: pull dormant enemies from pool when player comes within activation radius.
+  // This means we only ever simulate enemies that are close to the player.
+  const ACTIVATE_RADIUS = 900;  // px — enemies activate when this close
+  const MAX_ACTIVE = 30;        // cap simultaneous active enemies to keep update loop fast
+  if (world.enemyPool && world.enemyPool.length > 0 && world.enemies.length < MAX_ACTIVE) {
+    const biomeColor = biomes[(biomeLevel - 1) % biomes.length].enemy;
+    for (let i = world.enemyPool.length - 1; i >= 0 && world.enemies.length < MAX_ACTIVE; i--) {
+      const seed = world.enemyPool[i];
+      if (Math.hypot(seed.x - player.x, seed.y - player.y) < ACTIVATE_RADIUS) {
+        world.enemies.push({
+          x: seed.x, y: seed.y,
+          hp: seed.hp, dmg: seed.dmg,
+          atkDelay: 0, hitTimer: 0,
+          color: biomeColor
+        });
+        world.enemyPool.splice(i, 1);
+      }
+    }
+  }
 
   world.enemies.forEach(e => {
     if (e.hitTimer > 0) e.hitTimer -= dt * FPS;
@@ -3200,7 +3128,7 @@ function enterDungeon() {
     }
   }
     
-  world.enemies = []; shots = []; drops = [];
+  world.enemies = []; world.enemyPool = []; shots = []; drops = [];
   let sp = findSafePos(); player.x = sp.x; player.y = sp.y;
   let bp = findSafePos();
     
@@ -3266,20 +3194,24 @@ const canvas = document.getElementById("c");
 // Low-performance mode detection and adjustments
 const _deviceMemory = navigator.deviceMemory || 0;
 const _hc = navigator.hardwareConcurrency || 0;
-const LOW_PERF_MODE = (_deviceMemory > 0 && _deviceMemory <= 1.5) || (_hc > 0 && _hc <= 2) || /TCL/i.test(navigator.userAgent);
-let RENDER_SKIP = LOW_PERF_MODE ? 2 : 1; // draw every N frames when in low-perf mode
+const IS_TCL = /TCL/i.test(navigator.userAgent);
+const LOW_PERF_MODE = IS_TCL || (_deviceMemory > 0 && _deviceMemory <= 1.5) || (_hc > 0 && _hc <= 2);
+// TCL phones get aggressive frame skip (draw every 3rd frame); other low-end every 2nd
+let RENDER_SKIP = IS_TCL ? 3 : (LOW_PERF_MODE ? 2 : 1);
 
 function adjustCanvasForPerf() {
   try {
     if (LOW_PERF_MODE) {
-      // Use a smaller canvas resolution on low-end devices to reduce fragment shading cost
-      canvas.width = Math.min(800, Math.max(640, Math.floor(window.innerWidth * 0.8)));
-      canvas.height = Math.min(600, Math.max(480, Math.floor(window.innerHeight * 0.65)));
-      canvas.style.width = canvas.width + 'px';
-      canvas.style.height = canvas.height + 'px';
-      console.info('Bionic Biome: Low-performance mode enabled — throttling rendering and lowering canvas resolution.');
+      // TCL: use a smaller internal resolution to drastically cut GPU fill-rate pressure
+      const scale = IS_TCL ? 0.55 : 0.75;
+      canvas.width  = Math.min(640, Math.max(400, Math.floor(window.innerWidth  * scale)));
+      canvas.height = Math.min(480, Math.max(300, Math.floor(window.innerHeight * scale)));
+      // Stretch back to full screen via CSS (pixelated for crispness)
+      canvas.style.width  = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.imageRendering = 'pixelated';
+      console.info('Bionic Biome: Low-performance mode enabled (TCL=' + IS_TCL + ').');
     } else {
-      // Keep defaults for higher-end devices
       canvas.width = 800;
       canvas.height = 600;
       canvas.style.width = '';
@@ -3298,6 +3230,13 @@ function draw() {
     return;
   }
 
+  // On low-perf devices disable all shadow blur to cut GPU overdraw significantly
+  const _origShadowBlur = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+  if (LOW_PERF_MODE) {
+    // Override shadowBlur setter to no-op for this draw call
+    Object.defineProperty(ctx, 'shadowBlur', { set: function() {}, get: function() { return 0; }, configurable: true });
+  }
+
   const b = biomes[(biomeLevel - 1) % biomes.length];
   const centerX = Math.round(canvas.width / 2);
   const centerY = Math.round(canvas.height / 2);
@@ -3307,6 +3246,9 @@ function draw() {
   const grassColor = !inDungeon ? adjustColor(b.grass || '#000', overworldBrighten, overworldSaturate) : (b.grass || '#000');
   const wallColor = !inDungeon ? adjustColor(b.wall || '#000', overworldBrighten * 0.6, overworldSaturate) : (b.wall || '#000');
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Zoom factor: on low-perf/TCL draw 2x bigger tiles (fewer tiles visible = much less work)
+  const ZOOM = LOW_PERF_MODE ? 2.0 : 1.0;
 
   function worldToIso(wx, wy) {
     const tx = wx / TILE, ty = wy / TILE;
@@ -3319,12 +3261,20 @@ function draw() {
     const pIsoY = (pTx + pTy) * isoScaleY;
     const camX = Math.round(canvas.width / 2);
     const camY = Math.round(canvas.height / 2);
-    return { x: camX + isoX - pIsoX, y: camY + isoY - pIsoY };
+    // Apply zoom: scale relative to screen center
+    return {
+      x: camX + (isoX - pIsoX) * ZOOM,
+      y: camY + (isoY - pIsoY) * ZOOM
+    };
   }
-  let startX = Math.max(0, Math.floor(cx / TILE));
-  let endX = Math.min(MAP_SIZE, startX + 27);
-  let startY = Math.max(0, Math.floor(cy / TILE));
-  let endY = Math.min(MAP_SIZE, startY + 20);
+
+  // Shrink the tile viewport proportionally to zoom — fewer tiles = faster draw
+  const viewTilesX = LOW_PERF_MODE ? 14 : 27;
+  const viewTilesY = LOW_PERF_MODE ? 10 : 20;
+  let startX = Math.max(0, Math.floor(cx / TILE) - (LOW_PERF_MODE ? 1 : 0));
+  let endX   = Math.min(MAP_SIZE, startX + viewTilesX);
+  let startY = Math.max(0, Math.floor(cy / TILE) - (LOW_PERF_MODE ? 1 : 0));
+  let endY   = Math.min(MAP_SIZE, startY + viewTilesY);
 
   // Precompute visible entities by tile for correct depth sorting
   const entityMap = {};
@@ -3358,7 +3308,7 @@ function draw() {
     entityMap[tileKey(bx, by)].push({ type: 'boss', obj: world.boss });
   }
 
-  const halfW = TILE / 2, halfH = TILE / 3;
+  const halfW = (TILE / 2) * ZOOM, halfH = (TILE / 3) * ZOOM;
   // Build draw queue sorted by isometric depth x+y
   const tileQueue = [];
   for (let y = startY; y < endY; y++) {
@@ -3366,7 +3316,8 @@ function draw() {
       tileQueue.push({x, y, depth: x + y});
     }
   }
-  tileQueue.sort((a, b) => a.depth - b.depth || a.x - b.x);
+  // On low-perf skip the sort (saves O(n log n) per frame; depth artifacts barely visible at reduced res)
+  if (!LOW_PERF_MODE) tileQueue.sort((a, b) => a.depth - b.depth || a.x - b.x);
 
   for (const tile of tileQueue) {
     const x = tile.x, y = tile.y;
@@ -3649,11 +3600,14 @@ function draw() {
       ctx.fillStyle = "#fff";
       ctx.beginPath(); ctx.arc(0, 0, ERAD + 2, 0, Math.PI * 2); ctx.fill();
     } else {
-      const ePulse = Math.sin(eTime * 2 + (e.x + e.y) * 0.007) * 1.5 + ERAD + 3;
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.6)`;
-      ctx.fillStyle = `rgba(${eColor.r},${eColor.g},${eColor.b},0.12)`;
-      ctx.beginPath(); ctx.arc(0, 0, ePulse, 0, Math.PI * 2); ctx.fill();
+      // On low-perf: skip pulse halo and draw a simple solid circle
+      if (!LOW_PERF_MODE) {
+        const ePulse = Math.sin(eTime * 2 + (e.x + e.y) * 0.007) * 1.5 + ERAD + 3;
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.6)`;
+        ctx.fillStyle = `rgba(${eColor.r},${eColor.g},${eColor.b},0.12)`;
+        ctx.beginPath(); ctx.arc(0, 0, ePulse, 0, Math.PI * 2); ctx.fill();
+      }
 
       const eGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, ERAD);
       eGrad.addColorStop(0, `rgba(${Math.min(eColor.r+80,255)},${Math.min(eColor.g+80,255)},${Math.min(eColor.b+80,255)},0.95)`);
@@ -3664,36 +3618,38 @@ function draw() {
       ctx.fillStyle = eGrad;
       ctx.beginPath(); ctx.arc(0, 0, ERAD, 0, Math.PI * 2); ctx.fill();
 
-      for (let i = 0; i < 2; i++) {
-        const rot = (eTime * 1.6 + i * 2.3 + (e.x + e.y) * 0.01) % (Math.PI * 2);
-        ctx.save();
-        ctx.rotate(rot);
-        ctx.strokeStyle = `rgba(${Math.min(eColor.r+60,255)},${Math.min(eColor.g+60,255)},${Math.min(eColor.b+60,255)},0.5)`;
-        ctx.lineWidth = 1.5;
-        ctx.lineCap = 'round';
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.7)`;
-        ctx.beginPath();
-        for (let a = 0; a < Math.PI; a += 0.15) {
-          const r = (ERAD - 4) * (1 - a / Math.PI);
-          const x = Math.cos(a * 2.5) * r;
-          const y = Math.sin(a * 2.5) * r;
-          if (a === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+      if (!LOW_PERF_MODE) {
+        for (let i = 0; i < 2; i++) {
+          const rot = (eTime * 1.6 + i * 2.3 + (e.x + e.y) * 0.01) % (Math.PI * 2);
+          ctx.save();
+          ctx.rotate(rot);
+          ctx.strokeStyle = `rgba(${Math.min(eColor.r+60,255)},${Math.min(eColor.g+60,255)},${Math.min(eColor.b+60,255)},0.5)`;
+          ctx.lineWidth = 1.5;
+          ctx.lineCap = 'round';
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.7)`;
+          ctx.beginPath();
+          for (let a = 0; a < Math.PI; a += 0.15) {
+            const r = (ERAD - 4) * (1 - a / Math.PI);
+            const x = Math.cos(a * 2.5) * r;
+            const y = Math.sin(a * 2.5) * r;
+            if (a === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          ctx.restore();
         }
-        ctx.stroke();
-        ctx.restore();
-      }
 
-      for (let i = 0; i < 4; i++) {
-        const pAngle = (eTime * 1.2 + i * (Math.PI * 2 / 4)) % (Math.PI * 2);
-        const pR = 4 + Math.sin(eTime * 3 + i * 1.5) * 2.5;
-        const px = Math.cos(pAngle) * pR;
-        const py = Math.sin(pAngle) * pR;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.9)`;
-        ctx.fillStyle = `rgba(${Math.min(eColor.r+100,255)},${Math.min(eColor.g+100,255)},${Math.min(eColor.b+100,255)},0.85)`;
-        ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 4; i++) {
+          const pAngle = (eTime * 1.2 + i * (Math.PI * 2 / 4)) % (Math.PI * 2);
+          const pR = 4 + Math.sin(eTime * 3 + i * 1.5) * 2.5;
+          const px = Math.cos(pAngle) * pR;
+          const py = Math.sin(pAngle) * pR;
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = `rgba(${eColor.r},${eColor.g},${eColor.b},0.9)`;
+          ctx.fillStyle = `rgba(${Math.min(eColor.r+100,255)},${Math.min(eColor.g+100,255)},${Math.min(eColor.b+100,255)},0.85)`;
+          ctx.beginPath(); ctx.arc(px, py, 1.2, 0, Math.PI * 2); ctx.fill();
+        }
       }
 
       ctx.shadowBlur = 8;
@@ -4103,18 +4059,22 @@ function draw() {
   const baseX = mmX + mmW / 2;
   const baseY = mmY + 12; // small top padding
 
-  for (let y = 0; y < MAP_SIZE; y++) {
-    for (let x = 0; x < MAP_SIZE; x++) {
+  // On low-perf devices sample every 2nd tile to halve minimap draw calls
+  const mmStep = LOW_PERF_MODE ? 2 : 1;
+  const mmScaleW = mmHalfW * mmStep;
+  const mmScaleH = mmHalfH * mmStep;
+  const _mmGrass = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12); // cache color outside loop
+  for (let y = 0; y < MAP_SIZE; y += mmStep) {
+    for (let x = 0; x < MAP_SIZE; x += mmStep) {
       if (!explored[y][x]) continue;
       const cxTile = baseX + (x - y) * mmHalfW;
       const cyTile = baseY + (x + y) * mmHalfH;
-      if (world.grid[y][x] === 1) ctx.fillStyle = b.wall;
-      else ctx.fillStyle = adjustColor(b.grass || '#2a2a2a', 0.30, 0.12);
+      ctx.fillStyle = world.grid[y][x] === 1 ? b.wall : _mmGrass;
       ctx.beginPath();
-      ctx.moveTo(cxTile, cyTile - mmHalfH);
-      ctx.lineTo(cxTile + mmHalfW, cyTile);
-      ctx.lineTo(cxTile, cyTile + mmHalfH);
-      ctx.lineTo(cxTile - mmHalfW, cyTile);
+      ctx.moveTo(cxTile, cyTile - mmScaleH);
+      ctx.lineTo(cxTile + mmScaleW, cyTile);
+      ctx.lineTo(cxTile, cyTile + mmScaleH);
+      ctx.lineTo(cxTile - mmScaleW, cyTile);
       ctx.closePath(); ctx.fill();
     }
   }
@@ -4141,6 +4101,11 @@ function draw() {
   const pIsoX = baseX + (pTileX - pTileY) * mmHalfW;
   const pIsoY = baseY + (pTileX + pTileY) * mmHalfH;
   ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(pIsoX, pIsoY, 3.5, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1.0;
+
+  // Restore shadowBlur to normal behaviour after draw
+  if (LOW_PERF_MODE) {
+    delete ctx.shadowBlur;
+  }
 }
 
 /* === MAIN LOOP: compute dt and pass to update === */
@@ -4207,75 +4172,114 @@ canvas.addEventListener('click', (e) => {
 });
 
 /* ===== Revive Player (Ad Reward) ===== */
+// ─── REVIVE SYSTEM ────────────────────────────────────────────────────────────
+// Called by the Android wrapper after the rewarded ad finishes successfully.
+// Must be on window so the Java bridge can reach it.
 window.revivePlayer = function () {
-  // Prevent reviving if the player exhausted all allowed revives
-  if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
-    // Show compact ad-unavailable message instead of error
-    var btn = document.getElementById('revive-ad-btn');
-    if (btn) {
-      btn.classList.add('disabled');
-      btn.innerHTML = `<span class="video-icon">\u25B6</span> NO REVIVES LEFT`;
-      btn.title = 'NO REVIVES LEFT';
-    }
+  // Ignore stale or duplicate calls (double-fire protection)
+  if (!window._reviveInFlight) return;
+  window._reviveInFlight = false;
+
+  // Safety: if somehow called with no remaining revives, refuse silently
+  if (continuesUsed >= MAX_REVIVES) {
+    updateReviveButtonState();
     return;
   }
 
+  // ── 1. Charge the revive ──────────────────────────────────────────────────
   continuesUsed++;
-  player.hp  = 50;
-  gameOver   = false;
+  console.log('[Revive] granted. continuesUsed=' + continuesUsed);
+
+  // ── 2. Restore the player ────────────────────────────────────────────────
+  player.hp       = 50;
+  player.swing    = 0;
+  player.hitTimer = 0;
+  // Give enemies a 3-second attack cooldown so they can't munch immediately
+  var graceTicks = 180;
+  if (world && world.enemies) {
+    world.enemies.forEach(function(e) { e.atkDelay = Math.max(e.atkDelay, graceTicks); });
+  }
+  if (world && world.boss) world.boss.atkDelay = Math.max(world.boss.atkDelay || 0, graceTicks);
+
+  // ── 3. Kill any remaining interval that was updating the revive button ───
+  if (reviveButtonInterval) {
+    clearInterval(reviveButtonInterval);
+    reviveButtonInterval = null;
+  }
+
+  // ── 4. Set game state — running but paused ───────────────────────────────
+  gameOver    = false;
   gameRunning = true;
-  // No cooldown: allow immediate consecutive revives (AdMob will enforce limits)
+  gameActive  = false;  // stays paused until player taps resume
 
-  document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('game-over-btns').classList.add('hidden');
-  console.log('Player Revived! Revives used: ' + continuesUsed);
+  // ── 5. Hide game-over overlays, show pause overlay ───────────────────────
+  [
+    'start-screen',
+    'game-over-btns',
+    'revive-info-overlay'
+  ].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  mainBtns.classList.add('hidden');
+  diffBtns.classList.add('hidden');
+  if (customSubmenu) customSubmenu.classList.add('hidden');
+  statsBox.style.display = 'none';
 
-  // Pause the game (without showing the pause overlay) so time does not advance while the player reads the message.
-  gameActive = true;
-  if (typeof pauseGame === 'function') pauseGame(false);
+  // Show pause overlay — player taps "Resume" to get back in safely
+  var pauseEl = document.getElementById('pause-overlay');
+  if (pauseEl) pauseEl.classList.remove('hidden');
 
-  // Show the revive reminder screen before returning to the pause screen.
-  showReviveInfoOverlay();
+  // ── 6. Restart music from the correct track ──────────────────────────────
+  if (soundEnabled) {
+    var track = savedMusicTrack || (inDungeon ? 'dungeon' : 'overworld');
+    savedMusicTrack = null;
+    if (track.startsWith('overworld')) Music.play('overworld');
+    else if (track.startsWith('dungeon'))  Music.play('dungeon');
+  }
+
+  // ── 7. Fix the run timer — don't count time spent watching the ad ────────
+  if (typeof pauseTimestamp !== 'undefined' && pauseTimestamp > 0) {
+    startTime += Date.now() - pauseTimestamp;
+    pauseTimestamp = 0;
+  }
+  // Record a fresh pause start so the pause time is tracked correctly
+  if (typeof pauseTimestamp !== 'undefined') pauseTimestamp = Date.now();
 };
 
-/* Request the Android wrapper to show a rewarded ad */
+// Called when the player taps the "Watch Ad" button on the game-over screen.
+// Hands off to Android; Android calls window.revivePlayer() on ad completion.
 function requestReviveAd() {
-  // Disallow if max revives reached
-  if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
+  if (continuesUsed >= MAX_REVIVES || !isReviveAvailable()) {
     updateReviveButtonState();
     return;
   }
 
-  if (!isReviveAvailable()) {
-    updateReviveButtonState();
-    return;
-  }
+  // Block duplicate taps (touchstart + click both fire on mobile)
+  if (window._reviveInFlight) return;
+  window._reviveInFlight = true;
 
   var btn = document.getElementById('revive-ad-btn');
   if (btn) {
     btn.classList.add('disabled');
-    btn.textContent = 'LOADING AD...';
+    btn.textContent = 'LOADING AD\u2026';
   }
-  if (window.Android && window.Android.onGameOver) {
-    // Trigger the Android rewarded ad. Cooldown will be recorded when
-    // the ad completes and `revivePlayer()` is called.
+
+  if (window.Android && typeof window.Android.onGameOver === 'function') {
     window.Android.onGameOver();
   } else {
-    console.warn('Android ad interface not available');
-    if (btn) {
-      btn.classList.remove('disabled');
-      btn.innerHTML = `<span class="video-icon">\u25B6</span> Ad not ready`;
-      btn.title = 'Ad not ready';
-    }
+    // No Android bridge (running in browser / debug) — simulate immediate reward
+    console.warn('[Revive] Android bridge not found; simulating reward for debug.');
+    window.revivePlayer();
   }
 }
 
-/* Reset revive button state each time game over screen shows */
-var _originalShowGameOver = showGameOver;
+// Wrap showGameOver so the _reviveInFlight lock is always cleared when
+// a new game-over screen appears (handles abandoned / failed ads).
+var _origShowGameOver = showGameOver;
 showGameOver = function () {
-  _originalShowGameOver.apply(this, arguments);
-  // Ensure the revive button reflects the current cooldown state
-  updateReviveButtonState();
+  window._reviveInFlight = false;
+  _origShowGameOver.apply(this, arguments);
 };
 </script>
 </body>
