@@ -4182,7 +4182,6 @@ canvas.addEventListener('click', (e) => {
 window.revivePlayer = function () {
   // Prevent reviving if the player exhausted all allowed revives
   if (typeof continuesUsed !== 'undefined' && continuesUsed >= MAX_REVIVES) {
-    // Show compact ad-unavailable message instead of error
     var btn = document.getElementById('revive-ad-btn');
     if (btn) {
       btn.classList.add('disabled');
@@ -4192,21 +4191,22 @@ window.revivePlayer = function () {
     return;
   }
 
+  // Guard: if revivePlayer is somehow called again before the screen transitions, ignore it
+  if (window._reviveInFlight) return;
+  window._reviveInFlight = false; // clear the ad-request lock — ad completed, now process once
+
   continuesUsed++;
   player.hp  = 50;
   gameOver   = false;
   gameRunning = true;
-  // No cooldown: allow immediate consecutive revives (AdMob will enforce limits)
 
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-over-btns').classList.add('hidden');
   console.log('Player Revived! Revives used: ' + continuesUsed);
 
-  // Pause the game (without showing the pause overlay) so time does not advance while the player reads the message.
   gameActive = true;
   if (typeof pauseGame === 'function') pauseGame(false);
 
-  // Show the revive reminder screen before returning to the pause screen.
   showReviveInfoOverlay();
 };
 
@@ -4223,16 +4223,20 @@ function requestReviveAd() {
     return;
   }
 
+  // Guard against double-tap / touch+click firing twice
+  if (window._reviveInFlight) return;
+  window._reviveInFlight = true;
+
   var btn = document.getElementById('revive-ad-btn');
   if (btn) {
     btn.classList.add('disabled');
     btn.textContent = 'LOADING AD...';
   }
   if (window.Android && window.Android.onGameOver) {
-    // Trigger the Android rewarded ad. Cooldown will be recorded when
-    // the ad completes and `revivePlayer()` is called.
     window.Android.onGameOver();
   } else {
+    // No Android bridge — reset the lock so the player isn't stuck
+    window._reviveInFlight = false;
     console.warn('Android ad interface not available');
     if (btn) {
       btn.classList.remove('disabled');
@@ -4246,7 +4250,7 @@ function requestReviveAd() {
 var _originalShowGameOver = showGameOver;
 showGameOver = function () {
   _originalShowGameOver.apply(this, arguments);
-  // Ensure the revive button reflects the current cooldown state
+  window._reviveInFlight = false; // reset lock in case a prior ad was abandoned
   updateReviveButtonState();
 };
 </script>
