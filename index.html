@@ -2021,35 +2021,7 @@ closeMenuBtn.addEventListener('click', () => {
   resumeGame();
 });
 
-function updateMiniMenuButtonPosition() {
-  if (!miniMenuBtn) return;
-  if (!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = rect.width / canvas.width;
-  const scaleY = rect.height / canvas.height;
-
-  // Compute minimap position the same way draw() does so button aligns correctly
-  const mmPixelW = 180;
-  const mmS = mmPixelW / MAP_SIZE;
-  const mmW = mmPixelW;
-  const mmH = Math.ceil(MAP_SIZE * mmS);
-  const mmX = Math.max(10, canvas.width - mmW - 10);
-  const mmY = 15;
-  const btnSize = 44;
-  const padding = 6;
-
-  const left = rect.left + mmX * scaleX - btnSize - padding;
-  const top = rect.top + mmY * scaleY;
-
-  miniMenuBtn.style.left = `${left}px`;
-  miniMenuBtn.style.top = `${top}px`;
-
-  // Only show when a game is running (not on main menu)
-  miniMenuBtn.style.display = gameRunning ? 'flex' : 'none';
-}
-
-window.addEventListener('resize', updateMiniMenuButtonPosition);
+// (miniMenuBtn removed — was dead code causing ReferenceError)
 
 swBiome.addEventListener('click', () => {
   swBiome.classList.add('selected');
@@ -2542,7 +2514,7 @@ function startGame() {
 }
 
 function generateWorld(reset) {
-  world = { grid: [], enemies: [], entrance: {x: 0, y: 0}, boss: null };
+  world = { grid: [], enemies: [], enemyPool: [], entrance: {x: 0, y: 0}, boss: null };
   flowMap = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(9999));
   flowAccSeconds = 0;
   
@@ -2613,28 +2585,25 @@ function generateWorld(reset) {
   let enemyCount = settings.enemyCountBase + (biomeLevel * settings.enemyCountStep);
   let enemyHp = Math.max(1, Math.round(hpMult));
 
+  // Proximity pool: store all enemies as dormant seeds, activate when player gets close.
+  // This avoids simulating hundreds of enemies far away from the player.
+  world.enemyPool = [];
+  world.enemies = []; // active enemies only
+
   for (let i = 0; i < enemyCount; i++) {
-    // pick a position separated from player and other enemies
     let enp;
-    const minDist = 40;
     let attempts = 0;
     do {
       enp = findSafePos();
       attempts++;
-      if (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500) continue;
-    } while ((Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 ||
-              world.enemies.some(e => Math.hypot(enp.x - e.x, enp.y - e.y) < minDist))
-             && attempts < 1000);
+    } while (Math.hypot(enp.x - player.x, enp.y - player.y) <= 500 && attempts < 200);
 
     if (Math.hypot(enp.x - player.x, enp.y - player.y) > 500) {
-      world.enemies.push({ 
-        x: enp.x, 
-        y: enp.y, 
-        hp: enemyHp, 
-        dmg: scaledDmg, 
-        atkDelay: 0, 
-        hitTimer: 0,
-        color: biomes[(biomeLevel - 1) % biomes.length].enemy
+      world.enemyPool.push({
+        x: enp.x,
+        y: enp.y,
+        hp: enemyHp,
+        dmg: scaledDmg
       });
     }
   }
@@ -2801,6 +2770,26 @@ function update(dt) {
   let settings = DIFFICULTY_SETTINGS[currentDifficulty];
   const CURRENT_ENEMY_SPEED = 4.6 + ((biomeLevel - 1) * settings.enemySpeedStep); // px/frame
   const CURRENT_ENEMY_SPEED_PPS = CURRENT_ENEMY_SPEED * FPS; // px/sec
+
+  // Proximity activation: pull dormant enemies from pool when player comes within activation radius.
+  // This means we only ever simulate enemies that are close to the player.
+  const ACTIVATE_RADIUS = 900;  // px — enemies activate when this close
+  const MAX_ACTIVE = 30;        // cap simultaneous active enemies to keep update loop fast
+  if (world.enemyPool && world.enemyPool.length > 0 && world.enemies.length < MAX_ACTIVE) {
+    const biomeColor = biomes[(biomeLevel - 1) % biomes.length].enemy;
+    for (let i = world.enemyPool.length - 1; i >= 0 && world.enemies.length < MAX_ACTIVE; i--) {
+      const seed = world.enemyPool[i];
+      if (Math.hypot(seed.x - player.x, seed.y - player.y) < ACTIVATE_RADIUS) {
+        world.enemies.push({
+          x: seed.x, y: seed.y,
+          hp: seed.hp, dmg: seed.dmg,
+          atkDelay: 0, hitTimer: 0,
+          color: biomeColor
+        });
+        world.enemyPool.splice(i, 1);
+      }
+    }
+  }
 
   world.enemies.forEach(e => {
     if (e.hitTimer > 0) e.hitTimer -= dt * FPS;
@@ -3146,7 +3135,7 @@ function enterDungeon() {
     }
   }
     
-  world.enemies = []; shots = []; drops = [];
+  world.enemies = []; world.enemyPool = []; shots = []; drops = [];
   let sp = findSafePos(); player.x = sp.x; player.y = sp.y;
   let bp = findSafePos();
     
@@ -3265,6 +3254,9 @@ function draw() {
   const wallColor = !inDungeon ? adjustColor(b.wall || '#000', overworldBrighten * 0.6, overworldSaturate) : (b.wall || '#000');
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Zoom factor: on low-perf/TCL draw 2x bigger tiles (fewer tiles visible = much less work)
+  const ZOOM = LOW_PERF_MODE ? 2.0 : 1.0;
+
   function worldToIso(wx, wy) {
     const tx = wx / TILE, ty = wy / TILE;
     const isoScaleX = TILE / 2;
@@ -3276,12 +3268,20 @@ function draw() {
     const pIsoY = (pTx + pTy) * isoScaleY;
     const camX = Math.round(canvas.width / 2);
     const camY = Math.round(canvas.height / 2);
-    return { x: camX + isoX - pIsoX, y: camY + isoY - pIsoY };
+    // Apply zoom: scale relative to screen center
+    return {
+      x: camX + (isoX - pIsoX) * ZOOM,
+      y: camY + (isoY - pIsoY) * ZOOM
+    };
   }
-  let startX = Math.max(0, Math.floor(cx / TILE));
-  let endX = Math.min(MAP_SIZE, startX + 27);
-  let startY = Math.max(0, Math.floor(cy / TILE));
-  let endY = Math.min(MAP_SIZE, startY + 20);
+
+  // Shrink the tile viewport proportionally to zoom — fewer tiles = faster draw
+  const viewTilesX = LOW_PERF_MODE ? 14 : 27;
+  const viewTilesY = LOW_PERF_MODE ? 10 : 20;
+  let startX = Math.max(0, Math.floor(cx / TILE) - (LOW_PERF_MODE ? 1 : 0));
+  let endX   = Math.min(MAP_SIZE, startX + viewTilesX);
+  let startY = Math.max(0, Math.floor(cy / TILE) - (LOW_PERF_MODE ? 1 : 0));
+  let endY   = Math.min(MAP_SIZE, startY + viewTilesY);
 
   // Precompute visible entities by tile for correct depth sorting
   const entityMap = {};
@@ -3315,7 +3315,7 @@ function draw() {
     entityMap[tileKey(bx, by)].push({ type: 'boss', obj: world.boss });
   }
 
-  const halfW = TILE / 2, halfH = TILE / 3;
+  const halfW = (TILE / 2) * ZOOM, halfH = (TILE / 3) * ZOOM;
   // Build draw queue sorted by isometric depth x+y
   const tileQueue = [];
   for (let y = startY; y < endY; y++) {
